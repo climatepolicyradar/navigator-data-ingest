@@ -1,11 +1,8 @@
-"""
-A simple API client for creating documents & associations.
-"""
+"""A simple API client for creating documents & associations."""
 import hashlib
 import logging
 import os
 from functools import lru_cache
-from typing import Any, Callable, Mapping, Tuple
 
 import requests
 
@@ -64,7 +61,9 @@ def post_document(session: requests.Session, document: Document) -> requests.Res
     return response
 
 
-def post_relationship(session: requests.Session, relationship: DocumentRelationship) -> requests.Response:
+def post_relationship(
+    session: requests.Session, relationship: DocumentRelationship
+) -> requests.Response:
     """
     Make a request to the document relationships endpoint to create a new relationship.
 
@@ -186,7 +185,9 @@ def upload_document(
     if "url" in response_json:
         # For single file content types, return the URL to the CPR cache copy
         return DocumentUploadResult(
-            cloud_url=response_json["url"], md5sum=file_content_hash
+            cloud_url=response_json["url"],
+            md5sum=file_content_hash,
+            content_type=content_type,
         )
 
     raise Exception(response_json["detail"])

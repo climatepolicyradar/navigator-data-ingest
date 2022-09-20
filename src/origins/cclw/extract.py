@@ -60,7 +60,7 @@ def extract_documents(
         document_name = row[TITLE_FIELD].strip()
         document_description = _strip_tags(row[DESCRIPTION_FIELD])
         action_id = row[ACTION_ID_FIELD].strip()
-        document_id = f"{action_id}-{row[DOCUMENT_ID_FIELD].strip()}"
+        import_id = f"{action_id}-{row[DOCUMENT_ID_FIELD].strip()}"
         document_url = _parse_url(row[DOCUMENT_FIELD])
         document_languages = _split_not_null(row[LANGUAGES_FIELD], ";")
         document_category = DocumentType[row[CATEGORY_FIELD].strip()].value
@@ -82,10 +82,11 @@ def extract_documents(
             name=document_name,
             description=document_description,
             source_url=document_url,
-            source_id=document_id,
+            import_id=import_id,
             publication_ts=publication_date,
             url=None,  # Not yet uploaded
             md5sum=None,  # Calculated during upload
+            content_type=None,  # Detected during upload
             languages=document_languages,
             type=document_type,
             source=document_url,

@@ -1,15 +1,16 @@
 import logging
 from concurrent.futures import as_completed, Executor
-from datetime import date
-from typing import Optional, Sequence
+from typing import Generator, Sequence
 
 import requests
 from slugify import slugify
 
 from base.types import (
     DEFAULT_DESCRIPTION,
+    SINGLE_FILE_CONTENT_TYPES,
     Document,
     DocumentGenerator,
+    DocumentParserInput,
     DocumentRelationship,
     DocumentUploadResult,
 )
@@ -23,7 +24,9 @@ from base.api_client import (
 _LOGGER = logging.getLogger(__file__)
 
 
-def handle_all_documents(executor: Executor, source: DocumentGenerator):
+def handle_all_documents(
+    executor: Executor, source: DocumentGenerator
+) -> Generator[DocumentParserInput, None, None]:
     """
     Handle all documents.
 
@@ -52,11 +55,22 @@ def handle_all_documents(executor: Executor, source: DocumentGenerator):
                 f"{document_group}"
             )
         else:
+            _LOGGER.debug(f"Raw result: {result}")
             _LOGGER.info(
                 "Created documents & required relationships for "
-                f"'{[doc.source_id for doc in document_group]}'"
+                f"'{[doc.import_id for doc in document_group]}'"
             )
-            _LOGGER.debug(f"Raw results: {result}")
+            for doc in document_group:
+                if doc.url is not None and doc.content_type is not None:
+                    url_for_parser = doc.source_url
+                    if doc.content_type in SINGLE_FILE_CONTENT_TYPES:
+                        url_for_parser = doc.url
+                    yield DocumentParserInput(
+                        url=url_for_parser,
+                        import_id=doc.import_id,
+                        content_type=doc.content_type,
+                        document_slug="",  # TODO: implement
+                    )
 
     _LOGGER.info("Done uploading documents")
 
@@ -105,7 +119,7 @@ def _handle_documents(documents: Sequence[Document]) -> None:
 
         else:
             _LOGGER.info(
-                f"Skipping upload for '{document.source}:{document.source_id}:"
+                f"Skipping upload for '{document.source}:{document.import_id}:"
                 f"{document.name}' because the source URL is empty"
             )
 
