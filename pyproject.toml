@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "navigator-data-ingest"
 version = "0.1.0"
-description = "Loads data into backend"
+description = "Downloads a given list of documents, then updates document data via API"
 authors = ["CPR tech <tech@climatepolicyradar.org>"]
-license = "MIT"
+license = "BSD-3-Clause"
 
 [tool.poetry.dependencies]
 python = "^3.9"

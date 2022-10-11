@@ -7,9 +7,8 @@ from pathlib import Path
 
 import click
 
-from base.actions import handle_all_documents
+from base.actions import LawPolicyGenerator, handle_all_documents
 from base.types import DocumentParserInput
-from origins.cclw.load import CCLWDocumentCSV
 
 
 DEFAULT_LOGGING = {
@@ -45,30 +44,27 @@ _LOGGER = logging.getLogger(__file__)
 
 
 @click.command()
-@click.option("--input", help="Location of CSV input file.")
+@click.option("--input", help="Location of JSON array input file.")
+@click.option("--output-location", help="S3 bucket URL or folder on local filesystem")
 @click.option(
-    "--output-location",
-    help="Location in which to place output files for consumption by parsing stage.",
+    "--output-prefix",
+    help="Prefix to apply to output files for consumption by parsing stage.",
 )
-def main(input: str, output_location: str):
+def main(input: str, output_location: str, output_prefix: str):
     """
-    ETL for policy data.
-
-    Extract policy data from known CCLW data source (and later this will be event-driven)
-    Transform the policy data into parsed logical document groups.
-    Load the policy data into our backend.
+    Load documents from source JSON array file.
 
     :return None:
     """
     # load CCLW document descriptions from the given CSV file
     # TODO: command line args
     # TODO: more document sources
-    # TODO: cloudpathlib
-    csv_file_path = Path(input).absolute()
-    output_location_path = Path(output_location)
-    _LOGGER.info(f"Loading CCLW CSV data from '{csv_file_path}'")
+    # TODO: s3 & cloudpathlib
+    input_file_path = Path(input).absolute()
+    output_location_path = Path(output_location) / output_prefix
+    _LOGGER.info(f"Loading Law/Policy document data from '{input_file_path}'")
 
-    document_generator = CCLWDocumentCSV(csv_file_path)
+    document_generator = LawPolicyGenerator(input_file_path)
     # TODO: configure worker count
     with ProcessPoolExecutor(max_workers=4) as executor:
         for parser_input in handle_all_documents(executor, document_generator):
@@ -76,11 +72,12 @@ def main(input: str, output_location: str):
 
 
 def _write_parser_input(
-    output_location: Path, parser_input: DocumentParserInput
+    output_location: Path,
+    parser_input: DocumentParserInput,
 ) -> None:
-    output_file_location = output_location / f"{parser_input.import_id}.json"
+    output_file_location = output_location / f"{parser_input.document_id}.json"
     with open(output_file_location, "w") as output_file:
-        output_file.write(json.dumps(parser_input.dict(), indent=2))
+        output_file.write(json.dumps(parser_input.to_json(), indent=2))
 
 
 if __name__ == "__main__":
