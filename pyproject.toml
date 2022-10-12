@@ -3,11 +3,19 @@ name = "navigator-data-ingest"
 version = "0.1.0"
 description = "Downloads a given list of documents, then updates document data via API"
 authors = ["CPR tech <tech@climatepolicyradar.org>"]
+repository = "https://github.com/climatepolicyradar/navigator-data-ingest"
+packages = [
+    { include = "navigator_data_ingest", from = "src" },
+]
 license = "BSD-3-Clause"
+
+[tool.poetry.scripts]
+navigator-data-ingest = 'navigator_data_ingest.main:main'
 
 [tool.poetry.dependencies]
 python = "^3.9"
 click = "^8.1.2"
+cloudpathlib = { version = "^0.10.0", extras = ["s3"] }
 pydantic = "^1.9"
 python-slugify = "^6.1.2"
 python-dateutil = "^2.8.2"

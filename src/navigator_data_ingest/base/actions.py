@@ -1,19 +1,19 @@
 import json
 import logging
 from concurrent.futures import as_completed, Executor
-from pathlib import Path
-from typing import Generator
+from typing import Generator, Iterable
 
 import requests
+from cloudpathlib import S3Path
 from slugify import slugify
 
-from base.types import (
+from navigator_data_ingest.base.types import (
     Document,
     DocumentGenerator,
     DocumentParserInput,
     DocumentUploadResult,
 )
-from base.api_client import upload_document
+from navigator_data_ingest.base.api_client import upload_document
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -21,13 +21,13 @@ _LOGGER = logging.getLogger(__file__)
 class LawPolicyGenerator(DocumentGenerator):
     """A generator of validated Document objects for inspection & upload"""
 
-    def __init__(self, input_file: Path):
+    def __init__(self, input_file: S3Path):
         self._input_file = input_file
 
     def process_source(self) -> Generator[Document, None, None]:
         """Generate documents for processing from the configured source."""
 
-        with open(self._input_file) as input:
+        with self._input_file.open("r") as input:
             json_docs = json.load(input)
 
         for d in json_docs:
@@ -35,7 +35,9 @@ class LawPolicyGenerator(DocumentGenerator):
 
 
 def handle_all_documents(
-    executor: Executor, source: DocumentGenerator
+    executor: Executor,
+    source: Iterable[Document],
+    document_bucket: str,
 ) -> Generator[DocumentParserInput, None, None]:
     """
     Handle all documents.
@@ -50,8 +52,12 @@ def handle_all_documents(
     https://www.notion.so/climatepolicyradar/Document-names-on-S3-6f3cd748c96141d3b714a95b42842aeb
     """
     tasks = {
-        executor.submit(_handle_document, document): document
-        for document in source.process_source()
+        executor.submit(
+            _handle_document,
+            document,
+            document_bucket,
+        ): document
+        for document in source
     }
 
     for future in as_completed(tasks):
@@ -64,26 +70,21 @@ def handle_all_documents(
                 f"Handling the following document generated an exception: {document}"
             )
         else:
-            _LOGGER.info(f"Uploaded content for '{document}'")
-            _LOGGER.info(f"Writing parser input for '{document.import_id}")
-            # TODO: ??? upload failed ???
-            # if doc_details is None:
-            #     _LOGGER.info(
-            #         f"Not writing output for failed upload: '{doc.source}:"
-            #         f"{doc.import_id}'"
-            #     )
-            #     continue
-            url_for_parser = document_upload_result.cloud_url or document.source_url
-            document.url = url_for_parser
-            document.md5_sum = document_upload_result.md5_sum
-            yield DocumentParserInput(
-                document_name=document.name,
-                document_description=document.description,
-                document_url=url_for_parser,
-                document_id=document.import_id,
-                document_content_type=document_upload_result.content_type,
-                document_detail=document,
-            )
+            # inputs are returned for documents that have not been previously handled
+            if document_upload_result is not None:
+                _LOGGER.info(f"Uploaded content for '{document}'")
+                _LOGGER.info(f"Writing parser input for '{document.import_id}")
+                url_for_parser = document_upload_result.cloud_url or document.source_url
+                document.url = url_for_parser
+                document.md5_sum = document_upload_result.md5_sum
+                yield DocumentParserInput(
+                    document_name=document.name,
+                    document_description=document.description,
+                    document_url=url_for_parser,
+                    document_id=document.import_id,
+                    document_content_type=document_upload_result.content_type,
+                    document_detail=document,
+                )
 
     _LOGGER.info("Done uploading documents")
 
@@ -91,6 +92,7 @@ def handle_all_documents(
 def _upload_document(
     session: requests.Session,
     document: Document,
+    document_bucket: str,
 ) -> DocumentUploadResult:
     """
     Upload a single document.
@@ -99,7 +101,11 @@ def _upload_document(
     :param Document document: The document description
     :return DocumentUploadResult: Details of the document content & upload location
     """
-    # Replace forward slashes because S3 recognises them as pseudo-directory separators
+    doc_slug = slugify(document.name)
+    doc_geo = document.geography
+    doc_year = document.publication_ts.year
+    file_name = f"{doc_geo}/{doc_year}/{doc_slug}"
+
     if not document.source_url:
         _LOGGER.info(
             f"Skipping upload for '{document.source}:{document.import_id}:"
@@ -111,43 +117,43 @@ def _upload_document(
             content_type=None,
         )
 
-    doc_slug = slugify(document.name)
-    doc_geo = document.geography
-    doc_year = document.publication_ts.year
-    file_name = f"{doc_geo}/{doc_year}/{doc_slug}"
     clean_url = document.source_url.split("|")[0].strip()
 
     return upload_document(
         session,
         clean_url,
         file_name,
+        document_bucket,
     )
 
 
-def _handle_document(document: Document) -> DocumentUploadResult:
+def _handle_document(
+    document: Document,
+    document_bucket: str,
+) -> DocumentUploadResult:
     """
     Upload document source files & update details via API endpoing.
 
     :param Document document: A document to upload.
     """
-    session = requests.Session()
-
     _LOGGER.info(f"Handling document: {document}")
 
+    session = requests.Session()
     try:
-        uploaded_document_result = _upload_document(session, document)
+        uploaded_document_result = _upload_document(
+            session,
+            document,
+            document_bucket,
+        )
 
-        # FIXME: Send updated details to API endpoint
+        # FIXME: Send updated md5sum/url details to API endpoint
         # update_document_response = post_update(session=session, document=document)
         # if update_document_response.status_code >= 300:
         #     # TODO: More nuanced status response handling
         #     _LOGGER.error(
-        #         f"Failed to update entry in the database for '{document.source}:{document.import_id}': "
+        #         f"Failed to update entry in the database for '{document.import_id}': "
         #         f"{update_document_response.text}"
         #     )
-        # else:
-        #     # TODO: write out individual file
-        #     update_document_response.json()
 
         return uploaded_document_result
     except Exception:

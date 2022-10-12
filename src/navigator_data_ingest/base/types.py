@@ -6,12 +6,6 @@ from typing import Any, Generator, Mapping, Optional, Sequence
 
 from pydantic import BaseModel
 
-# if the source data doesn't have descriptions for things like events, or
-# non-lookup/predefined metadata, use a suitable default.
-DEFAULT_DESCRIPTION = "Imported by CPR loader"
-DEFAULT_POLICY_DATE = datetime(1900, 1, 1)
-PUBLICATION_EVENT_NAME = "Publication"
-
 CONTENT_TYPE_PDF = "application/pdf"
 CONTENT_TYPE_DOCX = (
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -137,3 +131,11 @@ class DocumentUploadResult(BaseModel):
     cloud_url: Optional[str]
     md5_sum: Optional[str]
     content_type: Optional[str]
+
+
+class UnsupportedContentTypeError(Exception):
+    """An error indicating a content type not yet supported by parsing"""
+
+    def __init__(self, content_type: str):
+        self.content_type = content_type
+        super().__init__(f"Content type '{content_type}' is not supported for caching")
