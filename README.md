@@ -2,5 +2,5 @@
 
 Data ingest portion of the data processing pipeline.
 
-The data ingest tool can ingest data from CSVs created from CCLW exported data, and then
+The data ingest tool can ingest data from JSON files created from bulk-imported & validated CCLW data, and then
 POST document updates to the backend database.
