@@ -1,12 +1,21 @@
 [tool.poetry]
 name = "navigator-data-ingest"
 version = "0.1.0"
-description = "Loads data into backend"
+description = "Downloads a given list of documents, then updates document data via API"
 authors = ["CPR tech <tech@climatepolicyradar.org>"]
-license = "MIT"
+repository = "https://github.com/climatepolicyradar/navigator-data-ingest"
+packages = [
+    { include = "navigator_data_ingest", from = "src" },
+]
+license = "BSD-3-Clause"
+
+[tool.poetry.scripts]
+navigator-data-ingest = 'navigator_data_ingest.main:main'
 
 [tool.poetry.dependencies]
 python = "^3.9"
+click = "^8.1.2"
+cloudpathlib = { version = "^0.10.0", extras = ["s3"] }
 pydantic = "^1.9"
 python-slugify = "^6.1.2"
 python-dateutil = "^2.8.2"
@@ -46,13 +55,15 @@ asyncio_mode = "strict"
 # D415 - First line should end with a period, question mark, or exclamation point
 ignore = """
 D100,D103,D104,D107,
-D202,D203,D213,
+D202,D203,D212,
 D400,D401,D406,D407,D413,D415
 """
 
 [tool.flake8]
 max-line-length = 88
 extend-ignore = "E203"
+per-file-ignores = "__init__.py:F401"
 
-[tool.mypy]
-ignore_missing_imports = "True"
+[tool.black]
+line-length = 88
+target-version = ['py39']

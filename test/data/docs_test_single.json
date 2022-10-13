@@ -1,0 +1,53 @@
+[
+  {
+    "publication_ts": "2013-01-01T00:00:00",
+    "name": "Presidential of the Republic of Indonesia Instruction Number 6 Year 2013 on Suspension of New Licenses and Improving Forest Governance of Primary Forest and Peatland",
+    "description": "The first iteration of this instruction was issued in 2011 in order to implement commitments under the agreements in the Letter of Intent signed with the Kingdom of Norway in May 2011. The Instruction is intended to facilitate Indonesia's participation in internationally financed REDD activities and places a moratorium on clearance of primary peatland and forests within moratorium areas.\u00a0The initial moratorium was extended by Presidential Instruction 6/2013.\u00a0In 2019, President Joko Widodo signed Presidential Instruction 5/2019, making the moratorium on the clearance of primary forest and peatlands in moratorium areas permanent.\u00a0",
+    "source_url": "https://climate-laws.org/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaUlHIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--8c435aa888628a4bbbef25307cab8c50b5be954a/f",
+    "url": null,
+    "md5_sum": null,
+    "type": "Decree",
+    "source": "CCLW",
+    "import_id": "1332-1548",
+    "category": "Policy",
+    "frameworks": [],
+    "geography": "IDN",
+    "hazards": [],
+    "instruments": [
+      "Processes, plans and strategies|Governance"
+    ],
+    "keywords": [
+      "REDD+ And LULUCF",
+      "Forests",
+      "Moratorium"
+    ],
+    "languages": [
+      "English"
+    ],
+    "sectors": [
+      "LULUCF",
+      "Residential and Commercial"
+    ],
+    "topics": [
+      "Adaptation",
+      "Mitigation"
+    ],
+    "events": [
+      {
+        "name": "Presidential instruction issued",
+        "description": "",
+        "created_ts": "2011-12-25T00:00:00"
+      },
+      {
+        "name": "Moratorium extended",
+        "description": "",
+        "created_ts": "2013-12-25T00:00:00"
+      },
+      {
+        "name": "Moratorium extended",
+        "description": "",
+        "created_ts": "2019-08-07T00:00:00"
+      }
+    ]
+  }
+]
