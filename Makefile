@@ -4,4 +4,5 @@ git_hooks:
 
 build:
 	docker build -t navigator-data-ingest .
+	docker build -t navigator-data-ingest-staging .
 
