@@ -146,7 +146,7 @@ def _handle_document(
             document_bucket,
         )
 
-        # FIXME: Send updated md5sum/url details to API endpoint
+        # TODO: (BAK-1208) Send updated md5sum/url details to API endpoint
         # update_document_response = post_update(session=session, document=document)
         # if update_document_response.status_code >= 300:
         #     # TODO: More nuanced status response handling
