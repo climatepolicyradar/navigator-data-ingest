@@ -30,7 +30,7 @@ jobs:
       - name: Push Images to ECR
         run: |
           .github/retag-and-push.sh navigator-data-ingest latest
-          .github/retag-and-push.sh navigator-data-ingest latest STAGING
+          .github/retag-and-push.sh navigator-data-ingest-staging latest STAGING
         env:
           DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
           DOCKER_REGISTRY_STAGING: ${{ secrets.DOCKER_REGISTRY_STAGING }}
