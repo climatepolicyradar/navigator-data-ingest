@@ -11,16 +11,16 @@ from cloudpathlib import CloudPath, S3Path
 from navigator_data_ingest.base.actions import LawPolicyGenerator, handle_all_documents
 from navigator_data_ingest.base.api_client import (
     API_HOST_ENVVAR,
-    MACHINE_USER_API_EMAIL_ENVVAR,
-    MACHINE_USER_API_PASSWORD_ENVVAR,
+    MACHINE_USER_EMAIL_ENVVAR,
+    MACHINE_USER_PASSWORD_ENVVAR,
 )
 from navigator_data_ingest.base.types import Document, DocumentParserInput
 
 
 REQUIRED_ENV_VARS = [
     API_HOST_ENVVAR,
-    MACHINE_USER_API_EMAIL_ENVVAR,
-    MACHINE_USER_API_PASSWORD_ENVVAR,
+    MACHINE_USER_EMAIL_ENVVAR,
+    MACHINE_USER_PASSWORD_ENVVAR,
 ]
 ENV_VAR_MISSING_ERROR = 10
 
