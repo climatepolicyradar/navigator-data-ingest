@@ -15,8 +15,8 @@ from navigator_data_ingest.base.types import (
 )
 
 API_HOST_ENVVAR = "API_HOST"
-MACHINE_USER_API_EMAIL_ENVVAR = "MACHINE_USER_LOADER_EMAIL"
-MACHINE_USER_API_PASSWORD_ENVVAR = "MACHINE_USER_LOADER_PASSWORD"
+MACHINE_USER_EMAIL_ENVVAR = "MACHINE_USER_EMAIL"
+MACHINE_USER_PASSWORD_ENVVAR = "MACHINE_USER_PASSWORD"
 CDN_PREFIX = "https://cdn.climatepolicyradar.org"
 
 _LOGGER = logging.getLogger(__file__)
@@ -32,8 +32,8 @@ def _get_api_host():
 
 @lru_cache()
 def _get_machine_user_token():
-    username = os.environ[MACHINE_USER_API_EMAIL_ENVVAR]
-    password = os.environ[MACHINE_USER_API_PASSWORD_ENVVAR]
+    username = os.environ[MACHINE_USER_EMAIL_ENVVAR]
+    password = os.environ[MACHINE_USER_PASSWORD_ENVVAR]
     api_host = _get_api_host()
 
     login_data = {
