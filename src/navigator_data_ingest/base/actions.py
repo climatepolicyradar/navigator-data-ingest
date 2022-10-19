@@ -83,7 +83,8 @@ def handle_all_documents(
                     document_url=url_for_parser,
                     document_id=document.import_id,
                     document_content_type=document_upload_result.content_type,
-                    document_detail=document,
+                    document_metadata=document,
+                    document_slug="",  # TODO: introduce slug when added
                 )
 
     _LOGGER.info("Done uploading documents")
