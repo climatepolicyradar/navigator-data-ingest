@@ -96,12 +96,13 @@ class Document(BaseModel):
 class DocumentParserInput(BaseModel):
     """Input specification for input to the parser."""
 
+    document_id: str
     document_name: str
     document_description: str
-    document_id: str
     document_url: Optional[str]
     document_content_type: Optional[str]
-    document_detail: Document
+    document_metadata: Document
+    document_slug: str
 
     def to_json(self) -> Mapping[str, Any]:
         """Output a JSON serialising friendly dict representing this model"""
@@ -111,7 +112,8 @@ class DocumentParserInput(BaseModel):
             "document_id": self.document_id,
             "document_url": self.document_url,
             "document_content_type": self.document_content_type,
-            "document_detail": self.document_detail.to_json(),
+            "document_metadata": self.document_metadata.to_json(),
+            "document_slug": self.document_slug,
         }
 
 
