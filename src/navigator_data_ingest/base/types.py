@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Generator, Mapping, Optional, Sequence
 
-from pydantic import BaseModel
+from pydantic import BaseModel, AnyHttpUrl
 
 CONTENT_TYPE_PDF = "application/pdf"
 CONTENT_TYPE_DOCX = (
@@ -63,7 +63,7 @@ class Document(BaseModel):
     description: str
     import_id: str  # Unique source derived ID
     publication_ts: datetime
-    source_url: Optional[str]  # Original source URL
+    source_url: Optional[AnyHttpUrl]  # Original source URL
 
     type: str
     source: str
@@ -97,6 +97,7 @@ class DocumentParserInput(BaseModel):
     document_id: str
     document_name: str
     document_description: str
+    document_source_url: Optional[AnyHttpUrl]
     document_cdn_object: Optional[str]
     document_content_type: Optional[str]
     document_md5_sum: Optional[str]

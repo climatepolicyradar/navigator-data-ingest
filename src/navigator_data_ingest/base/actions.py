@@ -79,6 +79,7 @@ def handle_all_documents(
                     document_slug="",  # TODO: introduce slug when added
                     document_name=document.name,
                     document_description=document.description,
+                    document_source_url=document.source_url,
                     document_cdn_object=document_upload_result.cdn_object,
                     document_content_type=document_upload_result.content_type,
                     document_md5_sum=document_upload_result.md5_sum,
