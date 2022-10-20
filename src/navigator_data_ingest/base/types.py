@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Generator, Mapping, Optional, Sequence
 
-from pydantic import BaseModel
+from pydantic import BaseModel, AnyHttpUrl
 
 CONTENT_TYPE_PDF = "application/pdf"
 CONTENT_TYPE_DOCX = (
@@ -61,11 +61,9 @@ class Document(BaseModel):
 
     name: str
     description: str
-    source_url: Optional[str]  # Original source URL
     import_id: str  # Unique source derived ID
     publication_ts: datetime
-    url: Optional[str]  # Serving URL returned from CDN upload
-    md5_sum: Optional[str]  # md5sum calculated during upload
+    source_url: Optional[AnyHttpUrl]  # Original source URL
 
     type: str
     source: str
@@ -99,8 +97,10 @@ class DocumentParserInput(BaseModel):
     document_id: str
     document_name: str
     document_description: str
-    document_url: Optional[str]
+    document_source_url: Optional[AnyHttpUrl]
+    document_cdn_object: Optional[str]
     document_content_type: Optional[str]
+    document_md5_sum: Optional[str]
     document_metadata: Document
     document_slug: str
 
@@ -110,7 +110,7 @@ class DocumentParserInput(BaseModel):
             "document_name": self.document_name,
             "document_description": self.document_description,
             "document_id": self.document_id,
-            "document_url": self.document_url,
+            "document_cdn_object": self.document_cdn_object,
             "document_content_type": self.document_content_type,
             "document_metadata": self.document_metadata.to_json(),
             "document_slug": self.document_slug,
@@ -130,7 +130,7 @@ class DocumentGenerator(ABC):
 class DocumentUploadResult(BaseModel):
     """Information generated during the upload of a document used by later processes."""
 
-    cloud_url: Optional[str]
+    cdn_object: Optional[str]
     md5_sum: Optional[str]
     content_type: Optional[str]
 

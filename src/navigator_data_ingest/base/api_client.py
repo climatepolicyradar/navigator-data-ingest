@@ -17,7 +17,6 @@ from navigator_data_ingest.base.types import (
 API_HOST_ENVVAR = "API_HOST"
 MACHINE_USER_EMAIL_ENVVAR = "MACHINE_USER_EMAIL"
 MACHINE_USER_PASSWORD_ENVVAR = "MACHINE_USER_PASSWORD"
-CDN_PREFIX = "https://cdn.climatepolicyradar.org"
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -31,7 +30,7 @@ def _get_api_host():
 
 
 @lru_cache()
-def _get_machine_user_token():
+def get_machine_user_token():
     username = os.environ[MACHINE_USER_EMAIL_ENVVAR]
     password = os.environ[MACHINE_USER_PASSWORD_ENVVAR]
     api_host = _get_api_host()
@@ -67,7 +66,7 @@ def upload_document(
     # download the document
     _LOGGER.info(f"Downloading document from '{source_url}'")
     upload_result = DocumentUploadResult(
-        cloud_url=None,
+        cdn_object=None,
         md5_sum=None,
         content_type=None,
     )
@@ -116,8 +115,8 @@ def upload_document(
             f"Uploading supported single file document content from '{source_url}' "
             f"to CDN s3 bucket with filename '{file_name}'"
         )
-        cdn_url = _store_cached_document(document_bucket, file_name, file_content)
-        upload_result.cloud_url = cdn_url
+        cdn_object = _store_document_in_cache(document_bucket, file_name, file_content)
+        upload_result.cdn_object = cdn_object
 
     except UnsupportedContentTypeError as e:
         _LOGGER.warn(
@@ -130,7 +129,7 @@ def upload_document(
         return upload_result
 
 
-def _store_cached_document(
+def _store_document_in_cache(
     bucket: str,
     name: str,
     data: bytes,
@@ -139,4 +138,4 @@ def _store_cached_document(
     output_file_location = S3Path(f"s3://{bucket}/{clean_name}")
     with output_file_location.open("wb") as output_file:
         output_file.write(data)
-    return f"{CDN_PREFIX}/{clean_name}"
+    return clean_name

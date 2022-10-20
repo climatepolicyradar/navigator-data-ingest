@@ -74,17 +74,16 @@ def handle_all_documents(
             if document_upload_result is not None:
                 _LOGGER.info(f"Uploaded content for '{document}'")
                 _LOGGER.info(f"Writing parser input for '{document.import_id}")
-                url_for_parser = document_upload_result.cloud_url or document.source_url
-                document.url = url_for_parser
-                document.md5_sum = document_upload_result.md5_sum
                 yield DocumentParserInput(
+                    document_id=document.import_id,
+                    document_slug="",  # TODO: introduce slug when added
                     document_name=document.name,
                     document_description=document.description,
-                    document_url=url_for_parser,
-                    document_id=document.import_id,
+                    document_source_url=document.source_url,
+                    document_cdn_object=document_upload_result.cdn_object,
                     document_content_type=document_upload_result.content_type,
+                    document_md5_sum=document_upload_result.md5_sum,
                     document_metadata=document,
-                    document_slug="",  # TODO: introduce slug when added
                 )
 
     _LOGGER.info("Done uploading documents")
@@ -113,7 +112,7 @@ def _upload_document(
             f"{document.name}' because the source URL is empty"
         )
         return DocumentUploadResult(
-            cloud_url=None,
+            cdn_object=None,
             md5_sum=None,
             content_type=None,
         )
