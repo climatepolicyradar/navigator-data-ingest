@@ -110,8 +110,10 @@ class DocumentParserInput(BaseModel):
             "document_name": self.document_name,
             "document_description": self.document_description,
             "document_id": self.document_id,
+            "document_source_url": self.document_source_url,
             "document_cdn_object": self.document_cdn_object,
             "document_content_type": self.document_content_type,
+            "document_md5_sum": self.document_md5_sum,
             "document_metadata": self.document_metadata.to_json(),
             "document_slug": self.document_slug,
         }
