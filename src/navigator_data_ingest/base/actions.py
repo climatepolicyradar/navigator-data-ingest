@@ -13,7 +13,7 @@ from navigator_data_ingest.base.types import (
     DocumentParserInput,
     DocumentUploadResult,
 )
-from navigator_data_ingest.base.api_client import upload_document
+from navigator_data_ingest.base.api_client import get_machine_user_token, upload_document, update_document_details
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -51,9 +51,11 @@ def handle_all_documents(
     The remote filename follows the template on
     https://www.notion.so/climatepolicyradar/Document-names-on-S3-6f3cd748c96141d3b714a95b42842aeb
     """
+    token = get_machine_user_token()
     tasks = {
         executor.submit(
             _handle_document,
+            token,
             document,
             document_bucket,
         ): document
@@ -128,6 +130,7 @@ def _upload_document(
 
 
 def _handle_document(
+    token: str,
     document: Document,
     document_bucket: str,
 ) -> DocumentUploadResult:
@@ -146,14 +149,22 @@ def _handle_document(
             document_bucket,
         )
 
-        # TODO: (BAK-1208) Send updated md5sum/url details to API endpoint
-        # update_document_response = post_update(session=session, document=document)
-        # if update_document_response.status_code >= 300:
-        #     # TODO: More nuanced status response handling
-        #     _LOGGER.error(
-        #         f"Failed to update entry in the database for '{document.import_id}': "
-        #         f"{update_document_response.text}"
-        #     )
+        response = update_document_details(
+            session, 
+            token,
+            document.import_id,
+            uploaded_document_result,
+        )
+        # FIXME: Remove the debug and test with corresponding backend change
+        print("-"*100)
+        
+        if response.status_code >= 300:
+            # TODO: More nuanced status response handling
+            _LOGGER.error(
+                f"Failed to update entry in the database for '{document.import_id}': "
+                f"[{response.status_code}] {response.text}"
+            )
+        print("-"*100)
 
         return uploaded_document_result
     except Exception:

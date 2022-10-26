@@ -1,5 +1,6 @@
 """A simple API client for creating documents & associations."""
 import hashlib
+import json
 import logging
 import os
 from functools import lru_cache
@@ -39,6 +40,9 @@ def get_machine_user_token():
         "username": username,
         "password": password,
     }
+    _LOGGER.info("T"*100)
+    _LOGGER.info(f"*** Calling: {api_host}/api/tokens")
+    _LOGGER.info("T"*100)
     get_token_response = requests.post(f"{api_host}/api/tokens", data=login_data)
     tokens = get_token_response.json()
     access_token = tokens["access_token"]
@@ -139,3 +143,18 @@ def _store_document_in_cache(
     with output_file_location.open("wb") as output_file:
         output_file.write(data)
     return clean_name
+
+
+def update_document_details(
+    session: requests.Session,
+    token: str,
+    import_id: str,
+    result: DocumentUploadResult
+) -> object:
+    headers = {'Authorization': token}
+
+    return session.put(
+        f"{_get_api_host()}/api/v1/documents/{import_id}", 
+        data=result.json(), 
+        headers=headers)
+    
