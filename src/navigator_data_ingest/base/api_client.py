@@ -40,9 +40,9 @@ def get_machine_user_token():
         "username": username,
         "password": password,
     }
-    _LOGGER.info("T"*100)
+    _LOGGER.info("T" * 100)
     _LOGGER.info(f"*** Calling: {api_host}/api/tokens")
-    _LOGGER.info("T"*100)
+    _LOGGER.info("T" * 100)
     get_token_response = requests.post(f"{api_host}/api/tokens", data=login_data)
     tokens = get_token_response.json()
     access_token = tokens["access_token"]
@@ -146,15 +146,12 @@ def _store_document_in_cache(
 
 
 def update_document_details(
-    session: requests.Session,
-    token: str,
-    import_id: str,
-    result: DocumentUploadResult
+    session: requests.Session, token: str, import_id: str, result: DocumentUploadResult
 ) -> object:
-    headers = {'Authorization': token}
+    headers = {"Authorization": token}
 
     return session.put(
-        f"{_get_api_host()}/api/v1/documents/{import_id}", 
-        data=result.json(), 
-        headers=headers)
-    
+        f"{_get_api_host()}/api/v1/documents/{import_id}",
+        data=result.json(),
+        headers=headers,
+    )
