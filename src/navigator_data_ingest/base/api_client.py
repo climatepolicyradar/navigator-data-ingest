@@ -158,11 +158,7 @@ def update_document_details(
     )
     _LOGGER.info(
         f"Response from backend to updating document",
-        extra={
-            "props" : {
-                "url": url, "status_code": response.status_code
-            }
-        },
+        extra={"props": {"url": url, "status_code": response.status_code}},
     )
 
     return response

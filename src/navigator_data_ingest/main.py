@@ -61,6 +61,7 @@ logging.config.dictConfig(DEFAULT_LOGGING)
 json_logging.init_non_web(enable_json=True)
 _LOGGER = logging.getLogger(__name__)
 
+
 @click.command()
 @click.option(
     "--pipeline-bucket",
