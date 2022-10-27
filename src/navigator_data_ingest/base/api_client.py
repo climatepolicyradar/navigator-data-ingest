@@ -40,11 +40,9 @@ def get_machine_user_token():
         "username": username,
         "password": password,
     }
-    _LOGGER.info("T" * 100)
-    _LOGGER.info(f"*** Calling: {api_host}/api/tokens")
-    _LOGGER.info("T" * 100)
     get_token_response = requests.post(f"{api_host}/api/tokens", data=login_data)
     tokens = get_token_response.json()
+    _LOGGER.debug(f"Response from api/tokens: {get_token_response.status_code} ")
     access_token = tokens["access_token"]
 
     return access_token
@@ -148,10 +146,23 @@ def _store_document_in_cache(
 def update_document_details(
     session: requests.Session, token: str, import_id: str, result: DocumentUploadResult
 ) -> object:
-    headers = {"Authorization": token}
 
-    return session.put(
-        f"{_get_api_host()}/api/v1/documents/{import_id}",
-        data=result.json(),
+    headers = {"Authorization": f"Bearer {token}"}
+
+    url = f"{_get_api_host()}/api/v1/admin/documents/{import_id}"
+
+    response = session.put(
+        url,
         headers=headers,
+        json=result.dict(),
     )
+    _LOGGER.info(
+        f"Response from backend to updating document",
+        extra={
+            "props" : {
+                "url": url, "status_code": response.status_code
+            }
+        },
+    )
+
+    return response

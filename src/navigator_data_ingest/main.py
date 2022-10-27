@@ -1,7 +1,9 @@
+import os
+import sys
 import json
 import logging
 import logging.config
-import os
+import json_logging
 from concurrent.futures import ProcessPoolExecutor
 from typing import cast
 
@@ -25,37 +27,39 @@ REQUIRED_ENV_VARS = [
 ENV_VAR_MISSING_ERROR = 10
 
 
+# Clear existing log handlers so we always log in structured JSON
+root_logger = logging.getLogger()
+if root_logger.handlers:
+    for handler in root_logger.handlers:
+        root_logger.removeHandler(handler)
+
+for _, logger in logging.root.manager.loggerDict.items():
+    if isinstance(logger, logging.Logger):
+        logger.propagate = True
+        if logger.handlers:
+            for handler in logger.handlers:
+                logger.removeHandler(handler)
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
 DEFAULT_LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {
-        "standard": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"},
-    },
     "handlers": {
         "default": {
-            "level": "INFO",
-            "formatter": "standard",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stdout",  # Default is stderr
         },
     },
-    "loggers": {
-        "": {  # root logger
-            "handlers": ["default"],
-            "level": "INFO",
-        },
-        "__main__": {  # if __name__ == '__main__'
-            "handlers": ["default"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
+    "loggers": {},
+    "root": {
+        "handlers": ["default"],
+        "level": LOG_LEVEL,
     },
 }
-
 logging.config.dictConfig(DEFAULT_LOGGING)
-
-_LOGGER = logging.getLogger(__file__)
-
+json_logging.init_non_web(enable_json=True)
+_LOGGER = logging.getLogger(__name__)
 
 @click.command()
 @click.option(
