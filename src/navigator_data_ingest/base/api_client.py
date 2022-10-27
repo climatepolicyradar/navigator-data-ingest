@@ -1,6 +1,5 @@
 """A simple API client for creating documents & associations."""
 import hashlib
-import json
 import logging
 import os
 from functools import lru_cache
@@ -144,8 +143,10 @@ def _store_document_in_cache(
 
 
 def update_document_details(
-    session: requests.Session, token: str, import_id: str, result: DocumentUploadResult
+    session: requests.Session, import_id: str, result: DocumentUploadResult
 ) -> object:
+
+    token = get_machine_user_token()
 
     headers = {"Authorization": f"Bearer {token}"}
 

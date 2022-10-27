@@ -86,6 +86,7 @@ class Document(BaseModel):
         json_dict["publication_ts"] = self.publication_ts.isoformat()
         json_dict["events"] = [event.to_json() for event in self.events]
         import json
+
         return json_dict
 
 

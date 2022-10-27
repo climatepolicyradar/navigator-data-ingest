@@ -55,11 +55,9 @@ def handle_all_documents(
     The remote filename follows the template on
     https://www.notion.so/climatepolicyradar/Document-names-on-S3-6f3cd748c96141d3b714a95b42842aeb
     """
-    token = get_machine_user_token()
     tasks = {
         executor.submit(
             _handle_document,
-            token,
             document,
             document_bucket,
         ): document
@@ -134,7 +132,6 @@ def _upload_document(
 
 
 def _handle_document(
-    token: str,
     document: Document,
     document_bucket: str,
 ) -> DocumentUploadResult:
@@ -155,7 +152,6 @@ def _handle_document(
 
         response = update_document_details(
             session,
-            token,
             document.import_id,
             uploaded_document_result,
         )
