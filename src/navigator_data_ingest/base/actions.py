@@ -159,8 +159,6 @@ def _handle_document(
             document.import_id,
             uploaded_document_result,
         )
-        # FIXME: Remove the debug and test with corresponding backend change
-        print("-" * 100)
 
         if response.status_code >= 300:
             # TODO: More nuanced status response handling
@@ -168,7 +166,6 @@ def _handle_document(
                 f"Failed to update entry in the database for '{document.import_id}': "
                 f"[{response.status_code}] {response.text}"
             )
-        print("-" * 100)
 
         return uploaded_document_result
     except Exception:
