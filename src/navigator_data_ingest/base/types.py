@@ -87,7 +87,6 @@ class Document(BaseModel):
         json_dict["events"] = [event.to_json() for event in self.events]
         import json
 
-        print(json.dumps(json_dict))
         return json_dict
 
 
