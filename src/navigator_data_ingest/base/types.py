@@ -33,6 +33,11 @@ CATEGORY_MAPPING = {
     "legislative": DocumentType.LAW,
     "litigation": DocumentType.LITIGATION,
 }
+FILE_EXTENSION_MAPPING = {
+    CONTENT_TYPE_PDF: ".pdf",
+    CONTENT_TYPE_HTML: ".html",
+    CONTENT_TYPE_DOCX: ".docx",
+}
 
 
 class Event(BaseModel):  # noqa: D101
@@ -85,8 +90,6 @@ class Document(BaseModel):
         json_dict = self.dict()
         json_dict["publication_ts"] = self.publication_ts.isoformat()
         json_dict["events"] = [event.to_json() for event in self.events]
-        import json
-
         return json_dict
 
 

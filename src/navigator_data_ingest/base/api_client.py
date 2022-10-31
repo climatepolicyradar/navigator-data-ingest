@@ -10,6 +10,7 @@ from cloudpathlib import S3Path
 from navigator_data_ingest.base.types import (
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
+    FILE_EXTENSION_MAPPING,
     DocumentUploadResult,
     UnsupportedContentTypeError,
 )
@@ -99,17 +100,16 @@ def upload_document(
 
         # s3 can only handle paths of up to 1024 bytes. To ensure we don't exceed that,
         # we trim the filename if it's too long
-        file_suffix = content_type.split("/")[1]
+        file_suffix = FILE_EXTENSION_MAPPING.get(content_type, "")
         filename_max_len = (
             1024
-            - len(file_name_without_suffix)
             - len(file_suffix)
             - len(file_content_hash)
             - len("_.")  # length of additional characters for joining path components
         )
         file_name_without_suffix_trimmed = file_name_without_suffix[:filename_max_len]
         file_name = (
-            f"{file_name_without_suffix_trimmed}_{file_content_hash}.{file_suffix}"
+            f"{file_name_without_suffix_trimmed}_{file_content_hash}{file_suffix}"
         )
 
         _LOGGER.info(
@@ -158,7 +158,7 @@ def update_document_details(
         json=result.dict(),
     )
     _LOGGER.info(
-        f"Response from backend to updating document",
+        "Response from backend to updating document",
         extra={"props": {"url": url, "status_code": response.status_code}},
     )
 
