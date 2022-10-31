@@ -67,6 +67,7 @@ class Document(BaseModel):
     name: str
     description: str
     import_id: str  # Unique source derived ID
+    slug: str  # Unique identifier created by backend
     publication_ts: datetime
     source_url: Optional[AnyHttpUrl]  # Original source URL
 

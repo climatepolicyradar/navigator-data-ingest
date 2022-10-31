@@ -14,7 +14,6 @@ from navigator_data_ingest.base.types import (
     DocumentUploadResult,
 )
 from navigator_data_ingest.base.api_client import (
-    get_machine_user_token,
     upload_document,
     update_document_details,
 )
@@ -80,7 +79,7 @@ def handle_all_documents(
                 _LOGGER.info(f"Writing parser input for '{document.import_id}")
                 yield DocumentParserInput(
                     document_id=document.import_id,
-                    document_slug="",  # TODO: introduce slug when added
+                    document_slug=document.slug,
                     document_name=document.name,
                     document_description=document.description,
                     document_source_url=document.source_url,
