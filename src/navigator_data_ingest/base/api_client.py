@@ -144,7 +144,7 @@ def _store_document_in_cache(
 
 def update_document_details(
     session: requests.Session, import_id: str, result: DocumentUploadResult
-) -> object:
+) -> requests.Response:
 
     token = get_machine_user_token()
 
