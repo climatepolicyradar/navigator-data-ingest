@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Generator, Mapping, Optional, Sequence
 
-from pydantic import BaseModel, AnyHttpUrl
+from pydantic import AnyHttpUrl, BaseModel
 
 CONTENT_TYPE_PDF = "application/pdf"
 CONTENT_TYPE_DOCX = (
@@ -101,9 +101,9 @@ class DocumentParserInput(BaseModel):
     document_name: str
     document_description: str
     document_source_url: Optional[AnyHttpUrl]
-    document_cdn_object: Optional[str]
-    document_content_type: Optional[str]
-    document_md5_sum: Optional[str]
+    document_cdn_object: Optional[str] = None
+    document_content_type: Optional[str] = None
+    document_md5_sum: Optional[str] = None
     document_metadata: Document
     document_slug: str
 
@@ -127,17 +127,24 @@ class DocumentGenerator(ABC):
 
     @abstractmethod
     def process_source(self) -> Generator[Document, None, None]:
-        """Generate documents for processing from the configured source."""
+        """Generate documents for processing from the configured source"""
 
         raise NotImplementedError("process_source() not implemented")
 
 
 class DocumentUploadResult(BaseModel):
-    """Information generated during the upload of a document used by later processes."""
+    """Information generated during the upload of a document used by later processes"""
 
     cdn_object: Optional[str]
     md5_sum: Optional[str]
     content_type: Optional[str]
+
+
+class HandleResult(BaseModel):
+    """Result of handling an input file"""
+
+    parser_input: DocumentParserInput
+    error: Optional[str] = None
 
 
 class UnsupportedContentTypeError(Exception):
