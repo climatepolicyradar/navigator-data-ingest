@@ -1,17 +1,23 @@
 """A simple API client for creating documents & associations."""
 import hashlib
+import json
 import logging
 import os
 from functools import lru_cache
+from typing import cast
 
 import requests
-from cloudpathlib import S3Path
+from cloudpathlib import CloudPath, S3Path
+from tenacity import retry
+from tenacity.stop import stop_after_attempt
+from tenacity.wait import wait_random_exponential
 
 from navigator_data_ingest.base.types import (
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
     FILE_EXTENSION_MAPPING,
     DocumentUploadResult,
+    DocumentParserInput,
     UnsupportedContentTypeError,
 )
 
@@ -74,14 +80,7 @@ def upload_document(
     )
 
     try:
-        download_response = session.get(source_url, allow_redirects=True, timeout=5)
-        if download_response.status_code >= 300:
-            _LOGGER.error(
-                f"Downloading source document failed: {download_response.status_code} "
-                f"{download_response.text}"
-            )
-            return upload_result
-
+        download_response = _download_from_source(session, source_url)
         content_type = download_response.headers["Content-Type"].split(";")[0]
         # Update the result object with the detected content type
         upload_result.content_type = content_type
@@ -124,12 +123,34 @@ def upload_document(
             f"Uploads for document at '{source_url}' could not be completed because "
             f"the content type '{e.content_type}' is not currently supported."
         )
+    except Exception:
+        _LOGGER.exception("Downloading source document failed")
     finally:
         # Always return an upload result, even if it's incomplete
         # TODO: perhaps use the existence of an incomplete output in the future
         return upload_result
 
 
+@retry(
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=1, min=1, max=10),
+)
+def _download_from_source(
+    session: requests.Session, source_url: str
+) -> requests.Response:
+    download_response = session.get(source_url, allow_redirects=True, timeout=5)
+    if download_response.status_code >= 300:
+        raise Exception(
+            f"Downloading source document failed: {download_response.status_code} "
+            f"{download_response.text}"
+        )
+    return download_response
+
+
+@retry(
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=1, min=1, max=10),
+)
 def _store_document_in_cache(
     bucket: str,
     name: str,
@@ -142,6 +163,10 @@ def _store_document_in_cache(
     return clean_name
 
 
+@retry(
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=1, min=1, max=10),
+)
 def update_document_details(
     session: requests.Session, import_id: str, result: DocumentUploadResult
 ) -> requests.Response:
@@ -162,4 +187,55 @@ def update_document_details(
         extra={"props": {"url": url, "status_code": response.status_code}},
     )
 
+    if response.status_code >= 300:
+        # TODO: More nuanced status response handling
+        raise Exception(
+            f"Failed to update entry in the database for '{import_id}': "
+            f"[{response.status_code}] {response.text}"
+        )
+
     return response
+
+
+@retry(
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=1, min=1, max=10),
+)
+def save_errors(
+    bucket: str,
+    name: str,
+    data: bytes,
+) -> str:
+    clean_name = name.lstrip("/")
+    output_file_location = S3Path(f"s3://{bucket}/{clean_name}")
+    with output_file_location.open("wb") as output_file:
+        output_file.write(data)
+    return clean_name
+
+
+@retry(
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=1, min=1, max=10),
+)
+def write_parser_input(
+    output_location: CloudPath,
+    parser_input: DocumentParserInput,
+) -> None:
+    output_file_location = cast(
+        S3Path,
+        output_location / f"{parser_input.document_id}.json",
+    )
+    with output_file_location.open("w") as output_file:
+        output_file.write(json.dumps(parser_input.to_json(), indent=2))
+
+
+@retry(
+    stop=stop_after_attempt(4),
+    wait=wait_random_exponential(multiplier=1, min=1, max=10),
+)
+def write_error_file(
+    output_location: CloudPath,
+    errors: list[str],
+) -> None:
+    with output_location.open("w") as output_file:
+        output_file.write(json.dumps(errors, indent=2))

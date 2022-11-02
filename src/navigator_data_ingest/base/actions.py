@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 from concurrent.futures import as_completed, Executor
 from typing import Generator, Iterable
 
@@ -12,6 +13,7 @@ from navigator_data_ingest.base.types import (
     DocumentGenerator,
     DocumentParserInput,
     DocumentUploadResult,
+    HandleResult,
 )
 from navigator_data_ingest.base.api_client import (
     upload_document,
@@ -41,7 +43,7 @@ def handle_all_documents(
     executor: Executor,
     source: Iterable[Document],
     document_bucket: str,
-) -> Generator[DocumentParserInput, None, None]:
+) -> Generator[HandleResult, None, None]:
     """
     Handle all documents.
 
@@ -67,27 +69,14 @@ def handle_all_documents(
         # check result, handle errors & shut down
         document = tasks[future]
         try:
-            document_upload_result = future.result()
+            handle_result = future.result()
         except Exception:
             _LOGGER.exception(
-                f"Handling the following document generated an exception: {document}"
+                f"Handling document '{document.import_id}' generated an "
+                "unexpected exception"
             )
         else:
-            # inputs are returned for documents that have not been previously handled
-            if document_upload_result is not None:
-                _LOGGER.info(f"Uploaded content for '{document}'")
-                _LOGGER.info(f"Writing parser input for '{document.import_id}")
-                yield DocumentParserInput(
-                    document_id=document.import_id,
-                    document_slug=document.slug,
-                    document_name=document.name,
-                    document_description=document.description,
-                    document_source_url=document.source_url,
-                    document_cdn_object=document_upload_result.cdn_object,
-                    document_content_type=document_upload_result.content_type,
-                    document_md5_sum=document_upload_result.md5_sum,
-                    document_metadata=document,
-                )
+            yield handle_result
 
     _LOGGER.info("Done uploading documents")
 
@@ -133,7 +122,7 @@ def _upload_document(
 def _handle_document(
     document: Document,
     document_bucket: str,
-) -> DocumentUploadResult:
+) -> HandleResult:
     """
     Upload document source files & update details via API endpoing.
 
@@ -142,27 +131,37 @@ def _handle_document(
     _LOGGER.info(f"Handling document: {document}")
 
     session = requests.Session()
+    parser_input = DocumentParserInput(
+        document_id=document.import_id,
+        document_slug=document.slug,
+        document_name=document.name,
+        document_description=document.description,
+        document_source_url=document.source_url,
+        document_metadata=document,
+    )
     try:
         uploaded_document_result = _upload_document(
             session,
             document,
             document_bucket,
         )
+        _LOGGER.info(f"Uploaded content for '{document.import_id}'")
 
-        response = update_document_details(
+        update_document_details(
             session,
             document.import_id,
             uploaded_document_result,
         )
+        _LOGGER.info(f"UPdating details for '{document.import_id}")
 
-        if response.status_code >= 300:
-            # TODO: More nuanced status response handling
-            _LOGGER.error(
-                f"Failed to update entry in the database for '{document.import_id}': "
-                f"[{response.status_code}] {response.text}"
-            )
-
-        return uploaded_document_result
+        parser_input = parser_input.copy(
+            update={
+                "document_cdn_object": uploaded_document_result.cdn_object,
+                "document_content_type": uploaded_document_result.content_type,
+                "document_md5_sum": uploaded_document_result.md5_sum,
+            },
+        )
+        return HandleResult(parser_input=parser_input)
     except Exception:
-        _LOGGER.exception(f"Uploading document with URL {document.source_url} failed")
-        raise
+        _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed")
+        return HandleResult(error=traceback.format_exc(), parser_input=parser_input)

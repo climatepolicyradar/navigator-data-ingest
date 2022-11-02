@@ -1,6 +1,4 @@
 import os
-import sys
-import json
 import logging
 import logging.config
 import json_logging
@@ -15,8 +13,10 @@ from navigator_data_ingest.base.api_client import (
     API_HOST_ENVVAR,
     MACHINE_USER_EMAIL_ENVVAR,
     MACHINE_USER_PASSWORD_ENVVAR,
+    write_error_file,
+    write_parser_input,
 )
-from navigator_data_ingest.base.types import Document, DocumentParserInput
+from navigator_data_ingest.base.types import Document
 
 
 REQUIRED_ENV_VARS = [
@@ -127,6 +127,7 @@ def main(
     _LOGGER.info(f"Loading Law/Policy document data from '{input_file_path}'")
 
     document_generator = LawPolicyGenerator(input_file_path)
+    errors = []
     # TODO: configure worker count
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
         documents_to_process = [
@@ -135,24 +136,27 @@ def main(
             if not _parser_input_already_exists(output_location_path, document)
         ]
 
-        for parser_input in handle_all_documents(
+        for handle_result in handle_all_documents(
             executor,
             documents_to_process,
             document_bucket,
         ):
-            _write_parser_input(output_location_path, parser_input)
+            if handle_result.error is not None:
+                errors.append(
+                    f"ERROR ingesting '{handle_result.parser_input.document_id}': "
+                    f"{handle_result.error}"
+                )
+            _LOGGER.info(
+                f"Writing parser input for '{handle_result.parser_input.document_id}"
+            )
+            write_parser_input(output_location_path, handle_result.parser_input)
 
-
-def _write_parser_input(
-    output_location: CloudPath,
-    parser_input: DocumentParserInput,
-) -> None:
-    output_file_location = cast(
-        S3Path,
-        output_location / f"{parser_input.document_id}.json",
-    )
-    with output_file_location.open("w") as output_file:
-        output_file.write(json.dumps(parser_input.to_json(), indent=2))
+    if errors:
+        error_output_location_path = output_location_path = cast(
+            S3Path,
+            pipeline_bucket_path / f"{input_file.strip().lstrip('/')}_errors",
+        )
+        write_error_file(error_output_location_path, errors)
 
 
 def _parser_input_already_exists(
