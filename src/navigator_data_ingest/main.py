@@ -152,7 +152,7 @@ def main(
             write_parser_input(output_location_path, handle_result.parser_input)
 
     if errors:
-        error_output_location_path = output_location_path = cast(
+        error_output_location_path = cast(
             S3Path,
             pipeline_bucket_path / f"{input_file.strip().lstrip('/')}_errors",
         )
