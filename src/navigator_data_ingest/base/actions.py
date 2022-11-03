@@ -152,7 +152,7 @@ def _handle_document(
             document.import_id,
             uploaded_document_result,
         )
-        _LOGGER.info(f"UPdating details for '{document.import_id}")
+        _LOGGER.info(f"Updating details for '{document.import_id}")
 
         parser_input = parser_input.copy(
             update={
