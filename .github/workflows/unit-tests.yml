@@ -30,7 +30,7 @@ jobs:
 
       - name: Building s3 bucket and uploading test data
         run: |
-          python -m test.s3_utils setup_test_data --pipeline_bucket_name ingest_unit_test_document_bucket --document_bucket_name ingest_unit_test_pipeline_bucket --test_data_file_path ./IntegrationTests/test_data/docs_test_subset.json
+          python -m test.s3_utils setup_test_data --pipeline_bucket_name ingest_unit_test_pipeline_bucket --document_bucket_name ingest_unit_test_document_bucket --test_data_file_path ./test/data/docs_test_subset.json
 
       - name: Running the Ingest Stage
         run: |
@@ -43,4 +43,4 @@ jobs:
       - name: Destroying Infrastructure
         if: always()
         run: |
-          python -m test.s3_utils teardown_test_data --pipeline_bucket_name ingest_unit_test_document_bucket --document_bucket_name ingest_unit_test_pipeline_bucket
+          python -m test.s3_utils teardown_test_data --pipeline_bucket_name ingest_unit_test_pipeline_bucket --document_bucket_name ingest_unit_test_document_bucket

@@ -39,7 +39,8 @@ def setup_test_data(document_bucket_name: str, pipeline_bucket_name: str, test_d
     s3.build_bucket(document_bucket_name)
     s3.build_bucket(pipeline_bucket_name)
 
-    s3.upload_file_to_bucket(pipeline_bucket_name, test_data_file_path)
+    # TODO env var
+    s3.upload_file_to_bucket(test_data_file_path, pipeline_bucket_name, 'input/docs_test_subset.json')
 
 
 def teardown_test_data(document_bucket_name: str, pipeline_bucket_name: str) -> None:
