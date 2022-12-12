@@ -1,13 +1,18 @@
 import boto3
 import sys
 
-from test.s3_utils import build_bucket, remove_bucket, upload_file_to_bucket
+from test.s3_utils import build_bucket, remove_bucket, upload_file_to_bucket, remove_objects
 
 
 def setup_test_data(document_bucket_name: str, pipeline_bucket_name: str, region: str,  test_data_file_path: str) -> None:
     """
     Setup test data for the integration tests.
     """
+    s3_conn = boto3.resource('s3', region_name=region)
+
+    remove_objects(s3=s3_conn, bucket_name=document_bucket_name)
+    remove_objects(s3=s3_conn, bucket_name=pipeline_bucket_name)
+
     s3_conn = boto3.client('s3', region_name=region)
     location = {'LocationConstraint': region}
 
