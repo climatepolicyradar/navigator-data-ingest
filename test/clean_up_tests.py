@@ -2,17 +2,23 @@ import sys
 
 import boto3
 
+from test.s3_utils import remove_bucket, remove_objects
 
-def teardown_test_data(document_bucket_name: str, pipeline_bucket_name: str) -> None:
+
+def tear_down_test_data(document_bucket_name: str, pipeline_bucket_name: str, region: str) -> None:
     """
-    Teardown test data for the integration tests.
+    Remove the AWS infrastructure used in the unit tests.
     """
-    s3 = boto3.resource('s3')
+    s3_conn = boto3.resource('s3', region_name=region)
 
+    remove_objects(s3=s3_conn, bucket_name=document_bucket_name)
+    remove_objects(s3=s3_conn, bucket_name=pipeline_bucket_name)
 
-    s3.remove_bucket(document_bucket_name)
-    s3.remove_bucket(pipeline_bucket_name)
+    s3_conn = boto3.client('s3', region_name=region)
+
+    remove_bucket(s3=s3_conn, bucket_name=document_bucket_name)
+    remove_bucket(s3=s3_conn, bucket_name=pipeline_bucket_name)
 
 
 if __name__ == "__main__":
-    teardown_test_data(document_bucket_name=sys.argv[1], pipeline_bucket_name=sys.argv[2])
+    tear_down_test_data(document_bucket_name=sys.argv[1], pipeline_bucket_name=sys.argv[2], region=sys.argv[3])
