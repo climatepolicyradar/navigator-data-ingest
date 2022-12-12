@@ -34,7 +34,7 @@ jobs:
 
       - name: Running the Ingest Stage
         run: |
-          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD=""  navigator-data-ingest-test --pipeline-bucket ingest_unit_test_pipeline_bucket --document-bucket ingest_unit_test_document_bucket --input-file input/docs_test_subset.json --output-prefix ingest_unit_test_parser_input --worker-count 1
+          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD=""  navigator-data-ingest-test --pipeline-bucket ingest-unit-test-pipeline-bucket --document-bucket ingest-unit-test-document-bucket --input-file input/docs_test_subset.json --output-prefix ingest_unit_test_parser_input --worker-count 1
 
       - name: Running Pytest on the Ingest Stage Output 🚀
         run: |
