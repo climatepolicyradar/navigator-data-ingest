@@ -1,14 +1,16 @@
 from cloudpathlib import S3Path
-import json
 
-bucket_path = S3Path("s3://ingest-unit-test-pipeline-bucket/ingest_unit_test_parser_input/")
+from s3_utils import create_dictionary_from_s3_bucket, read_local_s3_json_file
 
-json_files = bucket_path.glob("*.json")
+# .env file
+output_data = create_dictionary_from_s3_bucket(
+    bucket_path=S3Path("s3://ingest-unit-test-pipeline-bucket/ingest_unit_test_parser_input/"),
+    name_key="document_id")
+expected_output_data = read_local_s3_json_file(file_path="data/docs_test_subset_parser_input_expected.json")
 
-json_data = []
-for json_file in json_files:
-    data = json.loads(json_file.read_text())
-    json_data.append(data)
 
-def test_dummy():
-    assert True
+def test_parser_input():
+    """
+    Assert that the output data from the ingest stage is as expected.
+    """
+    assert output_data == expected_output_data

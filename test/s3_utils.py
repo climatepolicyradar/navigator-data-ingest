@@ -1,4 +1,6 @@
 from botocore.exceptions import ClientError
+from cloudpathlib import S3Path
+import json
 
 
 def remove_bucket(s3, bucket_name: str) -> None:
@@ -34,6 +36,27 @@ def upload_file_to_bucket(s3, bucket_name: str, upload_path: str, local_file_pat
     Upload a file to an S3 bucket.
     """
     s3.upload_file(local_file_path, bucket_name, upload_path)
+
+
+def create_dictionary_from_s3_bucket(bucket_path: S3Path, name_key: str) -> dict[dict]:
+    """
+    Create a dictionary from all the json files in an S3 bucket using the specifief name_key as the key for the value (json data).
+    """
+    json_files = bucket_path.glob("*.json")
+    data = {}
+    for json_file in json_files:
+        file_data = json.loads(json_file.read_text())
+        data[file_data[name_key]] = file_data
+    return data
+
+
+def read_local_s3_json_file(file_path: str) -> dict[dict]:
+    """
+    Read a local json file and return the data.
+    """
+    with open(file_path) as json_file:
+        data = json.load(json_file)
+    return data
 
 
 
