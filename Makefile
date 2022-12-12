@@ -6,3 +6,6 @@ build:
 	docker build -t navigator-data-ingest .
 	docker build -t navigator-data-ingest-staging .
 
+build_test:
+	docker build -t navigator-data-ingest-test .
+
