@@ -40,7 +40,7 @@ jobs:
         run: |
           python -m pytest
 
-      - name: Destroying Infrastructure
-        if: always()
-        run: |
-          python -m test.clean_up_tests ingest-unit-test-document-bucket ingest-unit-test-pipeline-bucket ${{ secrets.UNIT_TESTS_AWS_REGION }}
+#      - name: Destroying Infrastructure
+#        if: always()
+#        run: |
+#          python -m test.clean_up_tests ingest-unit-test-document-bucket ingest-unit-test-pipeline-bucket ${{ secrets.UNIT_TESTS_AWS_REGION }}
