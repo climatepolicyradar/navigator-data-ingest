@@ -25,7 +25,6 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }}
-          aws-region: ${{ secrets.AWS_REGION }}
           aws-secret-access-key: ${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }}
 
       - name: Building s3 bucket and uploading test data
@@ -43,4 +42,4 @@ jobs:
       - name: Destroying Infrastructure
         if: always()
         run: |
-          python -m s3_utils.teardown_test_data --pipeline_bucket_name ingest_unit_test_document_bucket --document_bucket_name ingest_unit_test_pipeline_bucket
+          python -m test.s3_utils.teardown_test_data --pipeline_bucket_name ingest_unit_test_document_bucket --document_bucket_name ingest_unit_test_pipeline_bucket
