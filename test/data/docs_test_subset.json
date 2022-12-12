@@ -8,7 +8,7 @@
     "md5_sum": null,
     "type": "Decree",
     "source": "CCLW",
-    "import_id": "1332-1547",
+    "import_id": "TESTCCLW.executive.1332.1547",
     "category": "Policy",
     "frameworks": [],
     "geography": "IDN",
@@ -48,7 +48,8 @@
         "description": "",
         "created_ts": "2019-08-07T00:00:00"
       }
-    ]
+    ],
+    "slug": "indonesia_2013_presidential-instruction-6-year-2013-on-suspension-of-new-licenses-and-improving-forest-governance-of-primary-forest-and-peatland"
   },
   {
     "publication_ts": "2013-01-01T00:00:00",
@@ -59,7 +60,7 @@
     "md5_sum": null,
     "type": "Decree",
     "source": "CCLW",
-    "import_id": "1332-1548",
+    "import_id": "TESTCCLW.executive.1332.1548",
     "category": "Policy",
     "frameworks": [],
     "geography": "IDN",
@@ -99,7 +100,8 @@
         "description": "",
         "created_ts": "2019-08-07T00:00:00"
       }
-    ]
+    ],
+    "slug": "england_2013_presidential-of-the-republic-of-indonesia-instruction-number-6-year-2013-on-suspension-of-new-licenses-and-improving-forest-governance-of-primary-forest-and-peatland"
   },
   {
     "publication_ts": "1998-01-01T00:00:00",
@@ -110,7 +112,7 @@
     "md5_sum": null,
     "type": "Act",
     "source": "CCLW",
-    "import_id": "1413-2093",
+    "import_id": "TESTCCLW.executive.1332.1549",
     "category": "Law",
     "frameworks": [
       "Mitigation"
@@ -167,7 +169,8 @@
         "description": "",
         "created_ts": "2021-06-04T00:00:00"
       }
-    ]
+    ],
+    "slug": "japan_1998_act-on-promotion-of-global-warming-countermeasures"
   },
   {
     "publication_ts": "2020-01-01T00:00:00",
@@ -178,7 +181,7 @@
     "md5_sum": null,
     "type": "Decision",
     "source": "CCLW",
-    "import_id": "1413-4606",
+    "import_id": "TESTCCLW.executive.1332.1550",
     "category": "Law",
     "frameworks": [
       "Mitigation"
@@ -235,7 +238,8 @@
         "description": "",
         "created_ts": "2021-06-04T00:00:00"
       }
-    ]
+    ],
+    "slug": "japan_2020_cabinet-decisions-for-a-law-proposal-to-partially-amend-the-law-on-the-promotion-of-global-warming-countermeasures"
   },
   {
     "publication_ts": "2021-01-01T00:00:00",
@@ -246,7 +250,7 @@
     "md5_sum": null,
     "type": "Law",
     "source": "CCLW",
-    "import_id": "1413-4607",
+    "import_id": "TESTCCLW.executive.1332.1551",
     "category": "Law",
     "frameworks": [
       "Mitigation"
@@ -303,7 +307,8 @@
         "description": "",
         "created_ts": "2021-06-04T00:00:00"
       }
-    ]
+    ],
+    "slug": "japan_2021_revised-global-warming-countermeasures-promotion-law"
   },
   {
     "publication_ts": "2017-01-01T00:00:00",
@@ -314,7 +319,7 @@
     "md5_sum": null,
     "type": "Strategy",
     "source": "CCLW",
-    "import_id": "9768-0",
+    "import_id": "TESTCCLW.executive.1332.1552",
     "category": "Policy",
     "frameworks": [],
     "geography": "JPN",
@@ -347,7 +352,8 @@
         "description": "",
         "created_ts": "2019-05-12T00:00:00"
       }
-    ]
+    ],
+    "slug": "japan_2017_basic-hydrogen-strategy"
   },
   {
     "publication_ts": "2007-01-01T00:00:00",
@@ -358,7 +364,7 @@
     "md5_sum": null,
     "type": "Strategy",
     "source": "CCLW",
-    "import_id": "1674-3157",
+    "import_id": "TESTCCLW.executive.1332.1553",
     "category": "Policy",
     "frameworks": [
       "Mitigation"
@@ -394,7 +400,8 @@
         "description": "",
         "created_ts": "2007-11-02T00:00:00"
       }
-    ]
+    ],
+    "slug": "spain_2007_spanish-climate-change-and-clean-energy-strategy-horizon-2007-2012-2020"
   },
   {
     "publication_ts": "2007-01-01T00:00:00",
@@ -405,7 +412,7 @@
     "md5_sum": null,
     "type": "Strategy",
     "source": "CCLW",
-    "import_id": "1674-3158",
+    "import_id": "TESTCCLW.executive.1332.1554",
     "category": "Policy",
     "frameworks": [
       "Mitigation"
@@ -441,7 +448,8 @@
         "description": "",
         "created_ts": "2007-11-02T00:00:00"
       }
-    ]
+    ],
+    "slug": "spain_2007_spanish-climate-change-and-clean-energy-strategy-horizon-2007-2012-2020"
   },
   {
     "publication_ts": "2014-12-13T00:00:00",
@@ -452,7 +460,7 @@
     "md5_sum": null,
     "type": "Law",
     "source": "CCLW",
-    "import_id": "1031-0",
+    "import_id": "TESTCCLW.executive.1332.1555",
     "category": "Law",
     "frameworks": [],
     "geography": "AUS",
@@ -476,7 +484,8 @@
         "description": "",
         "created_ts": "2014-12-13T00:00:00"
       }
-    ]
+    ],
+    "slug": "australia_2014_carbon-farming-initiative-amendment-bill-2014"
   },
   {
     "publication_ts": "2012-01-01T00:00:00",
@@ -487,7 +496,7 @@
     "md5_sum": null,
     "type": "Act",
     "source": "CCLW",
-    "import_id": "1647-2254",
+    "import_id": "TESTCCLW.executive.1332.1556",
     "category": "Law",
     "frameworks": [],
     "geography": "KOR",
@@ -524,7 +533,8 @@
         "description": "",
         "created_ts": "2020-06-01T00:00:00"
       }
-    ]
+    ],
+    "slug": "korea_2012_act-on-the-allocation-and-trading-of-greenhouse-gas-emission-permits"
   },
   {
     "publication_ts": "2020-01-01T00:00:00",
@@ -535,7 +545,7 @@
     "md5_sum": null,
     "type": "Law",
     "source": "CCLW",
-    "import_id": "1647-4580",
+    "import_id": "TESTCCLW.executive.1332.1557",
     "category": "Law",
     "frameworks": [],
     "geography": "KOR",
@@ -572,7 +582,8 @@
         "description": "",
         "created_ts": "2020-06-01T00:00:00"
       }
-    ]
+    ],
+    "slug": "korea_2012_act-on-the-allocation-and-trading-of-greenhouse-gas-emission-permits"
   },
   {
     "publication_ts": "2020-01-01T00:00:00",
@@ -583,7 +594,7 @@
     "md5_sum": null,
     "type": "Plan",
     "source": "CCLW",
-    "import_id": "1647-4582",
+    "import_id": "TESTCCLW.executive.1332.1558",
     "category": "Law",
     "frameworks": [],
     "geography": "KOR",
@@ -620,7 +631,8 @@
         "description": "",
         "created_ts": "2020-06-01T00:00:00"
       }
-    ]
+    ],
+    "slug": "korea_2020_emissions-trading-system-3rd-planning-period-allocation-plan_1647_4582"
   },
   {
     "publication_ts": "1997-01-01T00:00:00",
@@ -631,7 +643,7 @@
     "md5_sum": null,
     "type": "Law",
     "source": "CCLW",
-    "import_id": "1080-4597",
+    "import_id": "TESTCCLW.executive.1332.1559",
     "category": "Law",
     "frameworks": [],
     "geography": "BEL",
@@ -673,7 +685,8 @@
         "description": "",
         "created_ts": "2014-12-04T00:00:00"
       }
-    ]
+    ],
+    "slug": "belgium_1997_law-relating-to-the-coordination-of-the-federal-sustainable-development-policy_1080_4597"
   },
   {
     "publication_ts": "2000-01-01T00:00:00",
@@ -684,7 +697,7 @@
     "md5_sum": null,
     "type": "Plan",
     "source": "CCLW",
-    "import_id": "1080-4598",
+    "import_id": "TESTCCLW.executive.1332.1560",
     "category": "Law",
     "frameworks": [],
     "geography": "BEL",
@@ -726,7 +739,8 @@
         "description": "",
         "created_ts": "2014-12-04T00:00:00"
       }
-    ]
+    ],
+    "slug": "belgium_2000_the-federal-sustainable-development-plan_1080_4598"
   },
   {
     "publication_ts": "2013-01-01T00:00:00",
@@ -737,7 +751,7 @@
     "md5_sum": null,
     "type": "EU Decision",
     "source": "CCLW",
-    "import_id": "8570-3016",
+    "import_id": "TESTCCLW.executive.1332.1562",
     "category": "Law",
     "frameworks": [],
     "geography": "EUR",
@@ -773,7 +787,8 @@
         "description": "",
         "created_ts": "2013-11-20T00:00:00"
       }
-    ]
+    ],
+    "slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3016"
   },
   {
     "publication_ts": "2013-01-01T00:00:00",
@@ -784,7 +799,7 @@
     "md5_sum": null,
     "type": "EU Decision",
     "source": "CCLW",
-    "import_id": "8570-3017",
+    "import_id": "TESTCCLW.executive.1332.1563",
     "category": "Law",
     "frameworks": [],
     "geography": "EUR",
@@ -820,7 +835,8 @@
         "description": "",
         "created_ts": "2013-11-20T00:00:00"
       }
-    ]
+    ],
+    "slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017"
   },
   {
     "publication_ts": "2015-12-08T00:00:00",
@@ -831,7 +847,7 @@
     "md5_sum": null,
     "type": "Law",
     "source": "CCLW",
-    "import_id": "2019-2092",
+    "import_id": "TESTCCLW.executive.1332.1564",
     "category": "Law",
     "frameworks": [],
     "geography": "BRA",
@@ -856,6 +872,7 @@
         "description": "",
         "created_ts": "2015-12-08T00:00:00"
       }
-    ]
+    ],
+    "slug": "brazil_2015_law-13203-on-renegotiation-of-the-hydrological-risk-of-electricity-generation-and-other-matters-related-to-electricity-generation_2019_2092"
   }
 ]
