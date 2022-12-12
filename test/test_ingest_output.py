@@ -1,6 +1,6 @@
 from cloudpathlib import S3Path
 
-from s3_utils import create_dictionary_from_s3_bucket, read_local_s3_json_file
+from test.s3_utils import create_dictionary_from_s3_bucket, read_local_s3_json_file
 
 # .env file
 output_data = create_dictionary_from_s3_bucket(
