@@ -1,53 +1,30 @@
-import boto3
+from botocore.exceptions import ClientError
 
 
 def remove_bucket(s3, bucket_name: str) -> None:
     """
     Remove an S3 bucket and all of its contents.
     """
-    bucket = s3.Bucket(bucket_name)
-    bucket.objects.all().delete()
-    bucket.delete()
+    try:
+        s3.delete_bucket(Bucket=bucket_name)
+    except ClientError as e:
+        print("The bucket does not exist: {}".format(e))
 
 
-def build_bucket(s3, bucket_name: str) -> None:
+def build_bucket(s3, bucket_name: str, location: dict) -> None:
     """
     Build an S3 bucket.
     """
-    bucket = s3.Bucket(bucket_name)
-    bucket.create()
-    bucket.wait_until_exists()
+    s3.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=location)
 
 
-def upload_file_to_bucket(s3, bucket_name: str, upload_path: str) -> None:
+def upload_file_to_bucket(s3, bucket_name: str, upload_path: str, local_file_path: str) -> None:
     """
     Upload a file to an S3 bucket.
     """
-    bucket = s3.Bucket(bucket_name)
-    bucket.upload_file(upload_path)
+    s3.upload_file(local_file_path, bucket_name, upload_path)
 
 
-def setup_test_data(document_bucket_name: str, pipeline_bucket_name: str, test_data_file_path: str) -> None:
-    """
-    Setup test data for the integration tests.
-    """
-    s3 = boto3.resource('s3')
-
-    s3.remove_bucket(document_bucket_name)
-    s3.remove_bucket(pipeline_bucket_name)
-
-    s3.build_bucket(document_bucket_name)
-    s3.build_bucket(pipeline_bucket_name)
-
-    # TODO env var
-    s3.upload_file_to_bucket(test_data_file_path, pipeline_bucket_name, 'input/docs_test_subset.json')
 
 
-def teardown_test_data(document_bucket_name: str, pipeline_bucket_name: str) -> None:
-    """
-    Teardown test data for the integration tests.
-    """
-    s3 = boto3.resource('s3')
 
-    s3.remove_bucket(document_bucket_name)
-    s3.remove_bucket(pipeline_bucket_name)
