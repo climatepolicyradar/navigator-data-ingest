@@ -139,6 +139,7 @@ def _handle_document(
         document_source_url=document.source_url,
         document_metadata=document,
     )
+
     try:
         uploaded_document_result = _upload_document(
             session,
@@ -147,21 +148,28 @@ def _handle_document(
         )
         _LOGGER.info(f"Uploaded content for '{document.import_id}'")
 
+    except Exception:
+        _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed")
+        return HandleResult(error=traceback.format_exc(), parser_input=parser_input)
+
+    parser_input = parser_input.copy(
+        update={
+            "document_cdn_object": uploaded_document_result.cdn_object,
+            "document_content_type": uploaded_document_result.content_type,
+            "document_md5_sum": uploaded_document_result.md5_sum,
+        },
+    )
+
+    try:
         update_document_details(
             session,
             document.import_id,
             uploaded_document_result,
         )
         _LOGGER.info(f"Updating details for '{document.import_id}")
-
-        parser_input = parser_input.copy(
-            update={
-                "document_cdn_object": uploaded_document_result.cdn_object,
-                "document_content_type": uploaded_document_result.content_type,
-                "document_md5_sum": uploaded_document_result.md5_sum,
-            },
-        )
-        return HandleResult(parser_input=parser_input)
     except Exception:
         _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed")
         return HandleResult(error=traceback.format_exc(), parser_input=parser_input)
+
+    return HandleResult(parser_input=parser_input)
+
