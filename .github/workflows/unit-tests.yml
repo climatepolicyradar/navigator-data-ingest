@@ -45,9 +45,7 @@ jobs:
 
       - name: Building s3 bucket and uploading test data
         run: |
-          python -m test.setup_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }} ${{ env.TEST_DATA_FILE_PATH }}
-        env:
-            TEST_DATA_UPLOAD_PATH: ${{ env.TEST_DATA_UPLOAD_PATH }}
+          python -m test.setup_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }} ${{ env.TEST_DATA_FILE_PATH }} ${{ env.TEST_DATA_UPLOAD_PATH }}
 
       - name: Running the Ingest Stage
         run: |

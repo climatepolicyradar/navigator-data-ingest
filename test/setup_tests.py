@@ -1,11 +1,7 @@
 import boto3
 import sys
-import os
 
 from test.s3_utils import build_bucket, remove_bucket, upload_file_to_bucket, remove_objects
-
-
-TEST_DATA_UPLOAD_PATH = os.environ.get("TEST_DATA_UPLOAD_PATH")
 
 
 def setup_test_data(document_bucket_name: str, pipeline_bucket_name: str,
@@ -35,4 +31,4 @@ def setup_test_data(document_bucket_name: str, pipeline_bucket_name: str,
 if __name__ == "__main__":
     setup_test_data(document_bucket_name=sys.argv[1], pipeline_bucket_name=sys.argv[2],
                     region=sys.argv[3], test_data_file_path=sys.argv[4],
-                    test_data_upload_path=TEST_DATA_UPLOAD_PATH)
+                    test_data_upload_path=sys.argv[5])
