@@ -54,7 +54,7 @@ jobs:
             DOCUMENT_NAME_KEY: ${{ env.DOCUMENT_NAME_KEY }}
             TEST_DATA_EXPECTED_OUTPUT_FILE_PATH: ${{ env.TEST_DATA_EXPECTED_OUTPUT_FILE_PATH }}
 
-      - name: Destroying Infrastructure
-        if: always()
-        run: |
-          python -m test.clean_up_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
+#      - name: Destroying Infrastructure
+#        if: always()
+#        run: |
+#          python -m test.clean_up_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
