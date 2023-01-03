@@ -11,6 +11,7 @@ def remove_bucket(s3, bucket_name: str) -> None:
         s3.delete_bucket(Bucket=bucket_name)
     except ClientError as e:
         print("The bucket does not exist: {}".format(e))
+        raise Exception("Bucket Does Not Exist")
 
 
 def remove_objects(s3, bucket_name: str) -> None:
@@ -22,6 +23,7 @@ def remove_objects(s3, bucket_name: str) -> None:
         bucket.objects.all().delete()
     except ClientError as e:
         print("The bucket does not exist: {}".format(e))
+        raise Exception("Bucket Does Not Exist")
 
 
 def build_bucket(s3, bucket_name: str, location: dict) -> None:

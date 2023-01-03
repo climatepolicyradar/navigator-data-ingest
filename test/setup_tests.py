@@ -10,16 +10,8 @@ def setup_test_data(document_bucket_name: str, pipeline_bucket_name: str,
     """
     Setup test data and infrastructure for the integration tests.
     """
-    s3_conn = boto3.resource('s3', region_name=region)
-
-    remove_objects(s3=s3_conn, bucket_name=document_bucket_name)
-    remove_objects(s3=s3_conn, bucket_name=pipeline_bucket_name)
-
     s3_conn = boto3.client('s3', region_name=region)
     location = {'LocationConstraint': region}
-
-    remove_bucket(s3=s3_conn, bucket_name=document_bucket_name)
-    remove_bucket(s3=s3_conn, bucket_name=pipeline_bucket_name)
 
     build_bucket(s3=s3_conn, bucket_name=document_bucket_name, location=location)
     build_bucket(s3=s3_conn, bucket_name=pipeline_bucket_name, location=location)
