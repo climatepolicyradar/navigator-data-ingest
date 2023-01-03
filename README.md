@@ -39,7 +39,7 @@ Prefix to apply to output files
 
 Number of workers downloading/uploading cached documents
 
-    "--worker-count"
+    --worker-count
 
 
 ## Unit Tests 
