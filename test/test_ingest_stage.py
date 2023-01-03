@@ -19,4 +19,6 @@ def test_parser_input():
     """
     Assert that the output data from the ingest stage is as expected.
     """
+    assert len(output_data.keys()) == len(expected_output_data.keys())
+    assert output_data.keys() == expected_output_data.keys()
     assert output_data == expected_output_data
