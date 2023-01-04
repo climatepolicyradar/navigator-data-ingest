@@ -1,53 +1,47 @@
 [
   {
     "publication_ts": "2013-01-01T00:00:00",
-    "name": "Presidential of the Republic of Indonesia Instruction Number 6 Year 2013 on Suspension of New Licenses and Improving Forest Governance of Primary Forest and Peatland",
-    "description": "The first iteration of this instruction was issued in 2011 in order to implement commitments under the agreements in the Letter of Intent signed with the Kingdom of Norway in May 2011. The Instruction is intended to facilitate Indonesia's participation in internationally financed REDD activities and places a moratorium on clearance of primary peatland and forests within moratorium areas.\u00a0The initial moratorium was extended by Presidential Instruction 6/2013.\u00a0In 2019, President Joko Widodo signed Presidential Instruction 5/2019, making the moratorium on the clearance of primary forest and peatlands in moratorium areas permanent.\u00a0",
-    "source_url": "https://climate-laws.org/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaUlHIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--8c435aa888628a4bbbef25307cab8c50b5be954a/f",
-    "url": null,
-    "md5_sum": null,
-    "type": "Decree",
+    "name": "National Programme on climate change mitigation measures for 2013-2020 (Resolution of the Council of Ministers of the Republic of Belarus No. 510)",
+    "description": "The aim of the Programme is to implement measures to mitigate the effects of climate change, while ensuring sustainable development of the economy. It aims to cut GHG emissions by 12% by 2020 compared to 1990 levels, implement adaptation measures in various economic sectors, taking into account the socio-economic development of the country; develop recommendations for energy and resource conservation, expand forest ecosystems, restore peatland swamps to act as a carbon sink; improve the legal framework in climate change. The Programme has a budget of 88.7 billion Belarusian roubles (USD 8.2 million).",
+    "source_url": "https://climate-laws.org/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaGdLIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--fb4578ece26d712bd4ec2485de353212699ec4e2/F",
+    "type": "Programme",
     "source": "CCLW",
-    "import_id": "1332-1548",
+    "import_id": "CCLW.executive.1060.2620",
     "category": "Policy",
-    "frameworks": [],
-    "geography": "IDN",
+    "frameworks": [
+      "Mitigation"
+    ],
+    "geography": "BLR",
     "hazards": [],
     "instruments": [
+      "Provision of climate funds|Direct Investment",
+      "Capacity building|Governance",
       "Processes, plans and strategies|Governance"
     ],
     "keywords": [
-      "REDD+ And LULUCF",
-      "Forests",
-      "Moratorium"
+      "Adaptation",
+      "Institutions / Administrative Arrangements",
+      "Energy Supply",
+      "Energy Demand",
+      "REDD+ And LULUCF"
     ],
-    "languages": [
-      "English"
-    ],
+    "languages": [],
     "sectors": [
+      "Economy-wide",
+      "Energy",
       "LULUCF",
-      "Residential and Commercial"
+      "Transport"
     ],
     "topics": [
-      "Adaptation",
-      "Mitigation"
+      "Adaptation"
     ],
     "events": [
       {
-        "name": "Presidential instruction issued",
+        "name": "Law passed",
         "description": "",
-        "created_ts": "2011-12-25T00:00:00"
-      },
-      {
-        "name": "Moratorium extended",
-        "description": "",
-        "created_ts": "2013-12-25T00:00:00"
-      },
-      {
-        "name": "Moratorium extended",
-        "description": "",
-        "created_ts": "2019-08-07T00:00:00"
+        "created_ts": "2013-06-21T00:00:00"
       }
-    ]
+    ],
+    "slug": "belarus_2013_national-programme-on-climate-change-mitigation-measures-for-2013-2020-resolution-of-the-council-of-ministers-of-the-republic-of-belarus-no-510_1060_2620"
   }
 ]

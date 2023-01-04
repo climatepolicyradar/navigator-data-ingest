@@ -124,7 +124,7 @@ def _handle_document(
     document_bucket: str,
 ) -> HandleResult:
     """
-    Upload document source files & update details via API endpoing.
+    Upload document source files & update details via API endpoint.
 
     :param Document document: A document to upload.
     """
