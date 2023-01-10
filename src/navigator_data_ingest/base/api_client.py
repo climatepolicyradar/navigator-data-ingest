@@ -81,7 +81,7 @@ def upload_document(
     )
 
     try:
-        download_response = _download_from_source(session, source_url)
+        download_response = _download_from_source(session, source_url, import_id)
         content_type = download_response.headers["Content-Type"].split(";")[0]
         # Update the result object with the detected content type
         upload_result.content_type = content_type
@@ -137,12 +137,12 @@ def upload_document(
     wait=wait_random_exponential(multiplier=1, min=1, max=10),
 )
 def _download_from_source(
-    session: requests.Session, source_url: str
+    session: requests.Session, source_url: str, import_id: str
 ) -> requests.Response:
     download_response = session.get(source_url, allow_redirects=True, timeout=5)
     if download_response.status_code >= 300:
         raise Exception(
-            f"Downloading source document failed: {download_response.status_code} "
+            f"Downloading source document {import_id} failed: {download_response.status_code} "
             f"{download_response.text}"
         )
     return download_response
