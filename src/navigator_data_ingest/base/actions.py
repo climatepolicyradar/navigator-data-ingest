@@ -116,6 +116,7 @@ def _upload_document(
         clean_url,
         file_name,
         document_bucket,
+        document.import_id
     )
 
 
