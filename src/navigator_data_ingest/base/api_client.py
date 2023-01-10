@@ -59,6 +59,7 @@ def upload_document(
     source_url: str,
     file_name_without_suffix: str,
     document_bucket: str,
+    import_id: str,
 ) -> DocumentUploadResult:
     """
     Upload a document to the cloud, and returns the cloud URL.
@@ -72,7 +73,7 @@ def upload_document(
     :return DocumentUploadResult: the remote URL and the md5_sum of its contents
     """
     # download the document
-    _LOGGER.info(f"Downloading document from '{source_url}'")
+    _LOGGER.info(f"Downloading document from '{source_url}' for {import_id}")
     upload_result = DocumentUploadResult(
         cdn_object=None,
         md5_sum=None,
@@ -120,11 +121,11 @@ def upload_document(
 
     except UnsupportedContentTypeError as e:
         _LOGGER.warn(
-            f"Uploads for document at '{source_url}' could not be completed because "
+            f"Uploads for document {import_id} at '{source_url}' could not be completed because "
             f"the content type '{e.content_type}' is not currently supported."
         )
     except Exception:
-        _LOGGER.exception("Downloading source document failed")
+        _LOGGER.exception(f"Downloading source document {import_id} failed")
     finally:
         # Always return an upload result, even if it's incomplete
         # TODO: perhaps use the existence of an incomplete output in the future
