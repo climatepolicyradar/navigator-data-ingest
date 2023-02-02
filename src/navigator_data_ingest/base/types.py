@@ -85,7 +85,7 @@ class Document(BaseModel):
     topics: Sequence[str]
 
     events: Sequence[Event]
-    pipeline_errors: Optional[dict]
+    pipeline_errors: Optional[dict] = {}
 
     def to_json(self) -> Mapping[str, Any]:
         """Output a JSON serialising friendly dict representing this model"""
