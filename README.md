@@ -54,6 +54,6 @@ This involves creating a test environment, running the tests, and then destroyin
 - test data is downloaded from the pipeline bucket and compared against the expected output
 - s3 bucket objects and the bucket itself are removed 
 
-The aws credentials that are stored as github secrets can be found in bitwarden as the following vault entry: 
+The aws credentials that are stored as GitHub secrets can be found in bitwarden as the following vault entry: 
 - AWS ci-build (sandbox)
  
