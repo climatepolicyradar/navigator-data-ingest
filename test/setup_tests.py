@@ -1,7 +1,8 @@
-import boto3
 import sys
 
-from test.s3_utils import build_bucket, remove_bucket, upload_file_to_bucket, remove_objects
+import boto3
+
+from test.s3_utils import build_bucket, upload_file_to_bucket
 
 
 def setup_test_data(document_bucket_name: str, pipeline_bucket_name: str,
