@@ -146,7 +146,7 @@ def main(
                     f"ERROR ingesting '{handle_result.parser_input.document_id}': "
                     f"{handle_result.error}"
                 )
-                handle_result.parser_input.document_metadata.pipeline_errors["ingest_stage"] = errors
+                handle_result.parser_input.document_metadata.pipeline_errors["ingest_stage"] = [handle_result.error]
             _LOGGER.info(
                 f"Writing parser input for '{handle_result.parser_input.document_id}"
             )
