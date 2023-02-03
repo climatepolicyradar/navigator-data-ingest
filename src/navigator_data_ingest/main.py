@@ -8,7 +8,7 @@ from typing import cast
 import click
 from cloudpathlib import CloudPath, S3Path
 
-from navigator_data_ingest.base.actions import LawPolicyGenerator, handle_all_documents
+from navigator_data_ingest.base.new_document_actions import LawPolicyGenerator, handle_all_documents
 from navigator_data_ingest.base.api_client import (
     API_HOST_ENVVAR,
     MACHINE_USER_EMAIL_ENVVAR,
@@ -17,7 +17,8 @@ from navigator_data_ingest.base.api_client import (
     write_parser_input,
 )
 from navigator_data_ingest.base.types import Document
-
+from navigator_data_ingest.base.updated_document_actions import handle_document_updates, LawPolicyUpdatesGenerator
+from navigator_data_ingest.base.utils import read_s3_json_file
 
 REQUIRED_ENV_VARS = [
     API_HOST_ENVVAR,
@@ -126,7 +127,10 @@ def main(
 
     _LOGGER.info(f"Loading Law/Policy document data from '{input_file_path}'")
 
-    document_generator = LawPolicyGenerator(input_file_path)
+    json_data = read_s3_json_file(input_file_path)
+    document_generator = LawPolicyGenerator(json_data["new_documents"])
+    document_updates_generator = LawPolicyUpdatesGenerator(json_data["updated_documents"])
+
     errors = []
     # TODO: configure worker count
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
@@ -150,6 +154,20 @@ def main(
                 f"Writing parser input for '{handle_result.parser_input.document_id}"
             )
             write_parser_input(output_location_path, handle_result.parser_input)
+
+        documents_to_update = list(document_updates_generator.update_source())
+
+        for handle_result in handle_document_updates(
+                executor,
+                documents_to_update,
+                document_bucket,
+        ):
+            if handle_result.error is not None:
+                errors.append(
+                    f"ERROR updating '{handle_result.document_update.id}': "
+                    f"{handle_result.error}"
+                )
+                # TODO do something with error and update
 
     if errors:
         error_output_location_path = cast(

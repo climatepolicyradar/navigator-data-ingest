@@ -1,42 +1,34 @@
-import json
 import logging
 import traceback
 from concurrent.futures import as_completed, Executor
 from typing import Generator, Iterable
 
 import requests
-from cloudpathlib import S3Path
 from slugify import slugify
 
+from navigator_data_ingest.base.api_client import (
+    upload_document,
+    update_document_details,
+)
 from navigator_data_ingest.base.types import (
     Document,
     DocumentGenerator,
     DocumentParserInput,
     DocumentUploadResult,
-    HandleResult,
-)
-from navigator_data_ingest.base.api_client import (
-    upload_document,
-    update_document_details,
-)
+    HandleResult, )
 
 _LOGGER = logging.getLogger(__file__)
 
 
 class LawPolicyGenerator(DocumentGenerator):
     """A generator of validated Document objects for inspection & upload"""
-
-    def __init__(self, input_file: S3Path):
-        self._input_file = input_file
+    def __init__(self, json_docs: dict):
+        self.json_docs = json_docs
 
     def process_source(self) -> Generator[Document, None, None]:
         """Generate documents for processing from the configured source."""
-
-        with self._input_file.open("r") as input:
-            json_docs = json.load(input)
-
-        for d in json_docs:
-            yield (Document(**d))
+        for d in self.json_docs:
+            yield Document(**d)
 
 
 def handle_all_documents(
@@ -173,4 +165,3 @@ def _handle_document(
         return HandleResult(error=traceback.format_exc(), parser_input=parser_input)
 
     return HandleResult(parser_input=parser_input)
-

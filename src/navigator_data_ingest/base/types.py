@@ -2,7 +2,7 @@
 from abc import abstractmethod, ABC
 from datetime import datetime
 from enum import Enum
-from typing import Any, Generator, Mapping, Optional, Sequence
+from typing import Any, Generator, Mapping, Optional, Sequence, Literal
 
 from pydantic import AnyHttpUrl, BaseModel
 
@@ -153,3 +153,23 @@ class UnsupportedContentTypeError(Exception):
     def __init__(self, content_type: str):
         self.content_type = content_type
         super().__init__(f"Content type '{content_type}' is not supported for caching")
+
+
+class DocumentUpdate(BaseModel):
+    """A definition of updates to be performed on the instances of a document in the pipeline."""
+    id: str
+    updates: dict[
+        Literal[
+            "description",
+            "status",
+            "source_url",
+        ],
+        str
+    ]
+
+
+class HandleUploadResult(BaseModel):
+    """Result of handling a document update."""
+
+    document_update: DocumentUpdate
+    error: Optional[str] = None
