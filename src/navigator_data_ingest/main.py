@@ -163,7 +163,7 @@ def main(
         documents_to_update = list(document_updates_generator.update_source())
         # TODO pull from config or env or click argument
         update_config = UpdateConfig(
-            pipeline_bucket="bucket",
+            pipeline_bucket=pipeline_bucket,
             input_prefix="input",
             parser_input_prefix="parser_input",
             embeddings_input_prefix="embeddings_input",
