@@ -1,30 +1,18 @@
-import json
 import logging
 import traceback
-from abc import ABC
 from concurrent.futures import as_completed, Executor
 from typing import Generator, Iterable
 
-import requests
-from cloudpathlib import S3Path
-from slugify import slugify
-
 from navigator_data_ingest.base.types import (
-    Document,
-    DocumentGenerator,
-    DocumentParserInput,
-    DocumentUploadResult,
-    HandleResult, DocumentUpdate, HandleUploadResult,
-)
-from navigator_data_ingest.base.api_client import (
-    upload_document,
-    update_document_details,
+    DocumentUpdate,
+    HandleUploadResult,
+    DocumentUpdateGenerator,
 )
 
 _LOGGER = logging.getLogger(__file__)
 
 
-class LawPolicyUpdatesGenerator(DocumentGenerator):
+class LawPolicyUpdatesGenerator(DocumentUpdateGenerator):
     """A generator for updated Document objects for inspection & update/archive"""
 
     def __init__(self, json_updates: dict):

@@ -168,6 +168,15 @@ class DocumentUpdate(BaseModel):
     ]
 
 
+class DocumentUpdateGenerator(ABC):
+    """Base class for document updates."""
+    @abstractmethod
+    def update_source(self) -> Generator[DocumentUpdate, None, None]:
+        """Generate document updates for processing from the configured source"""
+
+        raise NotImplementedError("update_source() not implemented")
+
+
 class HandleUploadResult(BaseModel):
     """Result of handling a document update."""
 
