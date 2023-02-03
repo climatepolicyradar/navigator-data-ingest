@@ -25,8 +25,3 @@ def get_input_data(input_file: S3Path) -> InputData:
         raise ValueError(f"Input data missing required key: {e}")
 
     return input_data
-
-
-def get_s3_client(self) -> Any:
-    """Get the S3 client."""
-    return boto3.client("s3")
