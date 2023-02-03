@@ -1,14 +1,12 @@
-import os
-import logging
 import logging.config
-import json_logging
+import os
 from concurrent.futures import ProcessPoolExecutor
 from typing import cast
 
 import click
+import json_logging
 from cloudpathlib import CloudPath, S3Path
 
-from navigator_data_ingest.base.new_document_actions import LawPolicyGenerator, handle_all_documents
 from navigator_data_ingest.base.api_client import (
     API_HOST_ENVVAR,
     MACHINE_USER_EMAIL_ENVVAR,
@@ -16,9 +14,16 @@ from navigator_data_ingest.base.api_client import (
     write_error_file,
     write_parser_input,
 )
-from navigator_data_ingest.base.types import Document
-from navigator_data_ingest.base.updated_document_actions import handle_document_updates, LawPolicyUpdatesGenerator
-from navigator_data_ingest.base.utils import read_s3_json_file
+from navigator_data_ingest.base.new_document_actions import (
+    LawPolicyGenerator,
+    handle_all_documents,
+)
+from navigator_data_ingest.base.types import Document, UpdateConfig
+from navigator_data_ingest.base.updated_document_actions import (
+    handle_document_updates,
+    LawPolicyUpdatesGenerator,
+)
+from navigator_data_ingest.base.utils import get_input_data
 
 REQUIRED_ENV_VARS = [
     API_HOST_ENVVAR,
@@ -127,9 +132,9 @@ def main(
 
     _LOGGER.info(f"Loading Law/Policy document data from '{input_file_path}'")
 
-    json_data = read_s3_json_file(input_file_path)
-    document_generator = LawPolicyGenerator(json_data["new_documents"])
-    document_updates_generator = LawPolicyUpdatesGenerator(json_data["updated_documents"])
+    input_data = get_input_data(input_file_path)
+    document_generator = LawPolicyGenerator(input_data.new_documents)
+    document_updates_generator = LawPolicyUpdatesGenerator(input_data.updated_documents)
 
     errors = []
     # TODO: configure worker count
@@ -156,11 +161,20 @@ def main(
             write_parser_input(output_location_path, handle_result.parser_input)
 
         documents_to_update = list(document_updates_generator.update_source())
+        # TODO pull from config or env or click argument
+        update_config = UpdateConfig(
+            pipeline_bucket="bucket",
+            input_prefix="input",
+            parser_input_prefix="parser_input",
+            embeddings_input_prefix="embeddings_input",
+            indexer_input_prefix="indexer_input",
+            archive_prefix="archive",
+        )
 
         for handle_result in handle_document_updates(
-                executor,
-                documents_to_update,
-                document_bucket,
+            executor,
+            documents_to_update,
+            update_config,
         ):
             if handle_result.error is not None:
                 errors.append(

@@ -3,6 +3,7 @@ from abc import abstractmethod, ABC
 from datetime import datetime
 from enum import Enum
 from typing import Any, Generator, Mapping, Optional, Sequence, Literal
+import boto3
 
 from pydantic import AnyHttpUrl, BaseModel
 
@@ -157,6 +158,7 @@ class UnsupportedContentTypeError(Exception):
 
 class DocumentUpdate(BaseModel):
     """A definition of updates to be performed on the instances of a document in the pipeline."""
+
     id: str
     updates: dict[
         Literal[
@@ -164,12 +166,13 @@ class DocumentUpdate(BaseModel):
             "status",
             "source_url",
         ],
-        str
+        str,
     ]
 
 
 class DocumentUpdateGenerator(ABC):
     """Base class for document updates."""
+
     @abstractmethod
     def update_source(self) -> Generator[DocumentUpdate, None, None]:
         """Generate document updates for processing from the configured source"""
@@ -182,3 +185,22 @@ class HandleUploadResult(BaseModel):
 
     document_update: DocumentUpdate
     error: Optional[str] = None
+
+
+class InputData(BaseModel):
+    """Expected input data containing both document updates and new documents."""
+
+    new_documents: dict
+    updated_documents: dict[str, dict]
+
+
+class UpdateConfig(BaseModel):
+    """Shared configuration for document update functions."""
+
+    # TODO maybe add an init method to remove trailing slashes from the prefixes if needed
+    pipeline_bucket: str
+    input_prefix: str
+    parser_input_prefix: str
+    embeddings_input_prefix: str
+    indexer_input_prefix: str
+    archive_prefix: str
