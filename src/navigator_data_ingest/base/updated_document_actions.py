@@ -88,7 +88,7 @@ def _update_document(
 
 def _archive_document(
         document_id: str,
-):
+) -> None:
     """Archive the document by copying all instances of the document to the archive s3 directory with the relevant
     timestamp. """
     _LOGGER.info("Archiving document %s", document_id)
