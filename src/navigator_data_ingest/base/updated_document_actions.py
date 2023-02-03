@@ -68,6 +68,7 @@ def _update_document(
     try:
         action = identify_action(update.updates)
         action(update.id)
+        return HandleUploadResult(document_update=update)
 
     except Exception:
         _LOGGER.exception(f"Ingesting document with ID '{update.id}' failed")
