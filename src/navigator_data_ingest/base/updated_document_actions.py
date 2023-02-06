@@ -91,10 +91,10 @@ def _archive_document(
     for prefix in update_config.pipeline_stage_prefixes:
         for suffix in file_suffixes:
             document_path = S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.pipeline_stage_prefixes[prefix]}/{document_id}.{suffix}"
+                f"s3://{update_config.pipeline_bucket}/{prefix[1]}/{document_id}.{suffix}"
             )
             archive_path = S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.pipeline_stage_prefixes[prefix]}/{document_id}/{timestamp}.{suffix}"
+                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix[1]}/{document_id}/{timestamp}.{suffix}"
             )
             if document_path.exists():
                 _LOGGER.info(
