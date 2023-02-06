@@ -165,7 +165,7 @@ def main(
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,
             input_prefix="input",
-            parser_input_prefix="parser_input",
+            parser_input_prefix=output_prefix,
             embeddings_input_prefix="embeddings_input",
             indexer_input_prefix="indexer_input",
             archive_prefix="archive",

@@ -86,17 +86,19 @@ def _archive_document(
     file_suffix: str,
 ) -> None:
     """Archive the document."""
-    _LOGGER.info("Archiving document %s", document_id)
     document_path = S3Path(
         f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{file_suffix}"
     )
     archive_path = S3Path(
         f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{file_suffix}"
     )
-    _LOGGER.info(
-        "Archiving document %s from %s to %s", document_id, document_path, archive_path
-    )
     if document_path.exists():
+        _LOGGER.info(
+            "Archiving document %s from %s to %s",
+            document_id,
+            document_path,
+            archive_path,
+        )
         document_path.rename(archive_path)
 
 
