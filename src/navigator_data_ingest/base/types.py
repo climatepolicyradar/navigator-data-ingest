@@ -3,8 +3,6 @@ from abc import abstractmethod, ABC
 from datetime import datetime
 from enum import Enum
 from typing import Any, Generator, Mapping, Optional, Sequence, Literal
-import boto3
-
 from pydantic import AnyHttpUrl, BaseModel
 
 CONTENT_TYPE_PDF = "application/pdf"
@@ -190,7 +188,7 @@ class HandleUploadResult(BaseModel):
 class InputData(BaseModel):
     """Expected input data containing both document updates and new documents."""
 
-    new_documents: dict
+    new_documents: Sequence[dict]
     updated_documents: dict[str, dict]
 
 
