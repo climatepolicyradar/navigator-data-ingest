@@ -32,7 +32,6 @@ REQUIRED_ENV_VARS = [
 ]
 ENV_VAR_MISSING_ERROR = 10
 
-
 # Clear existing log handlers so we always log in structured JSON
 root_logger = logging.getLogger()
 if root_logger.handlers:
@@ -165,9 +164,11 @@ def main(
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,
             input_prefix="input",
-            parser_input_prefix=output_prefix,
-            embeddings_input_prefix="embeddings_input",
-            indexer_input_prefix="indexer_input",
+            pipeline_stage_prefixes={
+                "parser_input_prefix": output_prefix,
+                "embeddings_input_prefix": "embeddings_input",
+                "indexer_input_prefix": "indexer_input",
+            },
             archive_prefix="archive",
         )
 

@@ -198,7 +198,5 @@ class UpdateConfig(BaseModel):
     # TODO maybe add an init method to remove trailing slashes from the prefixes if needed
     pipeline_bucket: str
     input_prefix: str
-    parser_input_prefix: str
-    embeddings_input_prefix: str
-    indexer_input_prefix: str
+    pipeline_stage_prefixes: dict[str, str]
     archive_prefix: str

@@ -79,48 +79,31 @@ def _update_document(
 
 
 def _archive_document(
-    update_config: UpdateConfig,
-    timestamp: str,
-    document_id: str,
-    prefix: str,
-    file_suffix: str,
-) -> None:
-    """Archive the document."""
-    document_path = S3Path(
-        f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{file_suffix}"
-    )
-    archive_path = S3Path(
-        f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{file_suffix}"
-    )
-    if document_path.exists():
-        _LOGGER.info(
-            "Archiving document %s from %s to %s",
-            document_id,
-            document_path,
-            archive_path,
-        )
-        document_path.rename(archive_path)
-
-
-# TODO feels like we can just pass in the UpdateConfig directly to the point of use rather than cart through the code
-#  This does allow us to get from a click argument though
-def _archive_document_s3_instances(
     document_id: str,
     update_config: UpdateConfig,
+    file_suffixes=None,
 ) -> None:
-    """Archive the document by copying all instances of the document to the archive s3 directory with the relevant
-    timestamp."""
+    """Archive the document by copying all instances of the document to the archive s3 directory with timestamp."""
+    if file_suffixes is None:
+        file_suffixes = ["json", "npy"]
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
-    archive_config = {
-        update_config.parser_input_prefix: ["json"],
-        update_config.embeddings_input_prefix: ["json"],
-        update_config.indexer_input_prefix: ["json", "npy"],
-    }
-
-    for prefix, suffixes in archive_config.items():
-        for suffix in suffixes:
-            _archive_document(update_config, timestamp, document_id, prefix, suffix)
+    for prefix in update_config.pipeline_stage_prefixes:
+        for suffix in file_suffixes:
+            document_path = S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.pipeline_stage_prefixes[prefix]}/{document_id}.{suffix}"
+            )
+            archive_path = S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.pipeline_stage_prefixes[prefix]}/{document_id}/{timestamp}.{suffix}"
+            )
+            if document_path.exists():
+                _LOGGER.info(
+                    "Archiving document %s from %s to %s",
+                    document_id,
+                    document_path,
+                    archive_path,
+                )
+                document_path.rename(archive_path)
 
 
 def update_dont_parse(
@@ -140,4 +123,4 @@ def update_parse(
 def identify_action(updates: dict) -> callable:
     """Identify the action to be performed based upon the update type."""
     # TODO build out taxonomy of actions
-    return _archive_document_s3_instances
+    return _archive_document
