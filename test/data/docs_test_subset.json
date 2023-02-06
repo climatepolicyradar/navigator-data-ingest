@@ -878,11 +878,8 @@
     }
   ],
     "updated_documents": {
-      "CCLW.executive.1.1": {
+      "TESTCCLW.executive.1332.1564": {
           "description": "Example Updated"
-      },
-      "CCLW.executive.2.2": {
-          "status": "DELETED"
       }
   }
 }

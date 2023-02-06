@@ -965,50 +965,5 @@
             ]
         },
         "document_slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017"
-    },
-    "TESTCCLW.executive.1332.1564": {
-        "document_name": "Law 13.203 on Renegotiation of the hydrological risk of electricity generation and other matters related to electricity generation",
-        "document_description": "The Law 13.203 adds some benefits for renewables, and changes a number of measures in the local electricity sector. It seeks to resolve Brazil's hydrological risk and create a new subsidy model to increase the attractiveness of renewable investments.\nUnder the new law, the hydropower generating companies can protect themselves against droughts with the permission to buy and stock renewable energy, in a similar fashion to reserve energy auctions. For generators of solar, wind, biomass and cogeneration power, the government can now also provide rebates of up to 50 per cent in transmission and distribution tariffs.\nThe law also lowers the usage fee for new plants of auto-generation renewable systems and facilitates reorganisation of shareholding of special purpose entities to drive investments in new renewable power plants.",
-        "document_id": "TESTCCLW.executive.1332.1564",
-        "document_source_url": "https://climate-laws.org/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaGdJIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--2d3bca509b3e510e8f66a0964726cac80bc08bfa/f",
-        "document_cdn_object": "BRA/2015/law-13-203-on-renegotiation-of-the-hydrological-risk-of-electricity-generation-and-other-matters-related-to-electricity-generation_5f26bf5f6ec548d0acd54d96ade8ddd0.pdf",
-        "document_content_type": "application/pdf",
-        "document_md5_sum": "5f26bf5f6ec548d0acd54d96ade8ddd0",
-        "document_metadata": {
-            "name": "Law 13.203 on Renegotiation of the hydrological risk of electricity generation and other matters related to electricity generation",
-            "description": "The Law 13.203 adds some benefits for renewables, and changes a number of measures in the local electricity sector. It seeks to resolve Brazil's hydrological risk and create a new subsidy model to increase the attractiveness of renewable investments.\nUnder the new law, the hydropower generating companies can protect themselves against droughts with the permission to buy and stock renewable energy, in a similar fashion to reserve energy auctions. For generators of solar, wind, biomass and cogeneration power, the government can now also provide rebates of up to 50 per cent in transmission and distribution tariffs.\nThe law also lowers the usage fee for new plants of auto-generation renewable systems and facilitates reorganisation of shareholding of special purpose entities to drive investments in new renewable power plants.",
-            "import_id": "TESTCCLW.executive.1332.1564",
-            "slug": "brazil_2015_law-13203-on-renegotiation-of-the-hydrological-risk-of-electricity-generation-and-other-matters-related-to-electricity-generation_2019_2092",
-            "publication_ts": "2015-12-08T00:00:00",
-            "source_url": "https://climate-laws.org/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBaGdJIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--2d3bca509b3e510e8f66a0964726cac80bc08bfa/f",
-            "type": "Law",
-            "source": "CCLW",
-            "category": "Law",
-            "geography": "BRA",
-            "frameworks": [],
-            "instruments": [
-                "Capacity building|Governance"
-            ],
-            "hazards": [],
-            "keywords": [
-                "Energy Supply"
-            ],
-            "languages": [],
-            "sectors": [
-                "Energy",
-                "Water"
-            ],
-            "topics": [
-                "Mitigation"
-            ],
-            "events": [
-                {
-                    "name": "Law passed",
-                    "description": "",
-                    "created_ts": "2015-12-08T00:00:00"
-                }
-            ]
-        },
-        "document_slug": "brazil_2015_law-13203-on-renegotiation-of-the-hydrological-risk-of-electricity-generation-and-other-matters-related-to-electricity-generation_2019_2092"
     }
 }
