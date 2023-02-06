@@ -15,6 +15,7 @@ ARCHIVE_EXPECTED_DATA_FILE_PATH = os.environ.get("ARCHIVE_EXPECTED_DATA_FILE_PAT
 parser_input_data = create_dictionary_from_s3_bucket(
     bucket_path=S3Path(f"s3://{INGEST_PIPELINE_BUCKET}/{INGEST_OUTPUT_PREFIX}/"),
     name_key=DOCUMENT_NAME_KEY,
+    glob_pattern="*.json",
 )
 expected_parser_input_data = read_local_s3_json_file(
     file_path=PARSER_INPUT_EXPECTED_DATA_FILE_PATH
@@ -25,6 +26,7 @@ archive_data = create_dictionary_from_s3_bucket(
         f"s3://{INGEST_PIPELINE_BUCKET}/archive/{INGEST_OUTPUT_PREFIX}/"
     ),
     name_key=DOCUMENT_NAME_KEY,
+    glob_pattern="*/*.json",
 )
 expected_archive_data = read_local_s3_json_file(
     file_path=ARCHIVE_EXPECTED_DATA_FILE_PATH
