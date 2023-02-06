@@ -27,7 +27,7 @@ archive_data = create_dictionary_from_s3_bucket(
     name_key=DOCUMENT_NAME_KEY,
 )
 expected_archive_data = read_local_s3_json_file(
-    file_path=PARSER_INPUT_EXPECTED_DATA_FILE_PATH
+    file_path=ARCHIVE_EXPECTED_DATA_FILE_PATH
 )
 
 
