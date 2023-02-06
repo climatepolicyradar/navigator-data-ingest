@@ -18,7 +18,7 @@ from navigator_data_ingest.base.new_document_actions import (
     LawPolicyGenerator,
     handle_all_documents,
 )
-from navigator_data_ingest.base.types import Document, UpdateConfig
+from navigator_data_ingest.base.types import Document, UpdateConfig, PipelineStages
 from navigator_data_ingest.base.updated_document_actions import (
     handle_document_updates,
     LawPolicyUpdatesGenerator,
@@ -85,8 +85,27 @@ _LOGGER = logging.getLogger(__name__)
 )
 @click.option(
     "--output-prefix",
-    required=True,
-    help="Prefix to apply to output files",
+    required=False,
+    default="parser_input",
+    help="Prefix to apply to output files, this s3 directory is the parser input",
+)
+@click.option(
+    "--embeddings-input-prefix",
+    required=False,
+    default="embeddings_input",
+    help="S3 prefix containing the embeddings input files",
+)
+@click.option(
+    "--indexer-input-prefix",
+    required=False,
+    default="indexer_input",
+    help="S3 prefix containing the indexer input files",
+)
+@click.option(
+    "--archive-prefix",
+    required=False,
+    default="archive",
+    help="S3 prefix to which to archive documents",
 )
 @click.option(
     "--worker-count",
@@ -99,16 +118,23 @@ def main(
     document_bucket: str,
     input_file: str,
     output_prefix: str,
+    embeddings_input_prefix: str,
+    indexer_input_prefix: str,
+    archive_prefix: str,
     worker_count: int,
 ):
     """
     Load documents from source JSON array file, updating details via API.
 
-    :param Optional[str] input_bucket: S3 bucket name from which to read the input file
-    :param str input_file: Location of JSON Document array input file
-    :param Optional[str] document_bucket: S3 bucket to which to upload documents
-    :param str
-    :return None:
+    param pipeline_bucket: S3 bucket name from which to read/write input/output files
+    param document_bucket: S3 bucket name in which to store cached documents
+    param input_file: Location of JSON Document array input file
+    param parser_input_prefix: Prefix to apply to output files that contains the parser input files
+    param embeddings_input_prefix: S3 prefix containing the embeddings input files
+    param indexer_input_prefix: S3 prefix containing the indexer input files
+    param archive_prefix: S3 prefix to which to archive documents
+    param worker_count: Number of workers downloading/uploading cached documents
+    return: None
     """
     if os.getenv("ENV") != "production":
         # for running locally (outside docker)
@@ -160,16 +186,15 @@ def main(
             write_parser_input(output_location_path, handle_result.parser_input)
 
         documents_to_update = list(document_updates_generator.update_source())
-        # TODO pull from config or env or click argument
+
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,
-            input_prefix="input",
-            pipeline_stage_prefixes={
-                "parser_input_prefix": output_prefix,
-                "embeddings_input_prefix": "embeddings_input",
-                "indexer_input_prefix": "indexer_input",
-            },
-            archive_prefix="archive",
+            pipeline_stage_prefixes=PipelineStages(
+                parser_input=output_prefix,
+                embeddings_input=embeddings_input_prefix,
+                indexer_input=indexer_input_prefix,
+            ),
+            archive_prefix=archive_prefix,
         )
 
         for handle_result in handle_document_updates(
@@ -182,7 +207,6 @@ def main(
                     f"ERROR updating '{handle_result.document_update.id}': "
                     f"{handle_result.error}"
                 )
-                # TODO do something with error and update
 
     if errors:
         error_output_location_path = cast(

@@ -192,11 +192,17 @@ class InputData(BaseModel):
     updated_documents: dict[str, dict]
 
 
+class PipelineStages(BaseModel):
+    """Expected location of the pipeline stages in the s3 bucket."""
+
+    parser_input: str
+    embeddings_input: str
+    indexer_input: str
+
+
 class UpdateConfig(BaseModel):
     """Shared configuration for document update functions."""
 
-    # TODO maybe add an init method to remove trailing slashes from the prefixes if needed
     pipeline_bucket: str
-    input_prefix: str
-    pipeline_stage_prefixes: dict[str, str]
+    pipeline_stage_prefixes: PipelineStages
     archive_prefix: str
