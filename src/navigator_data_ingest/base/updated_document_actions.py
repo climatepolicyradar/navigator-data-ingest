@@ -9,28 +9,16 @@ from cloudpathlib import S3Path
 from navigator_data_ingest.base.types import (
     DocumentUpdate,
     HandleUploadResult,
-    DocumentUpdateGenerator,
     UpdateConfig,
+    UpdateResult,
 )
 
 _LOGGER = logging.getLogger(__file__)
 
 
-class LawPolicyUpdatesGenerator(DocumentUpdateGenerator):
-    """A generator for updated Document objects for inspection & update/archive"""
-
-    def __init__(self, json_updates: dict):
-        self.json_updates = json_updates
-
-    def update_source(self) -> Generator[DocumentUpdate, None, None]:
-        """Generate documents for updating in s3 from the configured source."""
-        for d in self.json_updates:
-            yield DocumentUpdate(id=d, updates=self.json_updates[d])
-
-
 def handle_document_updates(
     executor: Executor,
-    source: Iterable[DocumentUpdate],
+    source: Iterable[dict[str, UpdateResult]],
     update_config: UpdateConfig,
 ) -> Generator[HandleUploadResult, None, None]:
     """

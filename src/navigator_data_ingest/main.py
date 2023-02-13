@@ -14,16 +14,10 @@ from navigator_data_ingest.base.api_client import (
     write_error_file,
     write_parser_input,
 )
-from navigator_data_ingest.base.new_document_actions import (
-    LawPolicyGenerator,
-    handle_all_documents,
-)
+from navigator_data_ingest.base.new_document_actions import handle_all_documents
 from navigator_data_ingest.base.types import Document, UpdateConfig, PipelineStages
-from navigator_data_ingest.base.updated_document_actions import (
-    handle_document_updates,
-    LawPolicyUpdatesGenerator,
-)
-from navigator_data_ingest.base.utils import get_input_data
+from navigator_data_ingest.base.updated_document_actions import handle_document_updates
+from navigator_data_ingest.base.utils import LawPolicyGenerator
 
 REQUIRED_ENV_VARS = [
     API_HOST_ENVVAR,
@@ -157,16 +151,15 @@ def main(
 
     _LOGGER.info(f"Loading Law/Policy document data from '{input_file_path}'")
 
-    input_data = get_input_data(input_file_path)
-    document_generator = LawPolicyGenerator(input_data.new_documents)
-    document_updates_generator = LawPolicyUpdatesGenerator(input_data.updated_documents)
+    document_generator = LawPolicyGenerator(input_file_path)
 
     errors = []
     # TODO: configure worker count
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
+        # TODO we are we creating a generator and then just iterating over it?
         documents_to_process = [
             document
-            for document in document_generator.process_source()
+            for document in document_generator.process_new_documents()
             if not _parser_input_already_exists(output_location_path, document)
         ]
 
@@ -185,7 +178,7 @@ def main(
             )
             write_parser_input(output_location_path, handle_result.parser_input)
 
-        documents_to_update = list(document_updates_generator.update_source())
+        documents_to_update = list(document_generator.process_updated_documents())
 
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,

@@ -1,8 +1,10 @@
 """Base definitions for data ingest"""
+import json
 from abc import abstractmethod, ABC
-from datetime import datetime
+from dataclasses import dataclass
+import datetime
 from enum import Enum
-from typing import Any, Generator, Mapping, Optional, Sequence, Literal
+from typing import Any, Generator, Mapping, Optional, Sequence, Literal, Union, List
 from pydantic import AnyHttpUrl, BaseModel
 
 CONTENT_TYPE_PDF = "application/pdf"
@@ -121,16 +123,6 @@ class DocumentParserInput(BaseModel):
         }
 
 
-class DocumentGenerator(ABC):
-    """Base class for all document sources."""
-
-    @abstractmethod
-    def process_source(self) -> Generator[Document, None, None]:
-        """Generate documents for processing from the configured source"""
-
-        raise NotImplementedError("process_source() not implemented")
-
-
 class DocumentUploadResult(BaseModel):
     """Information generated during the upload of a document used by later processes"""
 
@@ -185,13 +177,6 @@ class HandleUploadResult(BaseModel):
     error: Optional[str] = None
 
 
-class InputData(BaseModel):
-    """Expected input data containing both document updates and new documents."""
-
-    new_documents: Sequence[dict]
-    updated_documents: dict[str, dict]
-
-
 class PipelineStages(BaseModel):
     """Expected location of the pipeline stages in the s3 bucket."""
 
@@ -200,9 +185,59 @@ class PipelineStages(BaseModel):
     indexer_input: str
 
 
+@dataclass
+class UpdateResult:
+    """Class describing the results of comparing csv data against the db data to identify updates."""
+
+    db_value: Union[str, datetime.datetime]
+    csv_value: Union[str, datetime.datetime]
+    updated: bool
+    type: Literal["PhysicalDocument", "Family", "FamilyDocument"]
+    field: str
+
+
+class InputData(BaseModel):
+    """Expected input data containing both document updates and new documents for the ingest stage of the pipeline."""
+
+    new_documents: List[dict]
+    updated_documents: dict[str, List[UpdateResult]]
+
+    def to_json(self) -> dict:
+        updated_documents_json = {}
+        for update in self.updated_documents:
+            for update_result in self.updated_documents[update]:
+                updated_documents_json[update] = [
+                    json.loads(json.dumps(update_result.__dict__))
+                ]
+        if "__pydantic_initialised__" in updated_documents_json.keys():
+            updated_documents_json.pop("__pydantic_initialised__")
+
+        return {
+            "new_documents": self.new_documents,
+            "updated_documents": updated_documents_json,
+        }
+
+
 class UpdateConfig(BaseModel):
     """Shared configuration for document update functions."""
 
     pipeline_bucket: str
-    pipeline_stage_prefixes: PipelineStages
+    input_prefix: str
+    pipeline_stage_prefixes: dict[str, str]
     archive_prefix: str
+
+
+class DocumentGenerator(ABC):
+    """Base class for all document sources."""
+
+    @abstractmethod
+    def process_new_documents(self) -> Generator[Document, None, None]:
+        """Generate new documents for processing from the configured source"""
+
+        raise NotImplementedError("process_new_documents() not implemented")
+
+    @abstractmethod
+    def process_updated_documents(self) -> Generator[UpdateResult, None, None]:
+        """Generate documents with updates for processing from the configured source"""
+
+        raise NotImplementedError("process_updated_documents() not implemented")

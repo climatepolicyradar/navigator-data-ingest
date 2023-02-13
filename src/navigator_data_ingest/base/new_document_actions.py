@@ -1,7 +1,7 @@
 import logging
 import traceback
 from concurrent.futures import as_completed, Executor
-from typing import Generator, Iterable, Sequence
+from typing import Generator, Iterable
 
 import requests
 from slugify import slugify
@@ -12,25 +12,12 @@ from navigator_data_ingest.base.api_client import (
 )
 from navigator_data_ingest.base.types import (
     Document,
-    DocumentGenerator,
     DocumentParserInput,
     DocumentUploadResult,
     HandleResult,
 )
 
 _LOGGER = logging.getLogger(__file__)
-
-
-class LawPolicyGenerator(DocumentGenerator):
-    """A generator of validated Document objects for inspection & upload"""
-
-    def __init__(self, json_docs: Sequence[dict]):
-        self.json_docs = json_docs
-
-    def process_source(self) -> Generator[Document, None, None]:
-        """Generate documents for processing from the configured source."""
-        for d in self.json_docs:
-            yield Document(**d)
 
 
 def handle_all_documents(
