@@ -156,6 +156,28 @@ def main(
     errors = []
     # TODO: configure worker count
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
+        documents_to_update = list(document_generator.process_updated_documents())
+
+        update_config = UpdateConfig(
+            pipeline_bucket=pipeline_bucket,
+            input_prefix="input",  # TODO get from input file path
+            parser_input=output_prefix,
+            embeddings_input=embeddings_input_prefix,
+            indexer_input=indexer_input_prefix,
+            archive_prefix=archive_prefix,
+        )
+
+        for handle_result in handle_document_updates(
+            executor,
+            documents_to_update,
+            update_config,
+        ):
+            if handle_result.error is not None:
+                errors.append(
+                    f"ERROR updating '{handle_result.document_update.id}': "
+                    f"{handle_result.error}"
+                )
+
         # TODO we are we creating a generator and then just iterating over it?
         documents_to_process = [
             document
@@ -177,29 +199,6 @@ def main(
                 f"Writing parser input for '{handle_result.parser_input.document_id}"
             )
             write_parser_input(output_location_path, handle_result.parser_input)
-
-        documents_to_update = list(document_generator.process_updated_documents())
-
-        update_config = UpdateConfig(
-            pipeline_bucket=pipeline_bucket,
-            pipeline_stage_prefixes=PipelineStages(
-                parser_input=output_prefix,
-                embeddings_input=embeddings_input_prefix,
-                indexer_input=indexer_input_prefix,
-            ),
-            archive_prefix=archive_prefix,
-        )
-
-        for handle_result in handle_document_updates(
-            executor,
-            documents_to_update,
-            update_config,
-        ):
-            if handle_result.error is not None:
-                errors.append(
-                    f"ERROR updating '{handle_result.document_update.id}': "
-                    f"{handle_result.error}"
-                )
 
     if errors:
         error_output_location_path = cast(

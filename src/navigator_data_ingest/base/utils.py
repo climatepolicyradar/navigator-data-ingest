@@ -1,5 +1,5 @@
 import json
-from typing import Generator
+from typing import Generator, List
 
 from cloudpathlib import S3Path
 
@@ -25,19 +25,22 @@ class LawPolicyGenerator(DocumentGenerator):
 
     def process_updated_documents(
         self,
-    ) -> Generator[dict[str, UpdateResult], None, None]:
+    ) -> Generator[dict[str, List[UpdateResult]]]:
         """Generate documents for updating in s3 from the configured source."""
-        for d, update in self.updated_documents.items():
+        for doc_id, update in self.updated_documents.items():
             try:
                 yield {
-                    d,
-                    UpdateResult(
-                        db_value=update["db_value"],
-                        csv_value=update["csv_value"],
-                        updated=update["updated"],
-                        type=update["type"],
-                        field=update["field"],
-                    ),
+                    doc_id,
+                    [
+                        UpdateResult(
+                            db_value=update_result["db_value"],
+                            csv_value=update_result["csv_value"],
+                            updated=update_result["updated"],
+                            type=update_result["type"],
+                            field=update_result["field"],
+                        )
+                        for update_result in update
+                    ],
                 }
             except KeyError as e:
                 raise ValueError(f"Input data missing required key: {e}")

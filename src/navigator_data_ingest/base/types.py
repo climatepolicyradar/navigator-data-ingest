@@ -29,6 +29,30 @@ class DocumentType(str, Enum):
     LITIGATION = "Litigation"
 
 
+class UpdateTypes(str, Enum):
+    """Update types supported by the ingest stage."""
+
+    PHYSICAL_DOCUMENT = "PhysicalDocument"
+    FAMILY_DOCUMENT = "FamilyDocument"
+    FAMILY = "Family"
+
+
+class UpdateFields(str, Enum):
+    """Update fields recognized by the ingest stage."""
+
+    SOURCE_URL = "source_url"
+    NAME = "name"
+    DESCRIPTION = "description"
+    DOCUMENT_STATUS = "document_status"
+
+
+class DocumentStatusTypes(str, Enum):
+    """Document statuses recognized by the ingest stage."""
+
+    DELETED = "DELETED"
+    PUBLISHED = "PUBLISHED"
+
+
 CATEGORY_MAPPING = {
     "executive": DocumentType.POLICY,
     "legislative": DocumentType.LAW,
@@ -146,45 +170,6 @@ class UnsupportedContentTypeError(Exception):
         super().__init__(f"Content type '{content_type}' is not supported for caching")
 
 
-class DocumentUpdate(BaseModel):
-    """A definition of updates to be performed on the instances of a document in the pipeline."""
-
-    id: str
-    updates: dict[
-        Literal[
-            "description",
-            "status",
-            "source_url",
-        ],
-        str,
-    ]
-
-
-class DocumentUpdateGenerator(ABC):
-    """Base class for document updates."""
-
-    @abstractmethod
-    def update_source(self) -> Generator[DocumentUpdate, None, None]:
-        """Generate document updates for processing from the configured source"""
-
-        raise NotImplementedError("update_source() not implemented")
-
-
-class HandleUploadResult(BaseModel):
-    """Result of handling a document update."""
-
-    document_update: DocumentUpdate
-    error: Optional[str] = None
-
-
-class PipelineStages(BaseModel):
-    """Expected location of the pipeline stages in the s3 bucket."""
-
-    parser_input: str
-    embeddings_input: str
-    indexer_input: str
-
-
 @dataclass
 class UpdateResult:
     """Class describing the results of comparing csv data against the db data to identify updates."""
@@ -192,8 +177,22 @@ class UpdateResult:
     db_value: Union[str, datetime.datetime]
     csv_value: Union[str, datetime.datetime]
     updated: bool
-    type: Literal["PhysicalDocument", "Family", "FamilyDocument"]
-    field: str
+    type: Literal[
+        UpdateTypes.FAMILY, UpdateTypes.FAMILY_DOCUMENT, UpdateTypes.PHYSICAL_DOCUMENT
+    ]
+    field: Literal[
+        UpdateFields.SOURCE_URL,
+        UpdateFields.DESCRIPTION,
+        UpdateFields.NAME,
+        UpdateFields.DOCUMENT_STATUS,
+    ]
+
+
+class UpdateDocumentResult(BaseModel):
+    """Result of updating a document update via the ingest stage."""
+
+    update: UpdateResult
+    error: Optional[str] = None
 
 
 class InputData(BaseModel):
@@ -218,12 +217,15 @@ class InputData(BaseModel):
         }
 
 
+@dataclass
 class UpdateConfig(BaseModel):
     """Shared configuration for document update functions."""
 
     pipeline_bucket: str
     input_prefix: str
-    pipeline_stage_prefixes: dict[str, str]
+    parser_input: str
+    embeddings_input: str
+    indexer_input: str
     archive_prefix: str
 
 
