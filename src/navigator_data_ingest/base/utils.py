@@ -33,8 +33,7 @@ class LawPolicyGenerator(DocumentGenerator):
         for doc_id, update in self.input_data.updated_documents.items():
             try:
                 yield {
-                    doc_id,
-                    [
+                    doc_id: [
                         UpdateResult(
                             db_value=update_result["db_value"],
                             csv_value=update_result["csv_value"],
