@@ -62,11 +62,21 @@ def _update_document(
 ) -> List[UpdateDocumentResult]:
     """Perform the document update."""
     doc_id = list(doc_updates.keys())[0]
+    _LOGGER.info("Updating document.", extra={"props": {"document_id": doc_id}})
 
     actions = [
         Action(action=identify_action(update), update=update)
         for update in doc_updates[doc_id]
     ]
+    _LOGGER.info(
+        "Identified actions for document.",
+        extra={
+            "props": {
+                "document_id": doc_id,
+                "actions": str([action.action.__name__ for action in actions]),
+            }
+        },
+    )
 
     return [
         UpdateDocumentResult(
@@ -86,13 +96,30 @@ def order_actions(actions: List[Action]) -> List[Action]:
     """
     ordering = [publish.__name__, update_dont_parse.__name__, archive.__name__]
     priorities = {letter: index for index, letter in enumerate(ordering)}
+    _LOGGER.info(
+        "Ordering actions.",
+        extra={"props": {"priorities": str(priorities)}},
+    )
 
-    return [
+    ordered_actions = [
         action
         for action in sorted(
             actions, key=lambda action: priorities[action.action.__name__]
         )
     ]
+    _LOGGER.info(
+        "Actions ordered.",
+        extra={
+            "props": {
+                "actions_initial": str([action.action.__name__ for action in actions]),
+                "actions_final": str(
+                    [action.action.__name__ for action in ordered_actions]
+                ),
+            }
+        },
+    )
+
+    return ordered_actions
 
 
 def identify_action(update: UpdateResult) -> Callable:
@@ -181,6 +208,16 @@ def archive(
     """Archive the document by copying all instances of the document to the archive s3 directory with timestamp."""
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     document_id = list(update.keys())[0]
+    _LOGGER.info(
+        "Archiving all instances of document.",
+        extra={
+            "props": {
+                "document_id": document_id,
+                "timestamp": timestamp,
+            }
+        },
+    )
+
     errors = [
         perform_archive(
             document_path=S3Path(
@@ -215,7 +252,7 @@ def publish(
 ) -> Union[str, None]:
     """Publish a deleted/archived document by copying all instances of the document to the live s3 directories."""
     doc_id = str(list(update.keys())[0])
-    _LOGGER.info("Publishing document %s.", doc_id)
+    _LOGGER.info("Publishing document.", extra={"props": {"doc_id": doc_id}})
     return None
 
 
@@ -295,6 +332,14 @@ def update_dont_parse(
     incorporated into the corpus during the next pipeline run whilst not triggering re-parsing of the document.
     """
     document_id = list(update.keys())[0]
+    _LOGGER.info(
+        "Updating document so as to not reparse.",
+        extra={
+            "props": {
+                "document_id": document_id,
+            }
+        },
+    )
     update_ = update[document_id]
     errors = [
         update_file_field(

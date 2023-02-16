@@ -1,11 +1,10 @@
-import boto3
 import sys
+
+import boto3
 
 from test.s3_utils import (
     build_bucket,
-    remove_bucket,
     upload_file_to_bucket,
-    remove_objects,
 )
 
 
@@ -16,9 +15,7 @@ def setup_test_data(
     test_data_file_path: str,
     test_data_upload_path: str,
 ) -> None:
-    """
-    Setup test data and infrastructure for the integration tests.
-    """
+    """Setup test data and infrastructure for the integration tests."""
     s3_conn = boto3.client("s3", region_name=region)
     location = {"LocationConstraint": region}
 

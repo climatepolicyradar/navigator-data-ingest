@@ -1,11 +1,11 @@
-from src.navigator_data_ingest.base.updated_document_actions import (
+from navigator_data_ingest.base.updated_document_actions import (
     identify_action,
     update_dont_parse,
     archive,
     publish,
     order_actions,
 )
-from src.navigator_data_ingest.base.types import UpdateResult, Action
+from navigator_data_ingest.base.types import UpdateResult, Action
 
 update_1 = UpdateResult(
     updated=True,
