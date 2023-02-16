@@ -1,5 +1,4 @@
 """Base definitions for data ingest"""
-import json
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from datetime import datetime
@@ -211,23 +210,7 @@ class InputData(BaseModel):
     """Expected input data containing both document updates and new documents for the ingest stage of the pipeline."""
 
     new_documents: List[dict]
-    updated_documents: dict[str, List[UpdateResult]]
-
-    def to_json(self) -> dict:
-        """Output a JSON serialising friendly dict representing this model"""
-        updated_documents_json = {}
-        for update in self.updated_documents:
-            for update_result in self.updated_documents[update]:
-                updated_documents_json[update] = [
-                    json.loads(json.dumps(update_result.__dict__))
-                ]
-        if "__pydantic_initialised__" in updated_documents_json.keys():
-            updated_documents_json.pop("__pydantic_initialised__")
-
-        return {
-            "new_documents": self.new_documents,
-            "updated_documents": updated_documents_json,
-        }
+    updated_documents: dict[str, List[dict]]
 
 
 @dataclass

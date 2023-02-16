@@ -170,10 +170,11 @@ def main(
             document_generator.process_updated_documents(),
             update_config,
         ):
-            if handle_result.error is not None:
-                errors.append(
-                    f"ERROR updating '{handle_result.document_id}': {handle_result.error}"
-                )
+            [
+                errors.append(f"ERROR updating '{result.document_id}': {result.error}")
+                for result in handle_result
+                if result.error is not None
+            ]
 
         # TODO we are we creating a generator and then just iterating over it, shouldn't we incorporate
         #  paser_input_already_exists into the generator?

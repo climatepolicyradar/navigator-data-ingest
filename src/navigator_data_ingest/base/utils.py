@@ -7,6 +7,7 @@ from navigator_data_ingest.base.types import (
     Document,
     DocumentGenerator,
     UpdateResult,
+    InputData,
 )
 
 
@@ -15,19 +16,21 @@ class LawPolicyGenerator(DocumentGenerator):
 
     def __init__(self, input_file: S3Path):
         json_data = read_s3_json_file(input_file)
-        self.new_documents = json_data["new_documents"]
-        self.updated_documents = json_data["updated_documents"]
+        self.input_data = InputData(
+            new_documents=json_data["new_documents"],
+            updated_documents=json_data["updated_documents"],
+        )
 
     def process_new_documents(self) -> Generator[Document, None, None]:
         """Generate documents for processing from the configured source."""
-        for d in self.new_documents:
+        for d in self.input_data.new_documents:
             yield Document(**d)
 
     def process_updated_documents(
         self,
     ) -> Generator[dict[str, List[UpdateResult]], None, None]:
         """Generate documents for updating in s3 from the configured source."""
-        for doc_id, update in self.updated_documents.items():
+        for doc_id, update in self.input_data.updated_documents.items():
             try:
                 yield {
                     doc_id,
