@@ -885,6 +885,13 @@
           "updated": true,
           "type": "FamilyDocument",
           "field": "document_status"
+        },
+        {
+          "db_value": "Published",
+          "csv_value": "Deleted",
+          "updated": true,
+          "type": "PhysicalDocument",
+          "field": "document_status"
         }
       ]
   }

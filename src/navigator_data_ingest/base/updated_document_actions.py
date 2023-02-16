@@ -46,18 +46,14 @@ def handle_document_updates(
         try:
             handle_result = future.result()
         except Exception:
+            # TODO find an identifier for the document
             _LOGGER.exception(
                 "Updating document generated an unexpected exception.",
-                extra={
-                    "props": {
-                        "update": update,
-                    },
-                },
             )
         else:
             yield handle_result
 
-    _LOGGER.info("Done uploading documents")
+    _LOGGER.info("Done updating documents.")
 
 
 def _update_document(
@@ -202,7 +198,8 @@ def publish(
     update_config: UpdateConfig,
 ) -> Union[str, None]:
     """Publish a deleted/archived document by copying all instances of the document to the live s3 directories."""
-    _LOGGER.info("Publishing document %s, %s", update, update_config)
+    doc_id = str(list(update.keys())[0])
+    _LOGGER.info("Publishing document %s.", doc_id)
     return None
 
 
