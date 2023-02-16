@@ -22,6 +22,7 @@ def setup_test_data(
     build_bucket(s3=s3_conn, bucket_name=document_bucket_name, location=location)
     build_bucket(s3=s3_conn, bucket_name=pipeline_bucket_name, location=location)
 
+    # Upload the test input json file with updates and new documents
     upload_file_to_bucket(
         s3=s3_conn,
         local_file_path=test_data_file_path,
@@ -29,11 +30,12 @@ def setup_test_data(
         upload_path=test_data_upload_path,
     )
 
+    # Upload the test document that will be archived
     upload_file_to_bucket(
         s3=s3_conn,
         local_file_path=test_data_file_path,
         bucket_name=pipeline_bucket_name,
-        upload_path="parser_input/CCLW.executive.2.2.json",
+        upload_path="ingest_unit_test_parser_input/TESTCCLW.executive.1332.1564.json",
     )
 
 
