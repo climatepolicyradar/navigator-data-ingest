@@ -170,6 +170,7 @@ class UnsupportedContentTypeError(Exception):
         super().__init__(f"Content type '{content_type}' is not supported for caching")
 
 
+# TODO probably should rename this to update
 @dataclass
 class UpdateResult:
     """Class describing the results of comparing csv data against the db data to identify updates."""
@@ -191,6 +192,7 @@ class UpdateResult:
 class UpdateDocumentResult(BaseModel):
     """Result of updating a document update via the ingest stage."""
 
+    document_id: str
     update: UpdateResult
     error: Optional[str] = None
 

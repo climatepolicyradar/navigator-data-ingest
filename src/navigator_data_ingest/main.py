@@ -15,7 +15,7 @@ from navigator_data_ingest.base.api_client import (
     write_parser_input,
 )
 from navigator_data_ingest.base.new_document_actions import handle_all_documents
-from navigator_data_ingest.base.types import Document, UpdateConfig, PipelineStages
+from navigator_data_ingest.base.types import Document, UpdateConfig
 from navigator_data_ingest.base.updated_document_actions import handle_document_updates
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 
@@ -156,11 +156,9 @@ def main(
     errors = []
     # TODO: configure worker count
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
-        documents_to_update = list(document_generator.process_updated_documents())
-
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,
-            input_prefix="input",  # TODO get from input file path
+            input_prefix=input_file_path.key.replace(input_file_path.name, ""),
             parser_input=output_prefix,
             embeddings_input=embeddings_input_prefix,
             indexer_input=indexer_input_prefix,
@@ -169,16 +167,16 @@ def main(
 
         for handle_result in handle_document_updates(
             executor,
-            documents_to_update,
+            document_generator.process_updated_documents(),
             update_config,
         ):
             if handle_result.error is not None:
                 errors.append(
-                    f"ERROR updating '{handle_result.document_update.id}': "
-                    f"{handle_result.error}"
+                    f"ERROR updating '{handle_result.document_id}': {handle_result.error}"
                 )
 
-        # TODO we are we creating a generator and then just iterating over it?
+        # TODO we are we creating a generator and then just iterating over it, shouldn't we incorporate
+        #  paser_input_already_exists into the generator?
         documents_to_process = [
             document
             for document in document_generator.process_new_documents()

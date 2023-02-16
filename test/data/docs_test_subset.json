@@ -879,7 +879,11 @@
   ],
     "updated_documents": {
       "TESTCCLW.executive.1332.1564": {
-          "description": "Example Updated"
-      }
-  }
+            "db_value": "Published",
+            "csv_value": "Deleted",
+            "updated": true,
+            "type": "FamilyDocument",
+            "field": "document_status"
+        }
+    }
 }

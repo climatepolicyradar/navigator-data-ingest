@@ -3,9 +3,10 @@ import logging
 import traceback
 from concurrent.futures import as_completed, Executor
 from datetime import datetime
-from typing import Generator, List
+from typing import Generator, List, Union, Callable
 
 from cloudpathlib import S3Path
+from pydantic import BaseModel
 
 from navigator_data_ingest.base.types import (
     UpdateConfig,
@@ -21,9 +22,9 @@ _LOGGER = logging.getLogger(__file__)
 
 def handle_document_updates(
     executor: Executor,
-    source: List[dict[str, List[UpdateResult]]],
+    source: Generator[dict[str, List[UpdateResult]]],
     update_config: UpdateConfig,
-) -> Generator[UpdateDocumentResult, None, None]:
+) -> List[UpdateDocumentResult, None, None]:
     """
     Handle documents updates.
 
@@ -46,7 +47,12 @@ def handle_document_updates(
             handle_result = future.result()
         except Exception:
             _LOGGER.exception(
-                f"Updating document '{update.id}' generated an " "unexpected exception."
+                "Updating document generated an unexpected exception.",
+                extra={
+                    "props": {
+                        "update": update,
+                    },
+                },
             )
         else:
             yield handle_result
@@ -54,36 +60,38 @@ def handle_document_updates(
     _LOGGER.info("Done uploading documents")
 
 
+class Action(BaseModel):
+    """Base class for actions."""
+
+    update: UpdateResult
+    action: Callable
+
+
 def _update_document(
-    update: dict[str, List[UpdateResult]],
+    doc_updates: dict[str, List[UpdateResult]],
     update_config: UpdateConfig,
 ) -> List[UpdateDocumentResult]:
     """Perform the document update."""
-    doc_id = list(update.keys())[0]
-    try:
-        actions = [identify_action(update) for update in update[doc_id]]
-        return [
-            action({doc_id: update}, update_config) for action in order_actions(actions)
-        ]
+    doc_id = list(doc_updates.keys())[0]
 
-    except Exception:
-        _LOGGER.exception(
-            "Updating document failed.",
-            extra={
-                "props": {
-                    "document_id": doc_id,
-                    "update": update,
-                }
-            },
+    actions = [
+        Action(action=identify_action(update), update=update)
+        for update in doc_updates[doc_id]
+    ]
+
+    return [
+        UpdateDocumentResult(
+            error=action.action({doc_id: action.update}, update_config),
+            document_id=doc_id,
+            update=action.update,
         )
-        return [
-            UpdateDocumentResult(error=traceback.format_exc(), document_update=update)
-        ]
+        for action in order_actions(actions)
+    ]
 
 
-def order_actions(actions: List[callable]) -> List[callable]:
+def order_actions(actions: List[Action]) -> List[callable]:
     """
-    Order the actions to be performed based upon the action type.
+    Order the update actions to be performed on an s3 document based upon the action type.
 
     We need to ensure that we make object updates before archiving a document.
     """
@@ -92,7 +100,9 @@ def order_actions(actions: List[callable]) -> List[callable]:
 
     return [
         action
-        for action in sorted(actions, key=lambda action: priorities[action.__name__])
+        for action in sorted(
+            actions, key=lambda action: priorities[action.callable.__name__]
+        )
     ]
 
 
@@ -130,25 +140,43 @@ def identify_action(update: UpdateResult) -> callable:
         )
 
 
-def perform_archive(document_path, archive_path):
+def perform_archive(document_path, archive_path) -> Union[str, None]:
     """Rename the document to the archive path."""
-    if document_path.exists():
-        _LOGGER.info(
-            "Archiving document %s from %s to %s",
-            document_path,
-            archive_path,
+    try:
+        if document_path.exists():
+            document_path.rename(archive_path)
+            _LOGGER.info(
+                "Document archived.",
+                extra={
+                    "props": {
+                        "document_path": document_path,
+                        "archive_path": archive_path,
+                    }
+                },
+            )
+    except Exception as e:
+        _LOGGER.exception(
+            "Archiving document failed.",
+            extra={
+                "props": {
+                    "document_path": document_path,
+                    "archive_path": archive_path,
+                    "error": e,
+                }
+            },
         )
-        document_path.rename(archive_path)
+        return traceback.format_exc()
+    return None
 
 
 def archive(
     update: dict[str, UpdateResult],
     update_config: UpdateConfig,
-) -> None:
+) -> List[str]:
     """Archive the document by copying all instances of the document to the archive s3 directory with timestamp."""
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     document_id = list(update.keys())[0]
-    [
+    errors = [
         perform_archive(
             document_path=S3Path(
                 f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
@@ -163,35 +191,38 @@ def archive(
             update_config.indexer_input,
         ]
     ]
-    perform_archive(
-        document_path=S3Path(
-            f"s3://{update_config.pipeline_bucket}/{update_config.indexer_input}/{document_id}.npy"
-        ),
-        archive_path=S3Path(
-            f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.indexer_input}/{document_id}/{timestamp}.npy"
-        ),
+    errors.append(
+        perform_archive(
+            document_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.indexer_input}/{document_id}.npy"
+            ),
+            archive_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.indexer_input}/{document_id}/{timestamp}.npy"
+            ),
+        )
     )
+    return errors
 
 
 def publish(
     update: dict[str, UpdateResult],
     update_config: UpdateConfig,
-) -> None:
+) -> Union[str, None]:
     """Publish a deleted/archived document by copying all instances of the document to the live s3 directories."""
-    _LOGGER.info("Publishing document %s", update)
-    pass  # TODO
+    _LOGGER.info("Publishing document %s, %s", update, update_config)
+    return None
 
 
 def update_file_field(
     document_path: S3Path,
     field: str,
-    new_value: str,
-    existing_value: str,
-) -> None:
+    new_value: Union[str, datetime],
+    existing_value: Union[str, datetime],
+) -> Union[str, None]:
     """Update the value of a field in a json object within s3 with the new value."""
     if document_path.exists():
         _LOGGER.info(
-            "Updating document field",
+            "Updating document field.",
             extra={
                 "props": {
                     "document_path": document_path,
@@ -217,7 +248,7 @@ def update_file_field(
                     }
                 },
             )
-            # TODO need to return errors
+            return traceback.format_exc()
         except KeyError:
             _LOGGER.error(
                 "Field not found in s3 object.",
@@ -231,9 +262,10 @@ def update_file_field(
                     }
                 },
             )
-            # TODO need to return errors
+            return traceback.format_exc()
         document[field] = new_value
         document_path.write_text(json.dumps(document))
+        return None
     else:
         _LOGGER.error(
             "Expected to update document but it doesn't exist.",
@@ -243,23 +275,22 @@ def update_file_field(
                 }
             },
         )
-        # TODO need to return errors
+        return "NotFoundError: Expected to update document but it doesn't exist."
 
 
 def update_dont_parse(
     update: dict[str, UpdateResult],
     update_config: UpdateConfig,
-) -> None:
+) -> List[str]:
     """
     Update the json objects and remove the npy file in the s3 pipeline cache.
 
     This is done so that the npy file of embeddings is recreated to reflect the change in the json object field and
     incorporated into the corpus during the next pipeline run whilst not triggering re-parsing of the document.
     """
-    # TODO return errors
     document_id = list(update.keys())[0]
     update_ = update[document_id]
-    [
+    errors = [
         update_file_field(
             document_path=S3Path(
                 f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
@@ -276,11 +307,14 @@ def update_dont_parse(
     ]
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    perform_archive(
-        document_path=S3Path(
-            f"s3://{update_config.pipeline_bucket}/{update_config.embeddings_input}/{document_id}.npy"
-        ),
-        archive_path=S3Path(
-            f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.embeddings_input}/{document_id}/{timestamp}.npy"
-        ),
+    errors.append(
+        perform_archive(
+            document_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.embeddings_input}/{document_id}.npy"
+            ),
+            archive_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.embeddings_input}/{document_id}/{timestamp}.npy"
+            ),
+        )
     )
+    return errors
