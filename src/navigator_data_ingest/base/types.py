@@ -231,7 +231,7 @@ class InputData(BaseModel):
 
 
 @dataclass
-class UpdateConfig(BaseModel):
+class UpdateConfig:
     """Shared configuration for document update functions."""
 
     pipeline_bucket: str
