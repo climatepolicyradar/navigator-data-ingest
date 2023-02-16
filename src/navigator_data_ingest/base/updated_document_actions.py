@@ -70,7 +70,7 @@ def _update_document(
 
     return [
         UpdateDocumentResult(
-            error=action.action({doc_id: action.update}, update_config),
+            error=str(action.action({doc_id: action.update}, update_config)),
             document_id=doc_id,
             update=action.update,
         )
@@ -170,7 +170,7 @@ def perform_archive(document_path, archive_path) -> Union[str, None]:
                 }
             },
         )
-        return traceback.format_exc()
+        return str(e)
     return None
 
 
