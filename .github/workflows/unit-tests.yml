@@ -54,7 +54,7 @@ jobs:
 
       - name: Running Pytest on the Ingest Stage Output 🚀
         run: |
-          python -m pytest -v test/
+          python -m pytest -vv test/
         env:
             INGEST_OUTPUT_PREFIX: ${{ env.INGEST_OUTPUT_PREFIX }}
             INGEST_PIPELINE_BUCKET: ${{ env.INGEST_PIPELINE_BUCKET }}

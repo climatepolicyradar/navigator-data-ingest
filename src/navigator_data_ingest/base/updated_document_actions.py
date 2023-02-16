@@ -172,7 +172,7 @@ def identify_action(update: UpdateResult) -> Callable:
         )
 
 
-def perform_archive(document_path, archive_path) -> Union[str, None]:
+def perform_archive(document_path: S3Path, archive_path: S3Path) -> Union[str, None]:
     """Rename the document to the archive path."""
     try:
         if document_path.exists():
@@ -181,8 +181,8 @@ def perform_archive(document_path, archive_path) -> Union[str, None]:
                 "Document archived.",
                 extra={
                     "props": {
-                        "document_path": document_path,
-                        "archive_path": archive_path,
+                        "document_path": str(document_path),
+                        "archive_path": str(archive_path),
                     }
                 },
             )
@@ -192,7 +192,7 @@ def perform_archive(document_path, archive_path) -> Union[str, None]:
                 "Document does not exist.",
                 extra={
                     "props": {
-                        "document_path": document_path,
+                        "document_path": str(document_path),
                     }
                 },
             )
@@ -201,8 +201,8 @@ def perform_archive(document_path, archive_path) -> Union[str, None]:
             "Archiving document failed.",
             extra={
                 "props": {
-                    "document_path": document_path,
-                    "archive_path": archive_path,
+                    "document_path": str(document_path),
+                    "archive_path": str(archive_path),
                     "error": e,
                 }
             },
@@ -278,7 +278,7 @@ def update_file_field(
             "Updating document field.",
             extra={
                 "props": {
-                    "document_path": document_path,
+                    "document_path": str(document_path),
                     "field": field,
                     "value": new_value,
                     "existing_value": existing_value,
@@ -293,7 +293,7 @@ def update_file_field(
                 "Field value mismatch - expected value not found in s3 object.",
                 extra={
                     "props": {
-                        "document_path": document_path,
+                        "document_path": str(document_path),
                         "field": field,
                         "value": new_value,
                         "existing_value": existing_value,
@@ -307,7 +307,7 @@ def update_file_field(
                 "Field not found in s3 object.",
                 extra={
                     "props": {
-                        "document_path": document_path,
+                        "document_path": str(document_path),
                         "field": field,
                         "value": new_value,
                         "existing_value": existing_value,
@@ -324,7 +324,7 @@ def update_file_field(
             "Expected to update document but it doesn't exist.",
             extra={
                 "props": {
-                    "document_path": document_path,
+                    "document_path": str(document_path),
                 }
             },
         )
