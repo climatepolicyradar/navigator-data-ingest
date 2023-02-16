@@ -880,8 +880,8 @@
     "updated_documents": {
       "TESTCCLW.executive.1332.1564": [
         {
-          "db_value": "Published",
-          "csv_value": "Deleted",
+          "db_value": "PUBLISHED",
+          "csv_value": "DELETED",
           "updated": true,
           "type": "PhysicalDocument",
           "field": "document_status"

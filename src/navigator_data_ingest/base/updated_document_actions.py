@@ -105,37 +105,37 @@ def identify_action(update: UpdateResult) -> Callable:
                 "updatetype": update.type,
                 "updatecsvvalue": update.csv_value,
                 "updatedbvalue": update.db_value,
-                "updatefieldssourceurlname": UpdateFields.SOURCE_URL.name,
-                "updatefieldsdocumentstatusname": UpdateFields.DOCUMENT_STATUS.name,
-                "updatetypespyhsicaldocumentname": UpdateTypes.PHYSICAL_DOCUMENT.name,
-                "documentstatstypespublishedname": DocumentStatusTypes.PUBLISHED.name,
+                "updatefieldssourceurlname": UpdateFields.SOURCE_URL.value,
+                "updatefieldsdocumentstatusname": UpdateFields.DOCUMENT_STATUS.value,
+                "updatetypespyhsicaldocumentname": UpdateTypes.PHYSICAL_DOCUMENT.value,
+                "documentstatstypespublishedname": DocumentStatusTypes.PUBLISHED.value,
             },
         },
     )
 
     if (
-        update.field == UpdateFields.SOURCE_URL.name
-        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.name
+        update.field == UpdateFields.SOURCE_URL.value
+        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.value
     ) or (
-        update.field == UpdateFields.DOCUMENT_STATUS.name
-        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.name
-        and update.csv_value == DocumentStatusTypes.DELETED.name
+        update.field == UpdateFields.DOCUMENT_STATUS.value
+        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.value
+        and update.csv_value == DocumentStatusTypes.DELETED.value
     ):
         return archive
 
     elif (
-        update.field == UpdateFields.NAME.name
-        and update.type == UpdateTypes.FAMILY.name
+        update.field == UpdateFields.NAME.value
+        and update.type == UpdateTypes.FAMILY.value
     ) or (
-        update.field == UpdateFields.DESCRIPTION.name
-        and update.type == UpdateTypes.FAMILY.name
+        update.field == UpdateFields.DESCRIPTION.value
+        and update.type == UpdateTypes.FAMILY.value
     ):
         return update_dont_parse
 
     elif (
-        update.field == UpdateFields.DOCUMENT_STATUS.name
-        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.name
-        and update.csv_value == DocumentStatusTypes.PUBLISHED.name
+        update.field == UpdateFields.DOCUMENT_STATUS.value
+        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.value
+        and update.csv_value == DocumentStatusTypes.PUBLISHED.value
     ):
         return publish
 
