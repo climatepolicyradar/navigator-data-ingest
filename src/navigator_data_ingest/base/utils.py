@@ -25,7 +25,7 @@ class LawPolicyGenerator(DocumentGenerator):
 
     def process_updated_documents(
         self,
-    ) -> Generator[dict[str, List[UpdateResult]]]:
+    ) -> Generator[dict[str, List[UpdateResult]], None, None]:
         """Generate documents for updating in s3 from the configured source."""
         for doc_id, update in self.updated_documents.items():
             try:

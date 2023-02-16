@@ -2,9 +2,19 @@
 import json
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-import datetime
+from datetime import datetime
 from enum import Enum
-from typing import Any, Generator, Mapping, Optional, Sequence, Literal, Union, List
+from typing import (
+    Any,
+    Generator,
+    Mapping,
+    Optional,
+    Sequence,
+    Literal,
+    Union,
+    List,
+    Callable,
+)
 from pydantic import AnyHttpUrl, BaseModel
 
 CONTENT_TYPE_PDF = "application/pdf"
@@ -175,8 +185,8 @@ class UnsupportedContentTypeError(Exception):
 class UpdateResult:
     """Class describing the results of comparing csv data against the db data to identify updates."""
 
-    db_value: Union[str, datetime.datetime]
-    csv_value: Union[str, datetime.datetime]
+    db_value: Union[str, datetime]
+    csv_value: Union[str, datetime]
     updated: bool
     type: Literal[
         UpdateTypes.FAMILY, UpdateTypes.FAMILY_DOCUMENT, UpdateTypes.PHYSICAL_DOCUMENT
@@ -204,6 +214,7 @@ class InputData(BaseModel):
     updated_documents: dict[str, List[UpdateResult]]
 
     def to_json(self) -> dict:
+        """Output a JSON serialising friendly dict representing this model"""
         updated_documents_json = {}
         for update in self.updated_documents:
             for update_result in self.updated_documents[update]:
@@ -245,3 +256,10 @@ class DocumentGenerator(ABC):
         """Generate documents with updates for processing from the configured source"""
 
         raise NotImplementedError("process_updated_documents() not implemented")
+
+
+class Action(BaseModel):
+    """Base class for actions."""
+
+    update: UpdateResult
+    action: Callable

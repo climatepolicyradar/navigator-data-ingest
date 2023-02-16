@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import Generator, List, Union, Callable
 
 from cloudpathlib import S3Path
-from pydantic import BaseModel
 
 from navigator_data_ingest.base.types import (
     UpdateConfig,
@@ -15,6 +14,7 @@ from navigator_data_ingest.base.types import (
     UpdateFields,
     DocumentStatusTypes,
     UpdateTypes,
+    Action,
 )
 
 _LOGGER = logging.getLogger(__file__)
@@ -22,9 +22,9 @@ _LOGGER = logging.getLogger(__file__)
 
 def handle_document_updates(
     executor: Executor,
-    source: Generator[dict[str, List[UpdateResult]]],
+    source: Generator[dict[str, List[UpdateResult]], None, None],
     update_config: UpdateConfig,
-) -> List[UpdateDocumentResult, None, None]:
+) -> Generator[List[UpdateDocumentResult], None, None]:
     """
     Handle documents updates.
 
@@ -60,13 +60,6 @@ def handle_document_updates(
     _LOGGER.info("Done uploading documents")
 
 
-class Action(BaseModel):
-    """Base class for actions."""
-
-    update: UpdateResult
-    action: Callable
-
-
 def _update_document(
     doc_updates: dict[str, List[UpdateResult]],
     update_config: UpdateConfig,
@@ -89,7 +82,7 @@ def _update_document(
     ]
 
 
-def order_actions(actions: List[Action]) -> List[callable]:
+def order_actions(actions: List[Action]) -> List[Action]:
     """
     Order the update actions to be performed on an s3 document based upon the action type.
 
@@ -101,12 +94,12 @@ def order_actions(actions: List[Action]) -> List[callable]:
     return [
         action
         for action in sorted(
-            actions, key=lambda action: priorities[action.callable.__name__]
+            actions, key=lambda action: priorities[action.action.__name__]
         )
     ]
 
 
-def identify_action(update: UpdateResult) -> callable:
+def identify_action(update: UpdateResult) -> Callable:
     """Identify the action to be performed based upon the update type and field."""
     if (
         update.field == UpdateFields.SOURCE_URL.name
