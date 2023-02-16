@@ -186,6 +186,16 @@ def perform_archive(document_path, archive_path) -> Union[str, None]:
                     }
                 },
             )
+        else:
+            # TODO do we want to raise an error here?
+            _LOGGER.info(
+                "Document does not exist.",
+                extra={
+                    "props": {
+                        "document_path": document_path,
+                    }
+                },
+            )
     except Exception as e:
         _LOGGER.exception(
             "Archiving document failed.",

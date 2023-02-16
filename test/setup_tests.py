@@ -15,7 +15,7 @@ def setup_test_data(
     test_data_file_path: str,
     test_data_upload_path: str,
 ) -> None:
-    """Setup test data and infrastructure for the integration tests."""
+    """Setup test data and infrastructure for the integration test."""
     s3_conn = boto3.client("s3", region_name=region)
     location = {"LocationConstraint": region}
 
