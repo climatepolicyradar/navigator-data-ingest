@@ -97,6 +97,22 @@ def order_actions(actions: List[Action]) -> List[Action]:
 
 def identify_action(update: UpdateResult) -> Callable:
     """Identify the action to be performed based upon the update type and field."""
+    _LOGGER.info(
+        "Identifying action with the following config.",
+        extra={
+            "props": {
+                "updatefield": update.field,
+                "updatetype": update.type,
+                "updatecsvvalue": update.csv_value,
+                "updatedbvalue": update.db_value,
+                "updatefieldssourceurlname": UpdateFields.SOURCE_URL.name,
+                "updatefieldsdocumentstatusname": UpdateFields.DOCUMENT_STATUS.name,
+                "updatetypespyhsicaldocumentname": UpdateTypes.PHYSICAL_DOCUMENT.name,
+                "documentstatstypespublishedname": DocumentStatusTypes.PUBLISHED.name,
+            },
+        },
+    )
+
     if (
         update.field == UpdateFields.SOURCE_URL.name
         and update.type == UpdateTypes.PHYSICAL_DOCUMENT.name
