@@ -7,7 +7,7 @@ from navigator_data_ingest.base.updated_document_actions import (
 )
 from navigator_data_ingest.base.types import UpdateResult, Action
 
-# TODO incorporate these tests into CI
+
 update_1 = UpdateResult(
     updated=True,
     type="Family",

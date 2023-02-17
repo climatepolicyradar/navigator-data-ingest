@@ -9,3 +9,5 @@ build:
 build_test:
 	docker build -t navigator-data-ingest-test .
 
+test:
+    docker run --entrypoint pytest navigator-data-ingest ./src -v

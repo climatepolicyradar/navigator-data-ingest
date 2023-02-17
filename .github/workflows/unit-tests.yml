@@ -44,6 +44,9 @@ jobs:
           aws-region: ${{ secrets.UNIT_TESTS_AWS_REGION }}
           aws-secret-access-key: ${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }}
 
+      - name: Running Unit Tests of the Ingest Application
+        run: make test
+
       - name: Building s3 bucket and uploading test data
         run: |
           python -m test.setup_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }} ${{ env.TEST_DATA_FILE_PATH }} ${{ env.TEST_DATA_UPLOAD_PATH }} ${{ env.INGEST_OUTPUT_PREFIX }}
@@ -52,7 +55,7 @@ jobs:
         run: |
           docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --input-file ${{ env.TEST_DATA_UPLOAD_PATH }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }}
 
-      - name: Running Pytest on the Ingest Stage Output 🚀
+      - name: Running Integration Tests on the Ingest Stage Output 🚀
         run: |
           python -m pytest -vv test/
         env:
@@ -63,7 +66,7 @@ jobs:
             ARCHIVE_EXPECTED_DATA_FILE_PATH: ${{ env.ARCHIVE_EXPECTED_DATA_FILE_PATH }}
             TEST_DATA_FILE_PATH: ${{ env.TEST_DATA_FILE_PATH }}
 
-#      - name: Destroying Infrastructure
-#        if: always()
-#        run: |
-#          python -m test.clean_up_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
+      - name: Destroying Infrastructure
+        if: always()
+        run: |
+          python -m test.clean_up_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
