@@ -2,10 +2,7 @@ import sys
 
 import boto3
 
-from test.s3_utils import (
-    build_bucket,
-    upload_file_to_bucket,
-)
+from test.s3_utils import build_bucket, upload_file_to_bucket, read_local_s3_json_file
 
 
 def setup_test_data(
@@ -14,6 +11,7 @@ def setup_test_data(
     region: str,
     test_data_file_path: str,
     test_data_upload_path: str,
+    ingest_output_prefix: str,
 ) -> None:
     """Setup test data and infrastructure for the integration test."""
     s3_conn = boto3.client("s3", region_name=region)
@@ -31,11 +29,15 @@ def setup_test_data(
     )
 
     # Upload the test document that will be archived
+    existing_document_name = list(
+        read_local_s3_json_file(test_data_file_path)["updated_documents"].keys()
+    )[0]
+
     upload_file_to_bucket(
         s3=s3_conn,
         local_file_path=test_data_file_path,
         bucket_name=pipeline_bucket_name,
-        upload_path="ingest_unit_test_parser_input/TESTCCLW.executive.1332.1564.json",
+        upload_path=f"{ingest_output_prefix}/{existing_document_name}.json",
     )
 
 
@@ -46,4 +48,5 @@ if __name__ == "__main__":
         region=sys.argv[3],
         test_data_file_path=sys.argv[4],
         test_data_upload_path=sys.argv[5],
+        ingest_output_prefix=sys.argv[6],
     )
