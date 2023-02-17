@@ -13,14 +13,14 @@ from navigator_data_ingest.base.api_client import (
 from navigator_data_ingest.base.types import (
     Document,
     DocumentParserInput,
-    DocumentUploadResult,
+    UploadResult,
     HandleResult,
 )
 
 _LOGGER = logging.getLogger(__file__)
 
 
-def handle_all_documents(
+def handle_new_documents(
     executor: Executor,
     source: Iterable[Document],
     document_bucket: str,
@@ -66,7 +66,7 @@ def _upload_document(
     session: requests.Session,
     document: Document,
     document_bucket: str,
-) -> DocumentUploadResult:
+) -> UploadResult:
     """
     Upload a single document.
 
@@ -84,7 +84,7 @@ def _upload_document(
             f"Skipping upload for '{document.source}:{document.import_id}:"
             f"{document.name}' because the source URL is empty"
         )
-        return DocumentUploadResult(
+        return UploadResult(
             cdn_object=None,
             md5_sum=None,
             content_type=None,

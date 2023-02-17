@@ -5,24 +5,24 @@ from navigator_data_ingest.base.updated_document_actions import (
     publish,
     order_actions,
 )
-from navigator_data_ingest.base.types import UpdateResult, Action
+from navigator_data_ingest.base.types import Update, Action
 
 
-update_1 = UpdateResult(
+update_1 = Update(
     updated=True,
     type="Family",
     field="name",
     csv_value="new name",
     db_value="old name",
 )
-update_2 = UpdateResult(
+update_2 = Update(
     updated=True,
     type="PhysicalDocument",
     field="source_url",
     csv_value="new url",
     db_value="old url",
 )
-update_3 = UpdateResult(
+update_3 = Update(
     updated=True,
     type="PhysicalDocument",
     field="document_status",

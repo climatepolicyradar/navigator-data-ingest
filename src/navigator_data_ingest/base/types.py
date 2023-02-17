@@ -156,7 +156,7 @@ class DocumentParserInput(BaseModel):
         }
 
 
-class DocumentUploadResult(BaseModel):
+class UploadResult(BaseModel):
     """Information generated during the upload of a document used by later processes"""
 
     cdn_object: Optional[str]
@@ -179,9 +179,8 @@ class UnsupportedContentTypeError(Exception):
         super().__init__(f"Content type '{content_type}' is not supported for caching")
 
 
-# TODO probably should rename this to update
 @dataclass
-class UpdateResult:
+class Update:
     """Class describing the results of comparing csv data against the db data to identify updates."""
 
     db_value: Union[str, datetime]
@@ -198,11 +197,11 @@ class UpdateResult:
     ]
 
 
-class UpdateDocumentResult(BaseModel):
+class UpdateResult(BaseModel):
     """Result of updating a document update via the ingest stage."""
 
     document_id: str
-    update: UpdateResult
+    update: Update
     error: Optional[str] = None
 
 
@@ -235,14 +234,14 @@ class DocumentGenerator(ABC):
         raise NotImplementedError("process_new_documents() not implemented")
 
     @abstractmethod
-    def process_updated_documents(self) -> Generator[UpdateResult, None, None]:
+    def process_updated_documents(self) -> Generator[Update, None, None]:
         """Generate documents with updates for processing from the configured source"""
 
         raise NotImplementedError("process_updated_documents() not implemented")
 
 
 class Action(BaseModel):
-    """Base class for actions."""
+    """Base class for associating an update with the relevant action."""
 
-    update: UpdateResult
+    update: Update
     action: Callable

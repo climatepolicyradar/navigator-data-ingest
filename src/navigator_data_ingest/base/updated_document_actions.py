@@ -3,14 +3,14 @@ import logging
 import traceback
 from concurrent.futures import as_completed, Executor
 from datetime import datetime
-from typing import Generator, List, Union, Callable
+from typing import Generator, List, Union, Callable, Tuple
 
 from cloudpathlib import S3Path
 
 from navigator_data_ingest.base.types import (
     UpdateConfig,
+    Update,
     UpdateResult,
-    UpdateDocumentResult,
     UpdateFields,
     DocumentStatusTypes,
     UpdateTypes,
@@ -22,9 +22,9 @@ _LOGGER = logging.getLogger(__file__)
 
 def handle_document_updates(
     executor: Executor,
-    source: Generator[dict[str, List[UpdateResult]], None, None],
+    source: Generator[Tuple[str, List[Update]], None, None],
     update_config: UpdateConfig,
-) -> Generator[List[UpdateDocumentResult], None, None]:
+) -> Generator[List[UpdateResult], None, None]:
     """
     Handle documents updates.
 
@@ -57,32 +57,30 @@ def handle_document_updates(
 
 
 def _update_document(
-    doc_updates: dict[str, List[UpdateResult]],
+    doc_updates: Tuple[str, List[Update]],
     update_config: UpdateConfig,
-) -> List[UpdateDocumentResult]:
+) -> List[UpdateResult]:
     """Perform the document update."""
-    # TODO is there something easier to use than a dict for getting the document id?
-    doc_id = list(doc_updates.keys())[0]
-    _LOGGER.info("Updating document.", extra={"props": {"document_id": doc_id}})
+    document_id, updates = doc_updates
+    _LOGGER.info("Updating document.", extra={"props": {"document_id": document_id}})
 
     actions = [
-        Action(action=identify_action(update), update=update)
-        for update in doc_updates[doc_id]
+        Action(action=identify_action(update), update=update) for update in updates
     ]
     _LOGGER.info(
         "Identified actions for document.",
         extra={
             "props": {
-                "document_id": doc_id,
+                "document_id": document_id,
                 "actions": str([action.action.__name__ for action in actions]),
             }
         },
     )
 
     return [
-        UpdateDocumentResult(
-            error=str(action.action({doc_id: action.update}, update_config)),
-            document_id=doc_id,
+        UpdateResult(
+            error=str(action.action((document_id, action.update), update_config)),
+            document_id=document_id,
             update=action.update,
         )
         for action in order_actions(actions)
@@ -123,7 +121,7 @@ def order_actions(actions: List[Action]) -> List[Action]:
     return ordered_actions
 
 
-def identify_action(update: UpdateResult) -> Callable:
+def identify_action(update: Update) -> Callable:
     """Identify the action to be performed based upon the update type and field."""
     _LOGGER.info(
         "Identifying action with the following config.",
@@ -209,12 +207,12 @@ def perform_archive(document_path: S3Path, archive_path: S3Path) -> Union[str, N
 
 
 def archive(
-    update: dict[str, UpdateResult],
+    update: Tuple[str, Update],
     update_config: UpdateConfig,
 ) -> List[str]:
     """Archive the document by copying all instances of the document to the archive s3 directory with timestamp."""
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    document_id = list(update.keys())[0]
+    document_id, document_update = update
     _LOGGER.info(
         "Archiving all instances of document.",
         extra={
@@ -254,12 +252,12 @@ def archive(
 
 
 def publish(
-    update: dict[str, UpdateResult],
+    update: Tuple[str, Update],
     update_config: UpdateConfig,
 ) -> Union[str, None]:
     """Publish a deleted/archived document by copying all instances of the document to the live s3 directories."""
-    doc_id = str(list(update.keys())[0])
-    _LOGGER.info("Publishing document.", extra={"props": {"doc_id": doc_id}})
+    document_id, document_update = update
+    _LOGGER.info("Publishing document.", extra={"props": {"doc_id": document_id}})
     return None
 
 
@@ -329,7 +327,7 @@ def update_file_field(
 
 
 def update_dont_parse(
-    update: dict[str, UpdateResult],
+    update: Tuple[str, Update],
     update_config: UpdateConfig,
 ) -> List[str]:
     """
@@ -338,7 +336,7 @@ def update_dont_parse(
     This is done so that the npy file of embeddings is recreated to reflect the change in the json object field and
     incorporated into the corpus during the next pipeline run whilst not triggering re-parsing of the document.
     """
-    document_id = list(update.keys())[0]
+    document_id, document_update = update
     _LOGGER.info(
         "Updating document so as to not reparse.",
         extra={
@@ -347,15 +345,14 @@ def update_dont_parse(
             }
         },
     )
-    update_ = update[document_id]
     errors = [
         update_file_field(
             document_path=S3Path(
                 f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
             ),
-            field=update_.field,
-            new_value=update_.csv_value,
-            existing_value=update_.db_value,
+            field=document_update.field,
+            new_value=document_update.csv_value,
+            existing_value=document_update.db_value,
         )
         for prefix in [
             update_config.parser_input,

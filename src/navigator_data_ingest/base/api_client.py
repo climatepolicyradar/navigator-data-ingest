@@ -16,7 +16,7 @@ from navigator_data_ingest.base.types import (
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
     FILE_EXTENSION_MAPPING,
-    DocumentUploadResult,
+    UploadResult,
     DocumentParserInput,
     UnsupportedContentTypeError,
 )
@@ -60,7 +60,7 @@ def upload_document(
     file_name_without_suffix: str,
     document_bucket: str,
     import_id: str,
-) -> DocumentUploadResult:
+) -> UploadResult:
     """
     Upload a document to the cloud, and returns the cloud URL.
 
@@ -74,7 +74,7 @@ def upload_document(
     """
     # download the document
     _LOGGER.info(f"Downloading document from '{source_url}' for {import_id}")
-    upload_result = DocumentUploadResult(
+    upload_result = UploadResult(
         cdn_object=None,
         md5_sum=None,
         content_type=None,
@@ -169,7 +169,7 @@ def _store_document_in_cache(
     wait=wait_random_exponential(multiplier=1, min=1, max=10),
 )
 def update_document_details(
-    session: requests.Session, import_id: str, result: DocumentUploadResult
+    session: requests.Session, import_id: str, result: UploadResult
 ) -> requests.Response:
 
     token = get_machine_user_token()
