@@ -37,12 +37,14 @@ def test_parser_input():
 def test_archive():
     """Assert that the archived data in s3 is as expected."""
 
-    parser_input_archived_files = S3Path(
-        f"s3://{INGEST_PIPELINE_BUCKET}/archive/{INGEST_OUTPUT_PREFIX}/"
-    ).glob("*/*.json")
-    assert len(list(parser_input_archived_files)) == 1
+    parser_input_archived_files = list(
+        S3Path(f"s3://{INGEST_PIPELINE_BUCKET}/archive/{INGEST_OUTPUT_PREFIX}/").glob(
+            "*/*.json"
+        )
+    )
+    assert len(parser_input_archived_files) == 1
 
-    archived_file = list(parser_input_archived_files)[0]
+    archived_file = parser_input_archived_files[0]
     assert (
         str(archived_file.parent)
         == f"s3://{INGEST_PIPELINE_BUCKET}/archive/{INGEST_OUTPUT_PREFIX}/{EXISTING_DOCUMENT_NAME}"

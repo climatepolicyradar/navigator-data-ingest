@@ -61,6 +61,7 @@ def _update_document(
     update_config: UpdateConfig,
 ) -> List[UpdateDocumentResult]:
     """Perform the document update."""
+    # TODO is there something easier to use than a dict for getting the document id?
     doc_id = list(doc_updates.keys())[0]
     _LOGGER.info("Updating document.", extra={"props": {"document_id": doc_id}})
 
@@ -128,14 +129,10 @@ def identify_action(update: UpdateResult) -> Callable:
         "Identifying action with the following config.",
         extra={
             "props": {
-                "updatefield": update.field,
-                "updatetype": update.type,
-                "updatecsvvalue": update.csv_value,
-                "updatedbvalue": update.db_value,
-                "updatefieldssourceurlname": UpdateFields.SOURCE_URL.value,
-                "updatefieldsdocumentstatusname": UpdateFields.DOCUMENT_STATUS.value,
-                "updatetypespyhsicaldocumentname": UpdateTypes.PHYSICAL_DOCUMENT.value,
-                "documentstatstypespublishedname": DocumentStatusTypes.PUBLISHED.value,
+                "update_field": update.field,
+                "update_type": update.type,
+                "update_csv_value": update.csv_value,
+                "update_db_value": update.db_value,
             },
         },
     )
