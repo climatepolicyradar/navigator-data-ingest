@@ -45,7 +45,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }}
 
       - name: Running Unit Tests of the Ingest Application
-        run: make test
+        run: | 
+          make test
 
       - name: Building s3 bucket and uploading test data
         run: |
