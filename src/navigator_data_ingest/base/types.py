@@ -9,11 +9,11 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
-    Literal,
     Union,
     List,
     Callable,
 )
+
 from pydantic import AnyHttpUrl, BaseModel
 
 CONTENT_TYPE_PDF = "application/pdf"
@@ -179,22 +179,14 @@ class UnsupportedContentTypeError(Exception):
         super().__init__(f"Content type '{content_type}' is not supported for caching")
 
 
-@dataclass
-class Update:
+class Update(BaseModel):
     """Class describing the results of comparing csv data against the db data to identify updates."""
 
     db_value: Union[str, datetime]
     csv_value: Union[str, datetime]
     updated: bool
-    type: Literal[
-        UpdateTypes.FAMILY, UpdateTypes.FAMILY_DOCUMENT, UpdateTypes.PHYSICAL_DOCUMENT
-    ]
-    field: Literal[
-        UpdateFields.SOURCE_URL,
-        UpdateFields.DESCRIPTION,
-        UpdateFields.NAME,
-        UpdateFields.DOCUMENT_STATUS,
-    ]
+    type: UpdateTypes
+    field: UpdateFields
 
 
 class UpdateResult(BaseModel):
