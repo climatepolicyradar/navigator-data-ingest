@@ -40,17 +40,13 @@ class LawPolicyGenerator(DocumentGenerator):
         """Initialize the generator."""
         _LOGGER.info("Initializing LawPolicyGenerator")
         json_data = read_s3_json_file(input_file)
-        self.input_data = InputData(
-            new_documents=json_data["new_documents"],
-            updated_documents=json_data["updated_documents"],
-        )
+        self.input_data = InputData.parse_raw(json_data)
         self.output_location_path = output_location_path
 
     def process_new_documents(self) -> Generator[Document, None, None]:
         """Generate documents for processing from the configured source."""
         _LOGGER.info("Processing new documents")
-        for document_json in self.input_data.new_documents:
-            document = Document(**document_json)
+        for document in self.input_data.new_documents:
             if not parser_input_already_exists(self.output_location_path, document):
                 yield document
 
@@ -59,20 +55,11 @@ class LawPolicyGenerator(DocumentGenerator):
     ) -> Generator[Tuple[str, List[Update]], None, None]:
         """Generate documents for updating in s3 from the configured source."""
         _LOGGER.info("Processing updated documents")
-        for document_id, update in self.input_data.updated_documents.items():
+        for document_id, document_updates in self.input_data.updated_documents.items():
             try:
                 yield (
                     document_id,
-                    [
-                        Update(
-                            db_value=update_result["db_value"],
-                            csv_value=update_result["csv_value"],
-                            updated=update_result["updated"],
-                            type=update_result["type"],
-                            field=update_result["field"],
-                        )
-                        for update_result in update
-                    ],
+                    document_updates,
                 )
             except KeyError as e:
                 raise ValueError(f"Input data missing required key: {e}")

@@ -12,6 +12,7 @@ from typing import (
     Union,
     List,
     Callable,
+    Literal,
 )
 
 from pydantic import AnyHttpUrl, BaseModel
@@ -36,23 +37,6 @@ class DocumentType(str, Enum):
     LAW = "Law"
     POLICY = "Policy"
     LITIGATION = "Litigation"
-
-
-class UpdateTypes(str, Enum):
-    """Update types supported by the ingest stage."""
-
-    PHYSICAL_DOCUMENT = "PhysicalDocument"
-    FAMILY_DOCUMENT = "FamilyDocument"
-    FAMILY = "Family"
-
-
-class UpdateFields(str, Enum):
-    """Update fields recognized by the ingest stage."""
-
-    SOURCE_URL = "source_url"
-    NAME = "name"
-    DESCRIPTION = "description"
-    DOCUMENT_STATUS = "document_status"
 
 
 class DocumentStatusTypes(str, Enum):
@@ -120,12 +104,38 @@ class Document(BaseModel):
 
     events: Sequence[Event]
 
+    document_status: DocumentStatusTypes
+
     def to_json(self) -> Mapping[str, Any]:
         """Output a JSON serialising friendly dict representing this model"""
         json_dict = self.dict()
         json_dict["publication_ts"] = self.publication_ts.isoformat()
         json_dict["events"] = [event.to_json() for event in self.events]
         return json_dict
+
+
+class UpdateTypes(str, Enum):
+    """Document types supported by the backend API."""
+
+    NAME = "name"
+    DESCRIPTION = "description"
+    IMPORT_ID = "import_id"
+    SLUG = "slug"
+    PUBLICATION_TS = "publication_ts"
+    SOURCE_URL = "source_url"
+    TYPE = "type"
+    SOURCE = "source"
+    CATEGORY = "category"
+    GEOGRAPHY = "geography"
+    FRAMEWORKS = "frameworks"
+    INSTRUMENTS = "instruments"
+    HAZARDS = "hazards"
+    KEYWORDS = "keywords"
+    LANGUAGES = "languages"
+    SECTORS = "sectors"
+    TOPICS = "topics"
+    EVENTS = "events"
+    DOCUMENT_STATUS = "document_status"
 
 
 class DocumentParserInput(BaseModel):
@@ -184,9 +194,7 @@ class Update(BaseModel):
 
     db_value: Union[str, datetime]
     csv_value: Union[str, datetime]
-    updated: bool
     type: UpdateTypes
-    field: UpdateFields
 
 
 class UpdateResult(BaseModel):
@@ -200,8 +208,8 @@ class UpdateResult(BaseModel):
 class InputData(BaseModel):
     """Expected input data containing both document updates and new documents for the ingest stage of the pipeline."""
 
-    new_documents: List[dict]
-    updated_documents: dict[str, List[dict]]
+    new_documents: List[Document]
+    updated_documents: dict[str, List[Update]]
 
 
 @dataclass

@@ -15,6 +15,7 @@ from navigator_data_ingest.base.types import (
     DocumentStatusTypes,
     UpdateTypes,
     Action,
+    Document,
 )
 
 _LOGGER = logging.getLogger(__file__)
@@ -87,13 +88,56 @@ def _update_document(
     ]
 
 
+def identify_action(update: Update) -> Callable:
+    """Identify the action to be performed based upon the update type and field."""
+    _LOGGER.info(
+        "Identifying action with the following config.",
+        extra={
+            "props": {
+                "update_type": update.type,
+                "update_csv_value": update.csv_value,
+                "update_db_value": update.db_value,
+            },
+        },
+    )
+
+    if update.type in [UpdateTypes.SOURCE_URL.value]:
+        return parse
+
+    elif (
+        update.type == UpdateTypes.DOCUMENT_STATUS.value
+        and update.csv_value == DocumentStatusTypes.DELETED.value
+    ):
+        return archive
+
+    elif (
+        update.type == UpdateTypes.DOCUMENT_STATUS.value
+        and update.csv_value == DocumentStatusTypes.PUBLISHED.value
+    ):
+        return publish
+
+    elif update.type in [UpdateTypes.NAME.value, UpdateTypes.DESCRIPTION.value]:
+        return update_dont_parse
+
+    else:
+        raise ValueError(
+            f"Update type {update.type} is not supported. "
+            f"Supported update types are: {[name.value for name in UpdateTypes]}"
+        )
+
+
 def order_actions(actions: List[Action]) -> List[Action]:
     """
     Order the update actions to be performed on an s3 document based upon the action type.
 
     We need to ensure that we make object updates before archiving a document.
     """
-    ordering = [publish.__name__, update_dont_parse.__name__, archive.__name__]
+    ordering = [
+        publish.__name__,
+        update_dont_parse.__name__,
+        parse.__name__,
+        archive.__name__,
+    ]
     priorities = {letter: index for index, letter in enumerate(ordering)}
     _LOGGER.info(
         "Ordering actions.",
@@ -119,91 +163,6 @@ def order_actions(actions: List[Action]) -> List[Action]:
     )
 
     return ordered_actions
-
-
-def identify_action(update: Update) -> Callable:
-    """Identify the action to be performed based upon the update type and field."""
-    _LOGGER.info(
-        "Identifying action with the following config.",
-        extra={
-            "props": {
-                "update_field": update.field,
-                "update_type": update.type,
-                "update_csv_value": update.csv_value,
-                "update_db_value": update.db_value,
-            },
-        },
-    )
-
-    if (
-        update.field == UpdateFields.SOURCE_URL.value
-        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.value
-    ) or (
-        update.field == UpdateFields.DOCUMENT_STATUS.value
-        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.value
-        and update.csv_value == DocumentStatusTypes.DELETED.value
-    ):
-        return archive
-
-    elif (
-        update.field == UpdateFields.NAME.value
-        and update.type == UpdateTypes.FAMILY.value
-    ) or (
-        update.field == UpdateFields.DESCRIPTION.value
-        and update.type == UpdateTypes.FAMILY.value
-    ):
-        return update_dont_parse
-
-    elif (
-        update.field == UpdateFields.DOCUMENT_STATUS.value
-        and update.type == UpdateTypes.PHYSICAL_DOCUMENT.value
-        and update.csv_value == DocumentStatusTypes.PUBLISHED.value
-    ):
-        return publish
-
-    else:
-        raise NotImplementedError(
-            f"Update type {update.type} with field {update.field} is not implemented."
-        )
-
-
-def perform_archive(document_path: S3Path, archive_path: S3Path) -> Union[str, None]:
-    """Rename the document to the archive path."""
-    try:
-        if document_path.exists():
-            document_path.rename(archive_path)
-            _LOGGER.info(
-                "Document archived.",
-                extra={
-                    "props": {
-                        "document_path": str(document_path),
-                        "archive_path": str(archive_path),
-                    }
-                },
-            )
-        else:
-            # TODO do we want to raise an error here?
-            _LOGGER.info(
-                "Document does not exist.",
-                extra={
-                    "props": {
-                        "document_path": str(document_path),
-                    }
-                },
-            )
-    except Exception as e:
-        _LOGGER.exception(
-            "Archiving document failed.",
-            extra={
-                "props": {
-                    "document_path": str(document_path),
-                    "archive_path": str(archive_path),
-                    "error": e,
-                }
-            },
-        )
-        return str(e)
-    return None
 
 
 def archive(
@@ -259,6 +218,78 @@ def publish(
     document_id, document_update = update
     _LOGGER.info("Publishing document.", extra={"props": {"doc_id": document_id}})
     return None
+
+
+def update_dont_parse(
+    update: Tuple[str, Update],
+    update_config: UpdateConfig,
+) -> List[str]:
+    """
+    Update the json objects and remove the npy file in the s3 pipeline cache.
+
+    This is done so that the npy file of embeddings is recreated to reflect the change in the json object field and
+    incorporated into the corpus during the next pipeline run whilst not triggering re-parsing of the document.
+    """
+    document_id, document_update = update
+    _LOGGER.info(
+        "Updating document so as to not reparse.",
+        extra={
+            "props": {
+                "document_id": document_id,
+            }
+        },
+    )
+    errors = [
+        update_file_field(
+            document_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
+            ),
+            field=document_update.field,
+            new_value=document_update.csv_value,
+            existing_value=document_update.db_value,
+        )
+        for prefix in [
+            update_config.parser_input,
+            update_config.embeddings_input,
+            update_config.indexer_input,
+        ]
+    ]
+
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    errors.append(
+        perform_archive(
+            document_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.embeddings_input}/{document_id}.npy"
+            ),
+            archive_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.embeddings_input}/{document_id}/{timestamp}.npy"
+            ),
+        )
+    )
+    return errors
+
+
+def parse(
+    update: Tuple[str, Update],
+    update_config: UpdateConfig,
+) -> List[str]:
+    """
+    Update the relevant json objects in the s3 pipeline cache.
+
+    This is done so that the output json file in the parser output directory is not present such that it triggers
+    re-parsing.
+    """
+    document_id, document_update = update
+    _LOGGER.info(
+        "Updating document so as to parse during the next run.",
+        extra={
+            "props": {
+                "document_id": document_id,
+            }
+        },
+    )
+
+    return []
 
 
 def update_file_field(
@@ -326,50 +357,40 @@ def update_file_field(
         return "NotFoundError: Expected to update document but it doesn't exist."
 
 
-def update_dont_parse(
-    update: Tuple[str, Update],
-    update_config: UpdateConfig,
-) -> List[str]:
-    """
-    Update the json objects and remove the npy file in the s3 pipeline cache.
-
-    This is done so that the npy file of embeddings is recreated to reflect the change in the json object field and
-    incorporated into the corpus during the next pipeline run whilst not triggering re-parsing of the document.
-    """
-    document_id, document_update = update
-    _LOGGER.info(
-        "Updating document so as to not reparse.",
-        extra={
-            "props": {
-                "document_id": document_id,
-            }
-        },
-    )
-    errors = [
-        update_file_field(
-            document_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
-            ),
-            field=document_update.field,
-            new_value=document_update.csv_value,
-            existing_value=document_update.db_value,
+def perform_archive(document_path: S3Path, archive_path: S3Path) -> Union[str, None]:
+    """Rename the document to the archive path."""
+    try:
+        if document_path.exists():
+            document_path.rename(archive_path)
+            _LOGGER.info(
+                "Document archived.",
+                extra={
+                    "props": {
+                        "document_path": str(document_path),
+                        "archive_path": str(archive_path),
+                    }
+                },
+            )
+        else:
+            # TODO do we want to raise an error here?
+            _LOGGER.info(
+                "Document does not exist.",
+                extra={
+                    "props": {
+                        "document_path": str(document_path),
+                    }
+                },
+            )
+    except Exception as e:
+        _LOGGER.exception(
+            "Archiving document failed.",
+            extra={
+                "props": {
+                    "document_path": str(document_path),
+                    "archive_path": str(archive_path),
+                    "error": str(e),
+                }
+            },
         )
-        for prefix in [
-            update_config.parser_input,
-            update_config.embeddings_input,
-            update_config.indexer_input,
-        ]
-    ]
-
-    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    errors.append(
-        perform_archive(
-            document_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.embeddings_input}/{document_id}.npy"
-            ),
-            archive_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.embeddings_input}/{document_id}/{timestamp}.npy"
-            ),
-        )
-    )
-    return errors
+        return str(e)
+    return None
