@@ -11,11 +11,9 @@ from navigator_data_ingest.base.types import (
     UpdateConfig,
     Update,
     UpdateResult,
-    UpdateFields,
     DocumentStatusTypes,
     UpdateTypes,
     Action,
-    Document,
 )
 
 _LOGGER = logging.getLogger(__file__)
@@ -50,6 +48,7 @@ def handle_document_updates(
             # TODO find an identifier for the document
             _LOGGER.exception(
                 "Updating document generated an unexpected exception.",
+                extra={"props": {"document_id": str(update[0])}},
             )
         else:
             yield handle_result
@@ -183,41 +182,86 @@ def archive(
     )
 
     errors = [
-        perform_archive(
-            document_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
+        rename(
+            existing_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{suffix}"
             ),
-            archive_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.json"
+            rename_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{suffix}"
             ),
         )
+        for prefix, suffix in [
+            (update_config.parser_input, "json"),
+            (update_config.embeddings_input, "json"),
+            (update_config.indexer_input, "json"),
+            (update_config.indexer_input, "npy"),
+        ]
+    ]
+    return errors
+
+
+def get_latest_timestamp(
+    document_id: str, update_config: UpdateConfig
+) -> Union[datetime, None]:
+    """Get the latest time stamp for the archived instances of a document in the archive s3 directory."""
+    document_archived_files = [
+        S3Path(
+            f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/"
+        ).glob("*")
         for prefix in [
             update_config.parser_input,
             update_config.embeddings_input,
             update_config.indexer_input,
+            update_config.indexer_input,
         ]
     ]
-    errors.append(
-        perform_archive(
-            document_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.indexer_input}/{document_id}.npy"
-            ),
-            archive_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.indexer_input}/{document_id}/{timestamp}.npy"
-            ),
-        )
+
+    if document_archived_files == []:
+        return None
+
+    return max(
+        [
+            datetime.strptime(file.name.split(".")[0], "%Y-%m-%d-%H-%M-%S")
+            for files in document_archived_files
+            for file in files
+        ]
     )
-    return errors
 
 
 def publish(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
-) -> Union[str, None]:
+) -> List[str]:
     """Publish a deleted/archived document by copying all instances of the document to the live s3 directories."""
     document_id, document_update = update
     _LOGGER.info("Publishing document.", extra={"props": {"doc_id": document_id}})
-    return None
+    timestamp = get_latest_timestamp(document_id, update_config)
+
+    if timestamp is None:
+        _LOGGER.info(
+            "Document has no archived files to publish.",
+            extra={"props": {"doc_id": document_id}},
+        )
+        errors = []
+        return errors
+
+    errors = [
+        rename(
+            existing_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{suffix}"
+            ),
+            rename_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{suffix}"
+            ),
+        )
+        for prefix, suffix in [
+            (update_config.parser_input, "json"),
+            (update_config.embeddings_input, "json"),
+            (update_config.indexer_input, "json"),
+            (update_config.indexer_input, "npy"),
+        ]
+    ]
+    return errors
 
 
 def update_dont_parse(
@@ -244,7 +288,7 @@ def update_dont_parse(
             document_path=S3Path(
                 f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
             ),
-            field=document_update.field,
+            field=str(document_update.type.value),
             new_value=document_update.csv_value,
             existing_value=document_update.db_value,
         )
@@ -257,11 +301,11 @@ def update_dont_parse(
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     errors.append(
-        perform_archive(
-            document_path=S3Path(
+        rename(
+            existing_path=S3Path(
                 f"s3://{update_config.pipeline_bucket}/{update_config.embeddings_input}/{document_id}.npy"
             ),
-            archive_path=S3Path(
+            rename_path=S3Path(
                 f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.embeddings_input}/{document_id}/{timestamp}.npy"
             ),
         )
@@ -274,10 +318,9 @@ def parse(
     update_config: UpdateConfig,
 ) -> List[str]:
     """
-    Update the relevant json objects in the s3 pipeline cache.
+    Update the fields in the json objects to reflect the change made to the data.
 
-    This is done so that the output json file in the parser output directory is not present such that it triggers
-    re-parsing.
+    Then remove the desired files by moving them to an archive directory in s3 to re-trigger parsing of the document.
     """
     document_id, document_update = update
     _LOGGER.info(
@@ -289,7 +332,27 @@ def parse(
         },
     )
 
-    return []
+    errors = update_dont_parse(update, update_config)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    [
+        errors.append(
+            rename(
+                existing_path=S3Path(
+                    f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{suffix}"
+                ),
+                rename_path=S3Path(
+                    f"s3://{update_config.pipeline_bucket}/{update_config.archive_trigger_parser}/{prefix}/{document_id}/{timestamp}.{suffix}"
+                ),
+            )
+        )
+        for prefix, suffix in [
+            (update_config.embeddings_input, "json"),
+            (update_config.indexer_input, "json"),
+            (update_config.indexer_input, "npy"),
+        ]
+    ]
+    return errors
 
 
 def update_file_field(
@@ -357,37 +420,36 @@ def update_file_field(
         return "NotFoundError: Expected to update document but it doesn't exist."
 
 
-def perform_archive(document_path: S3Path, archive_path: S3Path) -> Union[str, None]:
-    """Rename the document to the archive path."""
+def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
+    """Rename the document to the new path."""
     try:
-        if document_path.exists():
-            document_path.rename(archive_path)
+        if existing_path.exists():
+            existing_path.rename(rename_path)
             _LOGGER.info(
-                "Document archived.",
+                "Document renamed.",
                 extra={
                     "props": {
-                        "document_path": str(document_path),
-                        "archive_path": str(archive_path),
+                        "document_path": str(existing_path),
+                        "archive_path": str(rename_path),
                     }
                 },
             )
         else:
-            # TODO do we want to raise an error here?
             _LOGGER.info(
                 "Document does not exist.",
                 extra={
                     "props": {
-                        "document_path": str(document_path),
+                        "document_path": str(existing_path),
                     }
                 },
             )
     except Exception as e:
         _LOGGER.exception(
-            "Archiving document failed.",
+            "Renaming document failed.",
             extra={
                 "props": {
-                    "document_path": str(document_path),
-                    "archive_path": str(archive_path),
+                    "document_path": str(existing_path),
+                    "archive_path": str(rename_path),
                     "error": str(e),
                 }
             },

@@ -12,7 +12,6 @@ from typing import (
     Union,
     List,
     Callable,
-    Literal,
 )
 
 from pydantic import AnyHttpUrl, BaseModel
@@ -222,6 +221,7 @@ class UpdateConfig:
     embeddings_input: str
     indexer_input: str
     archive_prefix: str
+    archive_trigger_parser: str
 
 
 class DocumentGenerator(ABC):
