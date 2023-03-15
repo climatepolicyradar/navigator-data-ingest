@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from cloudpathlib import S3Path
 
 from navigator_data_ingest.base.updated_document_actions import (
@@ -7,6 +9,7 @@ from navigator_data_ingest.base.updated_document_actions import (
     publish,
     order_actions,
     parse,
+    get_latest_timestamp,
 )
 from navigator_data_ingest.base.types import Update, Action
 
@@ -111,3 +114,29 @@ def test_archive_function(
         assert archive_file_pattern["json"].match(
             archived_file.name
         ) or archive_file_pattern["npy"].match(archived_file.name)
+
+
+def test_get_latest_timestamp(
+    test_s3_client, s3_bucket_and_region, test_update_config, s3_document_id
+):
+    archive_keys = [
+        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-12-12.json",
+        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2023-01-21-01-12-12.json",
+        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-23-01-12-12.json",
+        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-11-12.json",
+    ]
+
+    for key in archive_keys:
+        test_s3_client.client.put_object(
+            Bucket=s3_bucket_and_region["bucket"],
+            Key=key,
+            Body=bytes(1024),
+        )
+
+    latest_timestamp = get_latest_timestamp(
+        document_id=s3_document_id, update_config=test_update_config
+    )
+
+    assert latest_timestamp == datetime.strptime(
+        "2023-01-21-01-12-12", "%Y-%m-%d-%H-%M-%S"
+    )

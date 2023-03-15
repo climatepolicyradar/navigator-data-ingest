@@ -50,7 +50,7 @@ jobs:
 
       - name: Building s3 bucket and uploading integration_tests data
         run: |
-          python -m test.setup_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }} ${{ env.TEST_DATA_FILE_PATH }} ${{ env.TEST_DATA_UPLOAD_PATH }} ${{ env.INGEST_OUTPUT_PREFIX }}
+          python -m integration_tests.setup_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }} ${{ env.TEST_DATA_FILE_PATH }} ${{ env.TEST_DATA_UPLOAD_PATH }} ${{ env.INGEST_OUTPUT_PREFIX }}
 
       - name: Running the Ingest Stage
         run: |
@@ -70,4 +70,4 @@ jobs:
       - name: Destroying Infrastructure
         if: always()
         run: |
-          python -m test.clean_up_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
+          python -m integration_tests.clean_up_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
