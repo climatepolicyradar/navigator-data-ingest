@@ -219,13 +219,16 @@ def get_latest_timestamp(
     if document_archived_files == []:
         return None
 
-    return max(
-        [
-            datetime.strptime(file.name.split(".")[0], "%Y-%m-%d-%H-%M-%S")
-            for files in document_archived_files
-            for file in files
-        ]
-    )
+    archive_timestamps = [
+        datetime.strptime(file.name.split(".")[0], "%Y-%m-%d-%H-%M-%S")
+        for files in document_archived_files
+        for file in files
+    ]
+
+    if archive_timestamps == []:
+        return None
+
+    return max(archive_timestamps)
 
 
 def publish(

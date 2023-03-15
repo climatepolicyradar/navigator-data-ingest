@@ -116,23 +116,19 @@ def test_archive_function(
         ) or archive_file_pattern["npy"].match(archived_file.name)
 
 
-def test_get_latest_timestamp(
+def test_get_latest_timestamp_empty_archive(
     test_s3_client, s3_bucket_and_region, test_update_config, s3_document_id
 ):
-    archive_keys = [
-        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-12-12.json",
-        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2023-01-21-01-12-12.json",
-        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-23-01-12-12.json",
-        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-11-12.json",
-    ]
+    latest_timestamp = get_latest_timestamp(
+        document_id=s3_document_id, update_config=test_update_config
+    )
 
-    for key in archive_keys:
-        test_s3_client.client.put_object(
-            Bucket=s3_bucket_and_region["bucket"],
-            Key=key,
-            Body=bytes(1024),
-        )
+    assert latest_timestamp is None
 
+
+def test_get_latest_timestamp_filled_archive(
+    test_filled_archive, s3_bucket_and_region, test_update_config, s3_document_id
+):
     latest_timestamp = get_latest_timestamp(
         document_id=s3_document_id, update_config=test_update_config
     )
@@ -140,3 +136,36 @@ def test_get_latest_timestamp(
     assert latest_timestamp == datetime.strptime(
         "2023-01-21-01-12-12", "%Y-%m-%d-%H-%M-%S"
     )
+
+
+def test_publish(test_filled_archive, s3_document_id, test_update_config):
+    errors = [
+        error
+        for error in publish(
+            update=(
+                s3_document_id,
+                Update(
+                    type="document_status",
+                    csv_value="PUBLISHED",
+                    db_value="DELETED",
+                ),
+            ),
+            update_config=test_update_config,
+        )
+        if not "None"
+    ]
+
+    assert errors == []
+
+    archived_files = list(
+        S3Path(
+            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.archive_prefix}/"
+        ).glob("*/*/*")
+    )
+    published_files = list(
+        S3Path(
+            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
+        ).glob("*")
+    )
+    assert len(archived_files) == 3
+    assert len(published_files) == 1

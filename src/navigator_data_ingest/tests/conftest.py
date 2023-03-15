@@ -83,6 +83,25 @@ def test_s3_client(s3_bucket_and_region, s3_document_keys) -> S3Client:
 
 
 @pytest.fixture
+def test_filled_archive(test_s3_client, test_update_config):
+    archive_keys = [
+        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-12-12.json",
+        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2023-01-21-01-12-12.json",
+        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-23-01-12-12.json",
+        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-11-12.json",
+    ]
+
+    for key in archive_keys:
+        test_s3_client.client.put_object(
+            Bucket=s3_bucket_and_region["bucket"],
+            Key=key,
+            Body=bytes(1024),
+        )
+
+    return test_s3_client
+
+
+@pytest.fixture
 def archive_file_pattern() -> dict:
     return {
         "json": re.compile(r"^[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+.json"),
