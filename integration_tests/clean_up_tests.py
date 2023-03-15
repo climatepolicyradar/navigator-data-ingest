@@ -2,13 +2,13 @@ import sys
 
 import boto3
 
-from test.s3_utils import remove_bucket, remove_objects
+from integration_tests.s3_utils import remove_bucket, remove_objects
 
 
 def tear_down_test_data(
     document_bucket_name: str, pipeline_bucket_name: str, region: str
 ) -> None:
-    """Remove the AWS infrastructure used in the unit test."""
+    """Remove the AWS infrastructure used in the unit integration_tests."""
     s3_conn = boto3.resource("s3", region_name=region)
 
     remove_objects(s3=s3_conn, bucket_name=document_bucket_name)

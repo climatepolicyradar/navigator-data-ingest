@@ -26,13 +26,13 @@ class S3Client:
 
 @pytest.fixture
 def s3_document_id() -> str:
-    return "CCLW.executive.1000.1000.json"
+    return "CCLW.executive.1000.1000"
 
 
 @pytest.fixture
 def test_update_config(s3_bucket_and_region) -> UpdateConfig:
     return UpdateConfig(
-        pipeline_bucket=s3_bucket_and_region["name"],
+        pipeline_bucket=s3_bucket_and_region["bucket"],
         input_prefix="input",
         parser_input="parser_input",
         embeddings_input="embeddings_input",
@@ -54,7 +54,10 @@ def s3_document_keys(s3_document_id, test_update_config) -> list:
 
 @pytest.fixture
 def s3_bucket_and_region() -> dict:
-    return {"bucket": "cpr-data-pipeline-cache-ingest-test", "region": "eu-west-1"}
+    return {
+        "bucket": "cpr-data-pipeline-cache-ingest-integration_tests",
+        "region": "eu-west-1",
+    }
 
 
 @pytest.fixture

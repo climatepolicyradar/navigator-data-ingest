@@ -1,4 +1,4 @@
-name: test
+name: integration_tests
 
 on:
   push:
@@ -9,14 +9,14 @@ on:
       - main
 
 env:
-  INGEST_DOCUMENT_BUCKET: ingest-unit-test-document-bucket
-  INGEST_PIPELINE_BUCKET: ingest-unit-test-pipeline-bucket
-  TEST_DATA_FILE_PATH: ./test/data/docs_test_subset.json
+  INGEST_DOCUMENT_BUCKET: ingest-unit-integration_tests-document-bucket
+  INGEST_PIPELINE_BUCKET: ingest-unit-integration_tests-pipeline-bucket
+  TEST_DATA_FILE_PATH: ./integration_tests/data/docs_test_subset.json
   TEST_DATA_UPLOAD_PATH: input/docs_test_subset.json
   INGEST_OUTPUT_PREFIX: ingest_unit_test_parser_input
   DOCUMENT_NAME_KEY: document_id
-  PARSER_INPUT_EXPECTED_DATA_FILE_PATH: test/data/docs_test_subset_parser_input_expected.json
-  ARCHIVE_EXPECTED_DATA_FILE_PATH: test/data/docs_test_subset_archive_parser_input_expected.json
+  PARSER_INPUT_EXPECTED_DATA_FILE_PATH: integration_tests/data/docs_test_subset_parser_input_expected.json
+  ARCHIVE_EXPECTED_DATA_FILE_PATH: integration_tests/data/docs_test_subset_archive_parser_input_expected.json
 
 jobs:
   test:
@@ -48,7 +48,7 @@ jobs:
         run: | 
           make test
 
-      - name: Building s3 bucket and uploading test data
+      - name: Building s3 bucket and uploading integration_tests data
         run: |
           python -m test.setup_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }} ${{ env.TEST_DATA_FILE_PATH }} ${{ env.TEST_DATA_UPLOAD_PATH }} ${{ env.INGEST_OUTPUT_PREFIX }}
 

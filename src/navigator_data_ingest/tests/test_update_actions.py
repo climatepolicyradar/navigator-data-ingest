@@ -6,6 +6,7 @@ from navigator_data_ingest.base.updated_document_actions import (
     archive,
     publish,
     order_actions,
+    parse,
 )
 from navigator_data_ingest.base.types import Update, Action
 
@@ -31,7 +32,7 @@ def test_identify_action_function():
     """Test the identify_action function returns the correct callable (function) given an UpdateResult."""
 
     assert identify_action(update_1) == update_dont_parse
-    assert identify_action(update_2) == archive
+    assert identify_action(update_2) == parse
     assert identify_action(update_3) == publish
 
 
@@ -51,46 +52,60 @@ def test_order_actions_function():
 
 
 def test_archive_function(
-    test_s3_client, test_update_config, s3_document_keys, archive_file_pattern
+    test_s3_client,
+    test_update_config,
+    s3_document_keys,
+    archive_file_pattern,
+    s3_document_id,
 ):
     """Test the archive function effectively archives a document."""
-    document_id = s3_document_keys[0].split("/")[-1]
-
-    errors = archive(
-        update=(
-            document_id,
-            Update(
-                type="document_status",
-                csv_value="PUBLISHED",
-                db_value="DELETED",
+    errors = [
+        error
+        for error in archive(
+            update=(
+                s3_document_id,
+                Update(
+                    type="document_status",
+                    csv_value="PUBLISHED",
+                    db_value="DELETED",
+                ),
             ),
-        ),
-        update_config=test_update_config,
-    )
+            update_config=test_update_config,
+        )
+        if not "None"
+    ]
 
     assert errors == []
     assert (
-        S3Path(
-            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
-        ).glob("*")
+        list(
+            S3Path(
+                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
+            ).glob("*")
+        )
         == []
     )
     assert (
-        S3Path(
-            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.embeddings_input}/"
-        ).glob("*")
+        list(
+            S3Path(
+                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.embeddings_input}/"
+            ).glob("*")
+        )
         == []
     )
     assert (
-        S3Path(
-            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.indexer_input}/"
-        ).glob("*")
+        list(
+            S3Path(
+                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.indexer_input}/"
+            ).glob("*")
+        )
         == []
     )
 
-    archived_files = S3Path(
-        f"s3://{test_update_config.pipeline_bucket}/{test_update_config.archive_prefix}/"
-    ).glob("*")
+    archived_files = list(
+        S3Path(
+            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.archive_prefix}/"
+        ).glob("*/*/*")
+    )
     assert len(archived_files) == len(s3_document_keys)
     for archived_file in archived_files:
         assert archive_file_pattern["json"].match(

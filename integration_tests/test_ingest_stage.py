@@ -2,7 +2,10 @@ from cloudpathlib import S3Path
 import os
 import re
 
-from test.s3_utils import create_dictionary_from_s3_bucket, read_local_s3_json_file
+from integration_tests.s3_utils import (
+    create_dictionary_from_s3_bucket,
+    read_local_s3_json_file,
+)
 
 ARCHIVE_FILE_PATTERN = re.compile(
     r"^[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+.json"
