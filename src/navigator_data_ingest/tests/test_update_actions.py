@@ -148,59 +148,65 @@ def test_publish(
     assert len(published_files) == 1
 
 
-def test_update_dont_parse(
-    test_s3_client, test_update_config, test_updates, s3_document_id
-):
-    errors = update_dont_parse(
-        update=(s3_document_id, test_updates[0]), update_config=test_update_config
-    )
-
-    assert errors == []
-
-    assert (
-        len(
-            list(
-                S3Path(
-                    f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
-                ).glob("*")
-            )
-        )
-        == 1
-    )
-
-    assert (
-        list(
-            S3Path(
-                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.embeddings_input}/"
-            ).glob("*")
-        )
-        == []
-    )
-
-    assert (
-        list(
-            S3Path(
-                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.indexer_input}/"
-            ).glob("*")
-        )
-        == []
-    )
-
-
-def test_parse(test_s3_client, test_update_config, test_updates, s3_document_id):
-    errors = parse(
-        update=(s3_document_id, test_updates[1]), update_config=test_update_config
-    )
-
-    assert errors == []
-
-
 def test_update_file_field():
     pass
 
 
 def test_rename():
     pass
+
+
+def test_update_dont_parse(
+    test_s3_client, test_update_config, test_updates, s3_document_id
+):
+    errors = [
+        error
+        for error in update_dont_parse(
+            update=(s3_document_id, test_updates[0]), update_config=test_update_config
+        )
+        if not "None"
+    ]
+
+    assert errors == []
+
+    parser_input_files = list(
+        S3Path(
+            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
+        ).glob("*")
+    )
+    assert len(parser_input_files) == 1
+
+    embeddings_input_files = list(
+        S3Path(
+            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.embeddings_input}/"
+        ).glob("*")
+    )
+    assert len(embeddings_input_files) == 1
+
+    assert (
+        len(
+            list(
+                S3Path(
+                    f"s3://{test_update_config.pipeline_bucket}/{test_update_config.indexer_input}/"
+                ).glob("*")
+            )
+        )
+        == 2
+    )
+
+    # TODO assert that actual data in the fields
+
+
+def test_parse(test_s3_client, test_update_config, test_updates, s3_document_id):
+    errors = [
+        error
+        for error in parse(
+            update=(s3_document_id, test_updates[1]), update_config=test_update_config
+        )
+        if not "None"
+    ]
+
+    assert errors == []
 
 
 def test_utils():

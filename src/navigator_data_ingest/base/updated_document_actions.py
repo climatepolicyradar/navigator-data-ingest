@@ -14,6 +14,7 @@ from navigator_data_ingest.base.types import (
     DocumentStatusTypes,
     UpdateTypes,
     Action,
+    PipelineFieldMapping,
 )
 
 _LOGGER = logging.getLogger(__file__)
@@ -368,20 +369,23 @@ def update_file_field(
 ) -> Union[str, None]:
     """Update the value of a field in a json object within s3 with the new value."""
     if document_path.exists():
+        pipeline_field = PipelineFieldMapping[field]
         _LOGGER.info(
             "Updating document field.",
             extra={
                 "props": {
                     "document_path": str(document_path),
                     "field": field,
+                    "pipeline_field": pipeline_field,
                     "value": new_value,
                     "existing_value": existing_value,
                 }
             },
         )
         document = json.loads(document_path.read_text())
+
         try:
-            assert document[field] == existing_value
+            assert document[pipeline_field] == existing_value
         except AssertionError:
             _LOGGER.error(
                 "Field value mismatch - expected value not found in s3 object.",
@@ -389,6 +393,7 @@ def update_file_field(
                     "props": {
                         "document_path": str(document_path),
                         "field": field,
+                        "pipeline_field": pipeline_field,
                         "value": new_value,
                         "existing_value": existing_value,
                         "document": document,
@@ -403,6 +408,7 @@ def update_file_field(
                     "props": {
                         "document_path": str(document_path),
                         "field": field,
+                        "pipeline_field": pipeline_field,
                         "value": new_value,
                         "existing_value": existing_value,
                         "document": document,
@@ -410,7 +416,7 @@ def update_file_field(
                 },
             )
             return traceback.format_exc()
-        document[field] = new_value
+        document[pipeline_field] = new_value
         document_path.write_text(json.dumps(document))
         return None
     else:

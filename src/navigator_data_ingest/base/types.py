@@ -118,23 +118,29 @@ class UpdateTypes(str, Enum):
 
     NAME = "name"
     DESCRIPTION = "description"
-    IMPORT_ID = "import_id"
-    SLUG = "slug"
-    PUBLICATION_TS = "publication_ts"
+    # IMPORT_ID = "import_id"
+    # SLUG = "slug"
+    # PUBLICATION_TS = "publication_ts"
     SOURCE_URL = "source_url"
-    TYPE = "type"
-    SOURCE = "source"
-    CATEGORY = "category"
-    GEOGRAPHY = "geography"
-    FRAMEWORKS = "frameworks"
-    INSTRUMENTS = "instruments"
-    HAZARDS = "hazards"
-    KEYWORDS = "keywords"
-    LANGUAGES = "languages"
-    SECTORS = "sectors"
-    TOPICS = "topics"
-    EVENTS = "events"
+    # TYPE = "type"
+    # SOURCE = "source"
+    # CATEGORY = "category"
+    # GEOGRAPHY = "geography"
+    # FRAMEWORKS = "frameworks"
+    # INSTRUMENTS = "instruments"
+    # HAZARDS = "hazards"
+    # KEYWORDS = "keywords"
+    # LANGUAGES = "languages"
+    # SECTORS = "sectors"
+    # TOPICS = "topics"
+    # EVENTS = "events"
     DOCUMENT_STATUS = "document_status"
+
+
+PipelineFieldMapping = {
+    UpdateTypes.NAME: "document_name",
+    UpdateTypes.SOURCE_URL: "document_source_url",
+}
 
 
 class DocumentParserInput(BaseModel):
