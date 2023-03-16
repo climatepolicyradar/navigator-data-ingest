@@ -5,7 +5,7 @@ import botocore.client
 import pytest
 from moto import mock_s3
 
-from navigator_data_ingest.base.types import UpdateConfig
+from navigator_data_ingest.base.types import UpdateConfig, Update, UpdateTypes
 
 
 class S3Client:
@@ -61,7 +61,7 @@ def s3_bucket_and_region() -> dict:
 
 
 @pytest.fixture
-def test_s3_client(s3_bucket_and_region, s3_document_keys) -> S3Client:
+def test_s3_client(s3_bucket_and_region, s3_document_keys):
     with mock_s3():
         s3_client = S3Client(s3_bucket_and_region["region"])
 
@@ -83,22 +83,34 @@ def test_s3_client(s3_bucket_and_region, s3_document_keys) -> S3Client:
 
 
 @pytest.fixture
-def test_filled_archive(test_s3_client, test_update_config):
-    archive_keys = [
-        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-12-12.json",
-        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2023-01-21-01-12-12.json",
-        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-23-01-12-12.json",
-        f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-11-12.json",
-    ]
+def test_s3_client_filled_archive(
+    test_update_config, s3_bucket_and_region, s3_document_id
+):
+    with mock_s3():
+        s3_client = S3Client(s3_bucket_and_region["region"])
 
-    for key in archive_keys:
-        test_s3_client.client.put_object(
+        s3_client.client.create_bucket(
             Bucket=s3_bucket_and_region["bucket"],
-            Key=key,
-            Body=bytes(1024),
+            CreateBucketConfiguration={
+                "LocationConstraint": s3_bucket_and_region["region"]
+            },
         )
 
-    return test_s3_client
+        archive_keys = [
+            f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-12-12.json",
+            f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2023-01-21-01-12-12.json",
+            f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-23-01-12-12.json",
+            f"{test_update_config.archive_prefix}/{test_update_config.parser_input}/{s3_document_id}/2022-01-21-01-11-12.json",
+        ]
+
+        for key in archive_keys:
+            s3_client.client.put_object(
+                Bucket=s3_bucket_and_region["bucket"],
+                Key=key,
+                Body=bytes(1024),
+            )
+
+        yield s3_client
 
 
 @pytest.fixture
@@ -107,3 +119,27 @@ def archive_file_pattern() -> dict:
         "json": re.compile(r"^[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+.json"),
         "npy": re.compile(r"^[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+\-[0-9]+.npy"),
     }
+
+
+@pytest.fixture
+def test_updates(s3_document_id):
+    updates = {
+        s3_document_id: [
+            {"type": "name", "csv_value": "new name", "db_value": "old name"},
+            {"type": "source_url", "csv_value": "new url", "db_value": "old url"},
+            {
+                "type": "document_status",
+                "csv_value": "PUBLISHED",
+                "db_value": "DELETED",
+            },
+        ]
+    }
+
+    return [
+        Update(
+            type=UpdateTypes(update["type"]),
+            csv_value=update["csv_value"],
+            db_value=update["db_value"],
+        )
+        for update in updates[s3_document_id]
+    ]

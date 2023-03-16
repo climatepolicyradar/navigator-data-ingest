@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from cloudpathlib import S3Path
 
+from navigator_data_ingest.base.types import Action
 from navigator_data_ingest.base.updated_document_actions import (
     identify_action,
     update_dont_parse,
@@ -11,46 +10,28 @@ from navigator_data_ingest.base.updated_document_actions import (
     parse,
     get_latest_timestamp,
 )
-from navigator_data_ingest.base.types import Update, Action
-
-# TODO make a fixture for this
-update_1 = Update(
-    type="name",
-    csv_value="new name",
-    db_value="old name",
-)
-update_2 = Update(
-    type="source_url",
-    csv_value="new url",
-    db_value="old url",
-)
-update_3 = Update(
-    type="document_status",
-    csv_value="PUBLISHED",
-    db_value="DELETED",
-)
 
 
-def test_identify_action_function():
+def test_identify_action_function(test_updates):
     """Test the identify_action function returns the correct callable (function) given an UpdateResult."""
 
-    assert identify_action(update_1) == update_dont_parse
-    assert identify_action(update_2) == parse
-    assert identify_action(update_3) == publish
+    assert identify_action(test_updates[0]) == update_dont_parse
+    assert identify_action(test_updates[1]) == parse
+    assert identify_action(test_updates[2]) == publish
 
 
-def test_order_actions_function():
+def test_order_actions_function(test_updates):
     """Test the order_actions function returns the correct order of actions given a list of actions."""
     actions = [
-        Action(action=archive, update=update_1),
-        Action(action=publish, update=update_1),
-        Action(action=update_dont_parse, update=update_1),
+        Action(action=archive, update=test_updates[0]),
+        Action(action=publish, update=test_updates[0]),
+        Action(action=update_dont_parse, update=test_updates[0]),
     ]
 
     assert order_actions(actions) == [
-        Action(action=publish, update=update_1),
-        Action(action=update_dont_parse, update=update_1),
-        Action(action=archive, update=update_1),
+        Action(action=publish, update=test_updates[0]),
+        Action(action=update_dont_parse, update=test_updates[0]),
+        Action(action=archive, update=test_updates[0]),
     ]
 
 
@@ -60,6 +41,7 @@ def test_archive_function(
     s3_document_keys,
     archive_file_pattern,
     s3_document_id,
+    test_updates,
 ):
     """Test the archive function effectively archives a document."""
     errors = [
@@ -67,11 +49,7 @@ def test_archive_function(
         for error in archive(
             update=(
                 s3_document_id,
-                Update(
-                    type="document_status",
-                    csv_value="PUBLISHED",
-                    db_value="DELETED",
-                ),
+                test_updates[2],
             ),
             update_config=test_update_config,
         )
@@ -127,28 +105,27 @@ def test_get_latest_timestamp_empty_archive(
 
 
 def test_get_latest_timestamp_filled_archive(
-    test_filled_archive, s3_bucket_and_region, test_update_config, s3_document_id
+    test_s3_client_filled_archive,
+    s3_bucket_and_region,
+    test_update_config,
+    s3_document_id,
 ):
     latest_timestamp = get_latest_timestamp(
         document_id=s3_document_id, update_config=test_update_config
     )
 
-    assert latest_timestamp == datetime.strptime(
-        "2023-01-21-01-12-12", "%Y-%m-%d-%H-%M-%S"
-    )
+    assert latest_timestamp == "2023-01-21-01-12-12"
 
 
-def test_publish(test_filled_archive, s3_document_id, test_update_config):
+def test_publish(
+    test_s3_client_filled_archive, s3_document_id, test_update_config, test_updates
+):
     errors = [
         error
         for error in publish(
             update=(
                 s3_document_id,
-                Update(
-                    type="document_status",
-                    csv_value="PUBLISHED",
-                    db_value="DELETED",
-                ),
+                test_updates[2],
             ),
             update_config=test_update_config,
         )

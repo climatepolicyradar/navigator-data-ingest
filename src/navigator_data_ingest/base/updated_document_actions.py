@@ -167,7 +167,7 @@ def order_actions(actions: List[Action]) -> List[Action]:
 def archive(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
-) -> List[str]:
+) -> List[Union[str, None]]:
     """Archive the document by copying all instances of the document to the archive s3 directory with timestamp."""
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     document_id, document_update = update
@@ -202,9 +202,9 @@ def archive(
 
 def get_latest_timestamp(
     document_id: str, update_config: UpdateConfig
-) -> Union[datetime, None]:
+) -> Union[str, None]:
     """Get the latest time stamp for the archived instances of a document in the archive s3 directory."""
-    document_archived_files = [
+    s3_prefix_file_generators = [
         S3Path(
             f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/"
         ).glob("*")
@@ -216,25 +216,26 @@ def get_latest_timestamp(
         ]
     ]
 
-    if document_archived_files == []:
-        return None
+    document_archived_files = []
+    for gen in s3_prefix_file_generators:
+        document_archived_files.extend(list(gen))
 
     archive_timestamps = [
-        datetime.strptime(file.name.split(".")[0], "%Y-%m-%d-%H-%M-%S")
-        for files in document_archived_files
-        for file in files
+        datetime.strptime(file.stem, "%Y-%m-%d-%H-%M-%S")
+        for file in document_archived_files
     ]
 
-    if archive_timestamps == []:
-        return None
-
-    return max(archive_timestamps)
+    return (
+        None
+        if archive_timestamps == []
+        else max(archive_timestamps).strftime("%Y-%m-%d-%H-%M-%S")
+    )
 
 
 def publish(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
-) -> List[str]:
+) -> List[Union[str, None]]:
     """Publish a deleted/archived document by copying all instances of the document to the live s3 directories."""
     document_id, document_update = update
     _LOGGER.info("Publishing document.", extra={"props": {"doc_id": document_id}})
@@ -270,7 +271,7 @@ def publish(
 def update_dont_parse(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
-) -> List[str]:
+) -> List[Union[str, None]]:
     """
     Update the json objects and remove the npy file in the s3 pipeline cache.
 
@@ -319,7 +320,7 @@ def update_dont_parse(
 def parse(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
-) -> List[str]:
+) -> List[Union[str, None]]:
     """
     Update the fields in the json objects to reflect the change made to the data.
 
@@ -335,7 +336,8 @@ def parse(
         },
     )
 
-    errors = update_dont_parse(update, update_config)
+    update_dont_parse_errors = update_dont_parse(update, update_config)
+    errors = [] if update_dont_parse_errors is None else update_dont_parse_errors
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     [

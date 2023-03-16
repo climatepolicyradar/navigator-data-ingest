@@ -10,4 +10,4 @@ build_test:
 	docker build -t navigator-data-ingest-test .
 
 test:
-	docker run --entrypoint pytest navigator-data-ingest-test ./src -vvv
+	docker run --entrypoint pytest navigator-data-ingest-test ./src -vvv --log-cli-level=INFO
