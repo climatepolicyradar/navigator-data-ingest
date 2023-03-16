@@ -9,8 +9,8 @@ on:
       - main
 
 env:
-  INGEST_DOCUMENT_BUCKET: ingest-unit-integration_tests-document-bucket
-  INGEST_PIPELINE_BUCKET: ingest-unit-integration_tests-pipeline-bucket
+  INGEST_DOCUMENT_BUCKET: ingest-tests-document-bucket
+  INGEST_PIPELINE_BUCKET: ingest-tests-pipeline-bucket
   TEST_DATA_FILE_PATH: ./integration_tests/data/docs_test_subset.json
   TEST_DATA_UPLOAD_PATH: input/docs_test_subset.json
   INGEST_OUTPUT_PREFIX: ingest_unit_test_parser_input
