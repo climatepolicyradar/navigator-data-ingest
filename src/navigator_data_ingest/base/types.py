@@ -110,6 +110,7 @@ class Document(BaseModel):
         json_dict = self.dict()
         json_dict["publication_ts"] = self.publication_ts.isoformat()
         json_dict["events"] = [event.to_json() for event in self.events]
+        del json_dict["document_status"]
         return json_dict
 
 
