@@ -146,3 +146,62 @@ def test_publish(
     )
     assert len(archived_files) == 3
     assert len(published_files) == 1
+
+
+def test_update_dont_parse(
+    test_s3_client, test_update_config, test_updates, s3_document_id
+):
+    errors = update_dont_parse(
+        update=(s3_document_id, test_updates[0]), update_config=test_update_config
+    )
+
+    assert errors == []
+
+    assert (
+        len(
+            list(
+                S3Path(
+                    f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
+                ).glob("*")
+            )
+        )
+        == 1
+    )
+
+    assert (
+        list(
+            S3Path(
+                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.embeddings_input}/"
+            ).glob("*")
+        )
+        == []
+    )
+
+    assert (
+        list(
+            S3Path(
+                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.indexer_input}/"
+            ).glob("*")
+        )
+        == []
+    )
+
+
+def test_parse(test_s3_client, test_update_config, test_updates, s3_document_id):
+    errors = parse(
+        update=(s3_document_id, test_updates[1]), update_config=test_update_config
+    )
+
+    assert errors == []
+
+
+def test_update_file_field():
+    pass
+
+
+def test_rename():
+    pass
+
+
+def test_utils():
+    pass
