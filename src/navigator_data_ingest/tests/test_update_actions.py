@@ -163,7 +163,7 @@ def test_update_file_field(
 
     error = update_file_field(
         document_path=parser_input_document_path,
-        field="document_name",
+        field="name",
         new_value="new document name",
         existing_value=parser_input_json["document_name"],
     )
@@ -189,7 +189,7 @@ def test_rename(
     error = rename(existing_path=existing_path, rename_path=rename_path)
 
     assert error is None
-    assert not s3_document_keys[0].exists()
+    assert not existing_path.exists()
     assert rename_path.exists()
 
 
