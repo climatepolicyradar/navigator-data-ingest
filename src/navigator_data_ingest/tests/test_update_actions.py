@@ -178,11 +178,15 @@ def test_rename(
     test_s3_client, test_update_config, s3_bucket_and_region, s3_document_keys
 ):
     """Test the rename function effectively renames an s3 object."""
+    existing_path = S3Path(
+        f"s3://{test_update_config.pipeline_bucket}/{s3_document_keys[0].key}"
+    )
+
     rename_path = S3Path(
         f"s3://{test_update_config.pipeline_bucket}/test-prefix/test-document-id.json"
     )
 
-    error = rename(existing_path=s3_document_keys[0], rename_path=rename_path)
+    error = rename(existing_path=existing_path, rename_path=rename_path)
 
     assert error is None
     assert not s3_document_keys[0].exists()
@@ -226,7 +230,7 @@ def test_update_dont_parse(
         parser_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
         ]
-        == update_to_document_name.value
+        == update_to_document_name.csv_value
     )
 
     embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
@@ -234,7 +238,7 @@ def test_update_dont_parse(
         embeddings_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
         ]
-        == update_to_document_name.value
+        == update_to_document_name.csv_value
     )
 
     indexer_input_doc_json_data = json.loads(indexer_input_doc_json.read_text())
@@ -242,7 +246,7 @@ def test_update_dont_parse(
         indexer_input_doc_json_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
         ]
-        == update_to_document_name.value
+        == update_to_document_name.csv_value
     )
 
 
@@ -283,5 +287,5 @@ def test_parse(
         parser_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_source_url.type)]
         ]
-        == update_to_source_url.value
+        == update_to_source_url.csv_value
     )
