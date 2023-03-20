@@ -67,7 +67,10 @@ def test_archive_function(
         embeddings_input_doc,
         indexer_input_doc_json,
         indexer_input_doc_npy,
-    ) = s3_document_keys
+    ) = [
+        S3Path(f"s3://{test_update_config.pipeline_bucket}/{s3_key}")
+        for s3_key in s3_document_keys
+    ]
 
     assert not parser_input_doc.exists()
     assert not embeddings_input_doc.exists()
@@ -208,7 +211,10 @@ def test_update_dont_parse(
         embeddings_input_doc,
         indexer_input_doc_json,
         indexer_input_doc_npy,
-    ) = s3_document_keys
+    ) = [
+        S3Path(f"s3://{test_update_config.pipeline_bucket}/{s3_key}")
+        for s3_key in s3_document_keys
+    ]
 
     assert parser_input_doc.exists()
     assert embeddings_input_doc.exists()
@@ -262,7 +268,10 @@ def test_parse(
         embeddings_input_doc,
         indexer_input_doc_json,
         indexer_input_doc_npy,
-    ) = s3_document_keys
+    ) = [
+        S3Path(f"s3://{test_update_config.pipeline_bucket}/{s3_key}")
+        for s3_key in s3_document_keys
+    ]
 
     assert parser_input_doc.exists()
     assert not embeddings_input_doc.exists()
