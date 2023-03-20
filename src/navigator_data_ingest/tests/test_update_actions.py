@@ -179,7 +179,7 @@ def test_rename(
 ):
     """Test the rename function effectively renames an s3 object."""
     existing_path = S3Path(
-        f"s3://{test_update_config.pipeline_bucket}/{s3_document_keys[0].key}"
+        f"s3://{test_update_config.pipeline_bucket}/{s3_document_keys[0]}"
     )
 
     rename_path = S3Path(

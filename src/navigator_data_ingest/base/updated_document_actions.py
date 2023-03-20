@@ -369,7 +369,7 @@ def update_file_field(
 ) -> Union[str, None]:
     """Update the value of a field in a json object within s3 with the new value."""
     if document_path.exists():
-        pipeline_field = PipelineFieldMapping[field]
+        pipeline_field = PipelineFieldMapping[UpdateTypes(field)]
         _LOGGER.info(
             "Updating document field.",
             extra={
