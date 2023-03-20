@@ -1,6 +1,7 @@
 from cloudpathlib import S3Path
+import json
 
-from navigator_data_ingest.base.types import Action
+from navigator_data_ingest.base.types import Action, PipelineFieldMapping, UpdateTypes
 from navigator_data_ingest.base.updated_document_actions import (
     identify_action,
     update_dont_parse,
@@ -9,6 +10,8 @@ from navigator_data_ingest.base.updated_document_actions import (
     order_actions,
     parse,
     get_latest_timestamp,
+    update_file_field,
+    rename,
 )
 
 
@@ -148,66 +151,129 @@ def test_publish(
     assert len(published_files) == 1
 
 
-def test_update_file_field():
-    pass
+def test_update_file_field(
+    test_s3_client,
+    s3_bucket_and_region,
+    test_update_config,
+    s3_document_id,
+    parser_input_json,
+):
+    parser_input_document_path = S3Path(
+        f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/{s3_document_id}.json"
+    )
+
+    error = update_file_field(
+        document_path=parser_input_document_path,
+        field="document_name",
+        new_value="new document name",
+        existing_value=parser_input_json["document_name"],
+    )
+
+    document_post_update = json.loads(parser_input_document_path.read_text())
+
+    assert error is None
+    assert document_post_update["document_name"] == "new document name"
 
 
-def test_rename():
-    pass
+def test_rename(
+    test_s3_client, test_update_config, s3_bucket_and_region, s3_document_keys
+):
+    rename_path = S3Path(
+        f"s3://{test_update_config.pipeline_bucket}/test-prefix/test-document-id.json"
+    )
+
+    error = rename(existing_path=s3_document_keys[0], rename_path=rename_path)
+
+    assert error is None
+    assert not s3_document_keys[0].exists()
+    assert rename_path.exists()
 
 
 def test_update_dont_parse(
-    test_s3_client, test_update_config, test_updates, s3_document_id
+    test_s3_client, test_update_config, test_updates, s3_document_id, s3_document_keys
 ):
+    update_to_document_name = test_updates[0]
+
     errors = [
         error
         for error in update_dont_parse(
-            update=(s3_document_id, test_updates[0]), update_config=test_update_config
+            update=(s3_document_id, update_to_document_name),
+            update_config=test_update_config,
         )
         if not "None"
     ]
 
     assert errors == []
 
-    parser_input_files = list(
-        S3Path(
-            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
-        ).glob("*")
-    )
-    assert len(parser_input_files) == 1
+    (
+        parser_input_doc,
+        embeddings_input_doc,
+        indexer_input_doc_json,
+        indexer_input_doc_npy,
+    ) = s3_document_keys
 
-    embeddings_input_files = list(
-        S3Path(
-            f"s3://{test_update_config.pipeline_bucket}/{test_update_config.embeddings_input}/"
-        ).glob("*")
-    )
-    assert len(embeddings_input_files) == 1
+    assert parser_input_doc.exists()
+    assert embeddings_input_doc.exists()
+    assert indexer_input_doc_json.exists()
+    assert not indexer_input_doc_npy.exists()
 
+    parser_input_doc_data = json.loads(parser_input_doc.read_text())
     assert (
-        len(
-            list(
-                S3Path(
-                    f"s3://{test_update_config.pipeline_bucket}/{test_update_config.indexer_input}/"
-                ).glob("*")
-            )
-        )
-        == 2
+        parser_input_doc_data[
+            PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
+        ]
+        == update_to_document_name.value
     )
 
-    # TODO assert that actual data in the fields
+    embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
+    assert (
+        embeddings_input_doc_data[
+            PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
+        ]
+        == update_to_document_name.value
+    )
+
+    indexer_input_doc_json_data = json.loads(indexer_input_doc_json.read_text())
+    assert (
+        indexer_input_doc_json_data[
+            PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
+        ]
+        == update_to_document_name.value
+    )
 
 
-def test_parse(test_s3_client, test_update_config, test_updates, s3_document_id):
+def test_parse(
+    test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
+):
+    update_to_source_url = test_updates[1]
+
     errors = [
         error
         for error in parse(
-            update=(s3_document_id, test_updates[1]), update_config=test_update_config
+            update=(s3_document_id, update_to_source_url),
+            update_config=test_update_config,
         )
         if not "None"
     ]
 
     assert errors == []
 
+    (
+        parser_input_doc,
+        embeddings_input_doc,
+        indexer_input_doc_json,
+        indexer_input_doc_npy,
+    ) = s3_document_keys
 
-def test_utils():
-    pass
+    assert parser_input_doc.exists()
+    assert not embeddings_input_doc.exists()
+    assert not indexer_input_doc_json.exists()
+    assert not indexer_input_doc_npy.exists()
+
+    parser_input_doc_data = json.loads(parser_input_doc.read_text())
+    assert (
+        parser_input_doc_data[
+            PipelineFieldMapping[UpdateTypes(update_to_source_url.type)]
+        ]
+        == update_to_source_url.value
+    )

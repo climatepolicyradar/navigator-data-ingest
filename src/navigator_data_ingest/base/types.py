@@ -140,7 +140,9 @@ class UpdateTypes(str, Enum):
 
 PipelineFieldMapping = {
     UpdateTypes.NAME: "document_name",
+    UpdateTypes.DESCRIPTION: "document_description",
     UpdateTypes.SOURCE_URL: "document_source_url",
+    UpdateTypes.DOCUMENT_STATUS: "document_status",
 }
 
 
