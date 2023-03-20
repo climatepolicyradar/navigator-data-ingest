@@ -47,12 +47,14 @@ def test_archive_function(
     test_updates,
 ):
     """Test the archive function effectively archives a document."""
+    publish_document_update = test_updates[2]
+
     errors = [
         error
         for error in archive(
             update=(
                 s3_document_id,
-                test_updates[2],
+                publish_document_update,
             ),
             update_config=test_update_config,
         )
@@ -60,30 +62,17 @@ def test_archive_function(
     ]
 
     assert errors == []
-    assert (
-        list(
-            S3Path(
-                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
-            ).glob("*")
-        )
-        == []
-    )
-    assert (
-        list(
-            S3Path(
-                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.embeddings_input}/"
-            ).glob("*")
-        )
-        == []
-    )
-    assert (
-        list(
-            S3Path(
-                f"s3://{test_update_config.pipeline_bucket}/{test_update_config.indexer_input}/"
-            ).glob("*")
-        )
-        == []
-    )
+    (
+        parser_input_doc,
+        embeddings_input_doc,
+        indexer_input_doc_json,
+        indexer_input_doc_npy,
+    ) = s3_document_keys
+
+    assert not parser_input_doc.exists()
+    assert not embeddings_input_doc.exists()
+    assert not indexer_input_doc_json.exists()
+    assert not indexer_input_doc_npy.exists()
 
     archived_files = list(
         S3Path(
@@ -100,6 +89,7 @@ def test_archive_function(
 def test_get_latest_timestamp_empty_archive(
     test_s3_client, s3_bucket_and_region, test_update_config, s3_document_id
 ):
+    """Test the get_latest_timestamp function returns None if there are no archived documents."""
     latest_timestamp = get_latest_timestamp(
         document_id=s3_document_id, update_config=test_update_config
     )
@@ -113,6 +103,7 @@ def test_get_latest_timestamp_filled_archive(
     test_update_config,
     s3_document_id,
 ):
+    """Test the get_latest_timestamp function returns the latest timestamp from the s3 object keys."""
     latest_timestamp = get_latest_timestamp(
         document_id=s3_document_id, update_config=test_update_config
     )
@@ -123,12 +114,15 @@ def test_get_latest_timestamp_filled_archive(
 def test_publish(
     test_s3_client_filled_archive, s3_document_id, test_update_config, test_updates
 ):
+    """Test the publish function effectively publishes a document."""
+    publish_document_update = test_updates[2]
+
     errors = [
         error
         for error in publish(
             update=(
                 s3_document_id,
-                test_updates[2],
+                publish_document_update,
             ),
             update_config=test_update_config,
         )
@@ -147,6 +141,7 @@ def test_publish(
             f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/"
         ).glob("*")
     )
+    # Four files in the parser archive directory. Assert that we only publish one file.
     assert len(archived_files) == 3
     assert len(published_files) == 1
 
@@ -158,6 +153,7 @@ def test_update_file_field(
     s3_document_id,
     parser_input_json,
 ):
+    """Test the update_file_field function effectively updates a field in an s3 json object."""
     parser_input_document_path = S3Path(
         f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/{s3_document_id}.json"
     )
@@ -178,6 +174,7 @@ def test_update_file_field(
 def test_rename(
     test_s3_client, test_update_config, s3_bucket_and_region, s3_document_keys
 ):
+    """Test the rename function effectively renames an s3 object."""
     rename_path = S3Path(
         f"s3://{test_update_config.pipeline_bucket}/test-prefix/test-document-id.json"
     )
@@ -192,6 +189,7 @@ def test_rename(
 def test_update_dont_parse(
     test_s3_client, test_update_config, test_updates, s3_document_id, s3_document_keys
 ):
+    """Test the update_dont_parse function effectively updates a document such that it isn't parsed in the pipeline."""
     update_to_document_name = test_updates[0]
 
     errors = [
@@ -245,6 +243,7 @@ def test_update_dont_parse(
 def test_parse(
     test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
 ):
+    """Test that a document is updated such that it is parsed by the pipeline."""
     update_to_source_url = test_updates[1]
 
     errors = [
