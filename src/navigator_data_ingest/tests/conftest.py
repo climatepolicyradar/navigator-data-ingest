@@ -28,76 +28,32 @@ class S3Client:
 @pytest.fixture
 def parser_input_json():
     return {
-        "document_name": "National Home Retrofit Scheme 2020 (One Stop Shop Development Call)",
-        "document_description": "\u00a0This scheme is aimed at engaging groups of private households, registered "
-        "Housing Associations and Local Authorities and Energy Utilities or other "
-        "organisations who wish to participate in delivering a \u201cOne Stop Shop\u201d type "
-        "service for energy efficiency works.",
+        "document_name": "An example document name.",
+        "document_description": "An example document description.",
         "document_id": "CCLW.executive.10000.4494",
-        "document_source_url": "https://www.seai.ie/grants/national-home-retrofit/National-Home-Retrofit-Scheme"
-        "-Guidelines.pdf",
+        "document_source_url": "https://domain/path/to/document.pdf",
         "document_cdn_object": None,
         "document_content_type": "text/html",
         "document_md5_sum": None,
-        "document_metadata": {
-            "name": "National Home Retrofit Scheme 2020 (One Stop Shop Development Call)",
-            "description": "\u00a0This scheme is aimed at engaging groups of private households, registered Housing "
-            "Associations and Local Authorities and Energy Utilities or other organisations who wish "
-            "to participate in delivering a \u201cOne Stop Shop\u201d type service for energy "
-            "efficiency works.",
-            "import_id": "CCLW.executive.10000.4494",
-            "slug": "ireland_2020_national-home-retrofit-scheme-2020-one-stop-shop-development-call_10000_4494",
-            "publication_ts": "2020-12-25T00:00:00",
-            "source_url": "https://www.seai.ie/grants/national-home-retrofit/National-Home-Retrofit-Scheme-Guidelines"
-            ".pdf",
-            "type": "Programme",
-            "source": "CCLW",
-            "category": "Policy",
-            "geography": "IRL",
-            "frameworks": [],
-            "instruments": ["Subsidies|Economic"],
-            "hazards": [],
-            "keywords": ["Energy Efficiency"],
-            "languages": ["English"],
-            "sectors": ["Buildings"],
-            "topics": ["Mitigation"],
-            "events": [
-                {
-                    "name": "released",
-                    "description": "",
-                    "created_ts": "2020-12-25T00:00:00",
-                }
-            ],
-        },
-        "document_slug": "ireland_2020_national-home-retrofit-scheme-2020-one-stop-shop-development-call_10000_4494",
+        "document_metadata": {},
+        "document_slug": "an_example_slug_1000_1000",
     }
 
 
 @pytest.fixture
 def embeddings_input_json():
     return {
+        "document_name": "An example document name.",
+        "document_description": "An example document description.",
         "document_id": "CCLW.executive.10000.4494",
-        "document_metadata": {
-            "publication_ts": "2020-12-25T00:00:00",
-            "date": "25/12/2020",
-            "geography": "IRL",
-            "category": "Policy",
-            "source": "CCLW",
-            "type": "Programme",
-        },
-        "document_name": "National Home Retrofit Scheme 2020 (One Stop Shop Development Call)",
-        "document_description": "\u00a0This scheme is aimed at engaging groups of private households, registered "
-        "Housing Associations and Local Authorities and Energy Utilities or other "
-        "organisations who wish to participate in delivering a \u201cOne Stop Shop\u201d type "
-        "service for energy efficiency works.",
-        "document_source_url": "https://www.seai.ie/grants/national-home-retrofit/National-Home-Retrofit-Scheme"
-        "-Guidelines.pdf",
+        "document_source_url": "https://domain/path/to/document.pdf",
         "document_cdn_object": None,
+        "document_content_type": "text/html",
         "document_md5_sum": None,
+        "document_metadata": {},
+        "document_slug": "an_example_slug_1000_1000",
         "languages": ["en"],
         "translated": False,
-        "document_slug": "ireland_2020_national-home-retrofit-scheme-2020-one-stop-shop-development-call_10000_4494",
-        "document_content_type": "text/html",
         "html_data": {
             "detected_title": "One Stop Shop Service",
             "detected_date": None,
@@ -121,48 +77,15 @@ def embeddings_input_json():
 @pytest.fixture
 def indexer_input_json():
     return {
+        "document_name": "An example document name.",
+        "document_description": "An example document description.",
         "document_id": "CCLW.executive.10000.4494",
-        "document_metadata": {
-            "name": "National Home Retrofit Scheme 2020 (One Stop Shop Development Call)",
-            "description": "This scheme is aimed at engaging groups of private households, registered Housing "
-            "Associations and Local Authorities and Energy Utilities or other organisations who wish "
-            "to participate in delivering a “One Stop Shop” type service for energy efficiency works.",
-            "import_id": "CCLW.executive.10000.4494",
-            "slug": "ireland_2020_national-home-retrofit-scheme-2020-one-stop-shop-development-call_10000_4494",
-            "publication_ts": "2020-12-25T00:00:00",
-            "source_url": "https://www.seai.ie/grants/national-home-retrofit/National-Home-Retrofit-Scheme-Guidelines"
-            ".pdf",
-            "type": "Programme",
-            "source": "CCLW",
-            "category": "Policy",
-            "geography": "IRL",
-            "frameworks": [],
-            "instruments": ["Subsidies|Economic"],
-            "hazards": [],
-            "keywords": ["Energy Efficiency"],
-            "languages": ["English"],
-            "sectors": ["Buildings"],
-            "topics": ["Mitigation"],
-            "events": [
-                {
-                    "name": "released",
-                    "description": "",
-                    "created_ts": "2020-12-25T00:00:00",
-                }
-            ],
-        },
-        "document_name": "National Home Retrofit Scheme 2020 (One Stop Shop Development Call)",
-        "document_description": "This scheme is aimed at engaging groups of private households, registered Housing "
-        "Associations and Local Authorities and Energy Utilities or other organisations who "
-        "wish "
-        "to participate in delivering a “One Stop Shop” type service for energy efficiency "
-        "works.",
-        "document_source_url": "https://www.seai.ie/grants/national-home-retrofit/National-Home-Retrofit-Scheme"
-        "-Guidelines.pdf",
+        "document_source_url": "https://domain/path/to/document.pdf",
         "document_cdn_object": None,
         "document_content_type": "text/html",
         "document_md5_sum": None,
-        "document_slug": "ireland_2020_national-home-retrofit-scheme-2020-one-stop-shop-development-call_10000_4494",
+        "document_metadata": {},
+        "document_slug": "an_example_slug_1000_1000",
         "languages": ["en"],
         "translated": False,
         "html_data": {
@@ -176,10 +99,12 @@ def indexer_input_json():
                     "language": "en",
                     "type": "Text",
                     "type_confidence": 1.0,
+                    "coords": None,
+                    "page_number": None,
                 }
             ],
+            "pdf_data": None,
         },
-        "pdf_data": None,
     }
 
 
@@ -298,14 +223,18 @@ def test_updates(s3_document_id):
         s3_document_id: [
             {
                 "type": "name",
-                "csv_value": "NEW NAME National Home Retrofit Scheme 2020 (One Stop Shop Development Call)",
-                "db_value": "National Home Retrofit Scheme 2020 (One Stop Shop Development Call)",
+                "csv_value": "NEW NAME",
+                "db_value": "An example document name.",
+            },
+            {
+                "type": "description",
+                "csv_value": "NEW DESCRIPTION",
+                "db_value": "An example document description.",
             },
             {
                 "type": "source_url",
                 "csv_value": "https://www.NEW_SOURCE_URL.pdf",
-                "db_value": "https://www.seai.ie/grants/national-home-retrofit/National-Home-Retrofit-Scheme"
-                "-Guidelines.pdf ",
+                "db_value": "https://domain/path/to/document.pdf",
             },
             {
                 "type": "document_status",

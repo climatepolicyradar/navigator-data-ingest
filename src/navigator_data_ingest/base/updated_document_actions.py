@@ -308,10 +308,10 @@ def update_dont_parse(
     errors.append(
         rename(
             existing_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.embeddings_input}/{document_id}.npy"
+                f"s3://{update_config.pipeline_bucket}/{update_config.indexer_input}/{document_id}.npy"
             ),
             rename_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.embeddings_input}/{document_id}/{timestamp}.npy"
+                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.indexer_input}/{document_id}/{timestamp}.npy"
             ),
         )
     )
@@ -385,7 +385,7 @@ def update_file_field(
         document = json.loads(document_path.read_text())
 
         try:
-            assert document[pipeline_field] == existing_value
+            assert str(document[pipeline_field]) == str(existing_value)
         except AssertionError:
             _LOGGER.error(
                 "Field value mismatch - expected value not found in s3 object.",
@@ -400,7 +400,7 @@ def update_file_field(
                     }
                 },
             )
-            return traceback.format_exc()
+            return "FieldMismatchError: Expected value not found in s3 object."
         except KeyError:
             _LOGGER.error(
                 "Field not found in s3 object.",

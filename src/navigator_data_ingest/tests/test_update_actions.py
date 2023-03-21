@@ -19,8 +19,9 @@ def test_identify_action_function(test_updates):
     """Test the identify_action function returns the correct callable (function) given an UpdateResult."""
 
     assert identify_action(test_updates[0]) == update_dont_parse
-    assert identify_action(test_updates[1]) == parse
-    assert identify_action(test_updates[2]) == publish
+    assert identify_action(test_updates[1]) == update_dont_parse
+    assert identify_action(test_updates[2]) == parse
+    assert identify_action(test_updates[3]) == publish
 
 
 def test_order_actions_function(test_updates):
@@ -118,7 +119,7 @@ def test_publish(
     test_s3_client_filled_archive, s3_document_id, test_update_config, test_updates
 ):
     """Test the publish function effectively publishes a document."""
-    publish_document_update = test_updates[2]
+    publish_document_update = test_updates[3]
 
     errors = [
         error
@@ -197,12 +198,12 @@ def test_update_dont_parse(
     test_s3_client, test_update_config, test_updates, s3_document_id, s3_document_keys
 ):
     """Test the update_dont_parse function effectively updates a document such that it isn't parsed in the pipeline."""
-    update_to_document_name = test_updates[0]
+    update_to_document_description = test_updates[1]
 
     errors = [
         error
         for error in update_dont_parse(
-            update=(s3_document_id, update_to_document_name),
+            update=(s3_document_id, update_to_document_description),
             update_config=test_update_config,
         )
         if not "None"
@@ -228,25 +229,25 @@ def test_update_dont_parse(
     parser_input_doc_data = json.loads(parser_input_doc.read_text())
     assert (
         parser_input_doc_data[
-            PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
+            PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_name.csv_value
+        == update_to_document_description.csv_value
     )
 
     embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
     assert (
         embeddings_input_doc_data[
-            PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
+            PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_name.csv_value
+        == update_to_document_description.csv_value
     )
 
     indexer_input_doc_json_data = json.loads(indexer_input_doc_json.read_text())
     assert (
         indexer_input_doc_json_data[
-            PipelineFieldMapping[UpdateTypes(update_to_document_name.type)]
+            PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_name.csv_value
+        == update_to_document_description.csv_value
     )
 
 
@@ -254,7 +255,7 @@ def test_parse(
     test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
 ):
     """Test that a document is updated such that it is parsed by the pipeline."""
-    update_to_source_url = test_updates[1]
+    update_to_source_url = test_updates[2]
 
     errors = [
         error
