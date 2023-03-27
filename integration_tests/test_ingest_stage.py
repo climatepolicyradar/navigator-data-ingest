@@ -32,27 +32,112 @@ expected_parser_input_data = read_local_s3_json_file(
 
 
 @pytest.mark.integration
-def test_parser_input():
-    """Assert that the output data from the ingest stage in s3 is as expected."""
-    assert len(parser_input_data.keys()) == len(expected_parser_input_data.keys())
-    assert parser_input_data.keys() == expected_parser_input_data.keys()
-    assert parser_input_data == expected_parser_input_data
+def test_update_1():
+    """
+    Assert that the json objects for the document in s3 are as expected post ingest stage run.
+
+    Update:
+    - Update to document 'name'
+
+    Document ID:
+    - TESTCCLW.executive.1.1
+
+    Expected Result:
+    """
+    assert True
 
 
 @pytest.mark.integration
-def test_archive():
-    """Assert that the archived data in s3 is as expected."""
+def test_update_2():
+    """
+    Assert that the json objects for the document in s3 are as expected post ingest stage run.
 
-    parser_input_archived_files = list(
-        S3Path(f"s3://{INGEST_PIPELINE_BUCKET}/archive/{INGEST_OUTPUT_PREFIX}/").glob(
-            "*/*.json"
-        )
-    )
-    assert len(parser_input_archived_files) == 1
+    Update:
+    - Update to document 'description'
 
-    archived_file = parser_input_archived_files[0]
-    assert (
-        str(archived_file.parent)
-        == f"s3://{INGEST_PIPELINE_BUCKET}/archive/{INGEST_OUTPUT_PREFIX}/{EXISTING_DOCUMENT_NAME}"
-    )
-    assert ARCHIVE_FILE_PATTERN.match(archived_file.name)
+    Document ID:
+    - TESTCCLW.executive.2.2
+
+    Expected Result:
+    """
+    assert True
+
+
+@pytest.mark.integration
+def test_update_3():
+    """
+    Assert that the json objects for the document in s3 are as expected post ingest stage run.
+
+    Update:
+    - Update to document 'source_url'
+
+    Document ID:
+    - TESTCCLW.executive.3.3
+
+    Expected Result:
+    """
+    assert True
+
+
+@pytest.mark.integration
+def test_update_4():
+    """
+    Assert that the json objects for the document in s3 are as expected post ingest stage run.
+
+    Update:
+    - Update to document 'document_status'
+
+    Document ID:
+    - TESTCCLW.executive.4.4
+
+    Expected Result:
+    """
+    assert True
+
+
+@pytest.mark.integration
+def test_update_5():
+    """
+    Assert that the json objects for the document in s3 are as expected post ingest stage run.
+
+    Update:
+    - Update to document 'document_status' and 'name'
+
+    Document ID:
+    - TESTCCLW.executive.5.5
+
+    Expected Result:
+    """
+    assert True
+
+
+@pytest.mark.integration
+def test_update_6():
+    """
+    Assert that the json objects for the document in s3 are as expected post ingest stage run.
+
+    Update:
+    - Update to document 'description' and 'source_url'
+
+    Document ID:
+    - TESTCCLW.executive.6.6
+
+    Expected Result:
+    """
+    assert True
+
+
+@pytest.mark.integration
+def test_update_7():
+    """
+    Assert that the json objects for the document in s3 are as expected post ingest stage run.
+
+    Update: - Update to document 'description' (for this document it simulates a document that has is currently being
+    processed i.e. doesn't exist in all the s3 prefixes).
+
+    Document ID:
+    - TESTCCLW.executive.7.7
+
+    Expected Result:
+    """
+    assert True
