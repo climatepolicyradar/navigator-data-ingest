@@ -1,3 +1,4 @@
+import pytest
 from cloudpathlib import S3Path
 import os
 import re
@@ -30,6 +31,7 @@ expected_parser_input_data = read_local_s3_json_file(
 )
 
 
+@pytest.mark.integration
 def test_parser_input():
     """Assert that the output data from the ingest stage in s3 is as expected."""
     assert len(parser_input_data.keys()) == len(expected_parser_input_data.keys())
@@ -37,6 +39,7 @@ def test_parser_input():
     assert parser_input_data == expected_parser_input_data
 
 
+@pytest.mark.integration
 def test_archive():
     """Assert that the archived data in s3 is as expected."""
 

@@ -1,5 +1,6 @@
 from cloudpathlib import S3Path
 import json
+import pytest
 
 from navigator_data_ingest.base.types import Action, PipelineFieldMapping, UpdateTypes
 from navigator_data_ingest.base.updated_document_actions import (
@@ -15,6 +16,7 @@ from navigator_data_ingest.base.updated_document_actions import (
 )
 
 
+@pytest.mark.unit
 def test_identify_action_function(test_updates):
     """Test the identify_action function returns the correct callable (function) given an UpdateResult."""
 
@@ -24,6 +26,7 @@ def test_identify_action_function(test_updates):
     assert identify_action(test_updates[3]) == publish
 
 
+@pytest.mark.unit
 def test_order_actions_function(test_updates):
     """Test the order_actions function returns the correct order of actions given a list of actions."""
     actions = [
@@ -39,6 +42,7 @@ def test_order_actions_function(test_updates):
     ]
 
 
+@pytest.mark.unit
 def test_archive_function(
     test_s3_client,
     test_update_config,
@@ -90,6 +94,7 @@ def test_archive_function(
         ) or archive_file_pattern["npy"].match(archived_file.name)
 
 
+@pytest.mark.unit
 def test_get_latest_timestamp_empty_archive(
     test_s3_client, s3_bucket_and_region, test_update_config, s3_document_id
 ):
@@ -101,6 +106,7 @@ def test_get_latest_timestamp_empty_archive(
     assert latest_timestamp is None
 
 
+@pytest.mark.unit
 def test_get_latest_timestamp_filled_archive(
     test_s3_client_filled_archive,
     s3_bucket_and_region,
@@ -115,6 +121,7 @@ def test_get_latest_timestamp_filled_archive(
     assert latest_timestamp == "2023-01-21-01-12-12"
 
 
+@pytest.mark.unit
 def test_publish(
     test_s3_client_filled_archive, s3_document_id, test_update_config, test_updates
 ):
@@ -150,6 +157,7 @@ def test_publish(
     assert len(published_files) == 1
 
 
+@pytest.mark.unit
 def test_update_file_field(
     test_s3_client,
     s3_bucket_and_region,
@@ -175,6 +183,7 @@ def test_update_file_field(
     assert document_post_update["document_name"] == "new document name"
 
 
+@pytest.mark.unit
 def test_rename(
     test_s3_client, test_update_config, s3_bucket_and_region, s3_document_keys
 ):
@@ -194,6 +203,7 @@ def test_rename(
     assert rename_path.exists()
 
 
+@pytest.mark.unit
 def test_update_dont_parse(
     test_s3_client, test_update_config, test_updates, s3_document_id, s3_document_keys
 ):
@@ -251,6 +261,7 @@ def test_update_dont_parse(
     )
 
 
+@pytest.mark.unit
 def test_parse(
     test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
 ):
