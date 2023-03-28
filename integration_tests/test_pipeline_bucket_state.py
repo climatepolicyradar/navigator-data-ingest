@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import pytest
 from cloudpathlib import S3Path
 
 
@@ -21,6 +22,7 @@ def timestamped_file(file: S3Path) -> bool:
     return file.name.startswith("20")
 
 
+@pytest.mark.integration
 def test_pipeline_bucket(pipeline_bucket_files):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
     for file in pipeline_bucket_files:
