@@ -4,6 +4,6 @@ import os
 
 
 @pytest.fixture
-def get_bucket_path():
+def bucket_path():
     """Get the bucket path."""
     return S3Path(os.path.join("s3://", os.environ.get("INGEST_PIPELINE_BUCKET")))
