@@ -48,9 +48,6 @@ jobs:
         run: |
             echo "INGEST_DOCUMENT_BUCKET=testdocbucket${GITHUB_SHA}" >> $GITHUB_ENV
             echo "INGEST_PIPELINE_BUCKET=testpipbucket${GITHUB_SHA}" >> $GITHUB_ENV
-            echo "GITHUB_SHA=${GITHUB_SHA}"
-            echo "Ingest Document Bucket Name: ${INGEST_DOCUMENT_BUCKET}"
-            echo "Ingest Pipeline Bucket Name: ${INGEST_PIPELINE_BUCKET}"
 
       - name: Building s3 buckets and uploading test data
         run: |
