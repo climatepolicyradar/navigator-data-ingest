@@ -43,7 +43,10 @@ def test_update_1():
     - TESTCCLW.executive.1.1
 
     Expected Result:
+    - Document name should be updated in the json objects
+    - The npy file should be removed from the indexer input prefix to trigger re-creation
     """
+
     assert True
 
 
@@ -141,3 +144,15 @@ def test_update_7():
     Expected Result:
     """
     assert True
+
+
+# TODO assert that the documents are uploaded to the document bucket
+# TODO assert that the new documents are uploaded to the parser input in the pipeline_initial_state bucket
+
+
+@pytest.mark.integration
+def test_parser_input():
+    """Assert that the output data from the ingest stage in s3 is as expected."""
+    assert len(parser_input_data.keys()) == len(expected_parser_input_data.keys())
+    assert parser_input_data.keys() == expected_parser_input_data.keys()
+    assert parser_input_data == expected_parser_input_data

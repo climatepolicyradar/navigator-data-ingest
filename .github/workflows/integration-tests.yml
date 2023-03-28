@@ -46,23 +46,25 @@ jobs:
           aws-region: ${{ secrets.UNIT_TESTS_AWS_REGION }}
           aws-secret-access-key: ${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }}
 
-      - name: Building s3 bucket and uploading integration_tests data
+      - name: Building s3 buckets and uploading test data
         run: |
-          python -m integration_tests.setup_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }} ${{ env.TEST_DATA_FILE_PATH }} ${{ env.TEST_DATA_UPLOAD_PATH }} ${{ env.INGEST_OUTPUT_PREFIX }} ${{ env.INDEXER_INPUT_PREFIX }} ${{ env.EMBEDDINGS_INPUT_PREFIX }}
+          python -m integration_tests.setup_test_buckets ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
+          aws s3 sync integration_tests/data/pipeline_in s3://${{ env.INGEST_PIPELINE_BUCKET }}
 
       - name: Running the Ingest Stage
         run: |
-          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --input-file ${{ env.TEST_DATA_UPLOAD_PATH }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }}
+          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --input-file ${{ env.TEST_DATA_UPLOAD_PATH }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }} --embeddings-input-prefix ${{ env.EMBEDDINGS_INPUT_PREFIX }} --indexer-input-prefix ${{ env.INDEXER_INPUT_PREFIX }}
 
       - name: Running Integration Tests on the Ingest Stage Output 🚀
         run: |
           python -m pytest -vvv integration_tests/ -m integration
         env:
-            INGEST_OUTPUT_PREFIX: ${{ env.INGEST_OUTPUT_PREFIX }}
             INGEST_PIPELINE_BUCKET: ${{ env.INGEST_PIPELINE_BUCKET }}
+            INGEST_OUTPUT_PREFIX: ${{ env.INGEST_OUTPUT_PREFIX }}
+            EMBEDDINGS_INPUT_PREFIX: ${{ env.EMBEDDINGS_INPUT_PREFIX }}
+            INDEXER_INPUT_PREFIX: ${{ env.INDEXER_INPUT_PREFIX }}
             DOCUMENT_NAME_KEY: ${{ env.DOCUMENT_NAME_KEY }}
             PARSER_INPUT_EXPECTED_DATA_FILE_PATH: ${{ env.PARSER_INPUT_EXPECTED_DATA_FILE_PATH }}
-            ARCHIVE_EXPECTED_DATA_FILE_PATH: ${{ env.ARCHIVE_EXPECTED_DATA_FILE_PATH }}
             TEST_DATA_FILE_PATH: ${{ env.TEST_DATA_FILE_PATH }}
 
       - name: Destroying Infrastructure
