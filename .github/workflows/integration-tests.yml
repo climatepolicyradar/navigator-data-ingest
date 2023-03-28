@@ -9,8 +9,6 @@ on:
       - main
 
 env:
-  INGEST_DOCUMENT_BUCKET: ingest-tests-document-bucket_${ github.refs }
-  INGEST_PIPELINE_BUCKET: ingest-tests-pipeline-bucket_${ github.refs }
   TEST_DATA_FILE_PATH: ./integration_tests/data/new_and_updated_documents.json
   TEST_DATA_UPLOAD_PATH: input/new_and_updated_documents.json
   INGEST_OUTPUT_PREFIX: ingest_unit_test_parser_input
@@ -45,6 +43,13 @@ jobs:
           aws-access-key-id: ${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }}
           aws-region: ${{ secrets.UNIT_TESTS_AWS_REGION }}
           aws-secret-access-key: ${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }}
+
+      - name: Set Dynamic Bucket Names
+        run: |
+            echo "INGEST_DOCUMENT_BUCKET=ingest-tests-document-bucket_${GITHUB_SHA}" >> $GITHUB_ENV
+            echo "INGEST_PIPELINE_BUCKET=ingest-tests-pipeline-bucket_${GITHUB_SHA}" >> $GITHUB_ENV
+            echo "Ingest Document Bucket Name: ${INGEST_DOCUMENT_BUCKET}"
+            echo "Ingest Pipeline Bucket Name: ${INGEST_PIPELINE_BUCKET}"
 
       - name: Building s3 buckets and uploading test data
         run: |
