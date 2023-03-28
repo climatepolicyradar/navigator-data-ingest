@@ -7,7 +7,7 @@ from integration_tests.s3_utils import (
 )
 
 
-def setup_test_bucket(
+def build(
     document_bucket_name: str,
     pipeline_bucket_name: str,
     region: str,
@@ -22,7 +22,7 @@ def setup_test_bucket(
 
 
 if __name__ == "__main__":
-    setup_test_bucket(
+    build(
         document_bucket_name=sys.argv[1],
         pipeline_bucket_name=sys.argv[2],
         region=sys.argv[3],
