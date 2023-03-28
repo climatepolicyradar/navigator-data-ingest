@@ -3,7 +3,9 @@ from cloudpathlib import S3Path
 import os
 
 
-PIPELINE_BUCKET = S3Path(os.environ.get("INGEST_PIPELINE_BUCKET"))
+PIPELINE_BUCKET = S3Path(
+    os.path.join("s3://", os.environ.get("INGEST_PIPELINE_BUCKET"))
+)
 
 
 @pytest.fixture
