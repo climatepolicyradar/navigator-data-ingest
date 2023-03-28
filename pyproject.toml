@@ -41,6 +41,10 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 addopts = "-p no:cacheprovider"
 asyncio_mode = "strict"
+markers = [
+    "integration",
+    "unit",
+]
 
 [tool.pydocstyle]
 # D100 - Missing docstring in public module
