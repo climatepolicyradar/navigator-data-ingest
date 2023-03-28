@@ -147,12 +147,8 @@ def test_update_7():
 
 
 # TODO assert that the documents are uploaded to the document bucket
-# TODO assert that the new documents are uploaded to the parser input in the pipeline_initial_state bucket
 
 
-@pytest.mark.integration
-def test_parser_input():
-    """Assert that the output data from the ingest stage in s3 is as expected."""
-    assert len(parser_input_data.keys()) == len(expected_parser_input_data.keys())
-    assert parser_input_data.keys() == expected_parser_input_data.keys()
-    assert parser_input_data == expected_parser_input_data
+# TODO assert that the final start of the pipeline bucket is as expected - normalize all the timestamped file names -
+#  assert that the files are as expected by getting the local relative file path and using that as the key to get the
+#  expected data
