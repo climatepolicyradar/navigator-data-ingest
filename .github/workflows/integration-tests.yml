@@ -56,7 +56,7 @@ jobs:
 
       - name: Running Integration Tests on the Ingest Stage Output 🚀
         run: |
-          python -m pytest -vvv -m integration
+          python -m pytest -vvv integration_tests/ -m integration
         env:
             INGEST_OUTPUT_PREFIX: ${{ env.INGEST_OUTPUT_PREFIX }}
             INGEST_PIPELINE_BUCKET: ${{ env.INGEST_PIPELINE_BUCKET }}
