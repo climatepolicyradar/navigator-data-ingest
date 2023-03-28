@@ -46,8 +46,8 @@ jobs:
 
       - name: Set Dynamic Bucket Names
         run: |
-            echo "INGEST_DOCUMENT_BUCKET=ingest-tests-document-bucket_${GITHUB_SHA}" >> $GITHUB_ENV
-            echo "INGEST_PIPELINE_BUCKET=ingest-tests-pipeline-bucket_${GITHUB_SHA}" >> $GITHUB_ENV
+            echo "INGEST_DOCUMENT_BUCKET=ingest-tests-document-bucket_${GITHUB_RUN_ID}" >> $GITHUB_ENV
+            echo "INGEST_PIPELINE_BUCKET=ingest-tests-pipeline-bucket_${GITHUB_RUN_ID}" >> $GITHUB_ENV
             echo "Ingest Document Bucket Name: ${INGEST_DOCUMENT_BUCKET}"
             echo "Ingest Pipeline Bucket Name: ${INGEST_PIPELINE_BUCKET}"
 
