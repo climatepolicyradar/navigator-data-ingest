@@ -70,4 +70,4 @@ jobs:
       - name: Destroying Infrastructure
         if: always()
         run: |
-          python -m integration_tests.clean_up_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
+          python -m integration_tests.remove_test_buckets ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
