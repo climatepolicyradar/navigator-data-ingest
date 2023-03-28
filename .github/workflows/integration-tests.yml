@@ -9,8 +9,8 @@ on:
       - main
 
 env:
-  INGEST_DOCUMENT_BUCKET: ingest-tests-document-bucket
-  INGEST_PIPELINE_BUCKET: ingest-tests-pipeline-bucket
+  INGEST_DOCUMENT_BUCKET: ingest-tests-document-bucket_${ github.refs }
+  INGEST_PIPELINE_BUCKET: ingest-tests-pipeline-bucket_${ github.refs }
   TEST_DATA_FILE_PATH: ./integration_tests/data/new_and_updated_documents.json
   TEST_DATA_UPLOAD_PATH: input/new_and_updated_documents.json
   INGEST_OUTPUT_PREFIX: ingest_unit_test_parser_input
