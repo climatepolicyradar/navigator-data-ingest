@@ -59,38 +59,6 @@ def test_update_4():
     Assert that the json objects for the document in s3 are as expected post ingest stage run.
 
     Update:
-    - Update to document 'document_status'
-
-    Document ID:
-    - TESTCCLW.executive.4.4
-
-    Expected Result:
-    """
-    assert True
-
-
-@pytest.mark.integration
-def test_update_5():
-    """
-    Assert that the json objects for the document in s3 are as expected post ingest stage run.
-
-    Update:
-    - Update to document 'document_status' and 'name'
-
-    Document ID:
-    - TESTCCLW.executive.5.5
-
-    Expected Result:
-    """
-    assert True
-
-
-@pytest.mark.integration
-def test_update_6():
-    """
-    Assert that the json objects for the document in s3 are as expected post ingest stage run.
-
-    Update:
     - Update to document 'description' and 'source_url'
 
     Document ID:
@@ -102,7 +70,7 @@ def test_update_6():
 
 
 @pytest.mark.integration
-def test_update_7():
+def test_update_5():
     """
     Assert that the json objects for the document in s3 are as expected post ingest stage run.
 

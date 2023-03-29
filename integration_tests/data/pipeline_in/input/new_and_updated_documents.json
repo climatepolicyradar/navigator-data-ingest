@@ -880,25 +880,6 @@
       ],
       "TESTCCLW.executive.4.4": [
         {
-          "db_value": "PUBLISHED",
-          "csv_value": "DELETED",
-          "type": "document_status"
-        }
-      ],
-      "TESTCCLW.executive.5.5": [
-        {
-          "db_value": "PUBLISHED",
-          "csv_value": "DELETED",
-          "type": "document_status"
-        },
-        {
-          "db_value": "name",
-          "csv_value": "new name",
-          "type": "name"
-        }
-      ],
-      "TESTCCLW.executive.6.6": [
-        {
           "db_value": "description",
           "csv_value": "new description",
           "type": "description"
@@ -909,7 +890,7 @@
           "type": "source_url"
         }
       ],
-      "TESTCCLW.executive.7.7": [
+      "TESTCCLW.executive.5.5": [
         {
           "db_value": "description",
           "csv_value": "new description",
