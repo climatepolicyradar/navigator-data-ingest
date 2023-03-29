@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import traceback
 from concurrent.futures import as_completed, Executor
 from datetime import datetime
@@ -19,6 +20,7 @@ from navigator_data_ingest.base.types import (
 _LOGGER = logging.getLogger(__file__)
 
 
+# TODO use os.path.join for file paths
 def handle_document_updates(
     executor: Executor,
     source: Generator[Tuple[str, List[Update]], None, None],
@@ -146,21 +148,35 @@ def update_dont_parse(
             }
         },
     )
-    errors = [
-        update_file_field(
-            document_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
-            ),
-            field=str(document_update.type.value),
-            new_value=document_update.csv_value,
-            existing_value=document_update.db_value,
-        )
-        for prefix in [
-            update_config.parser_input,
-            update_config.embeddings_input,
-            update_config.indexer_input,
-        ]
-    ]
+    errors = []
+    for prefix_path in [
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.parser_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.embeddings_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.indexer_input
+            )
+        ),
+    ]:
+        # Might be translated and non-translated json objects
+        document_files = list(prefix_path.glob(f"{document_id}*.json"))
+        for document_file in document_files:
+            errors.append(
+                update_file_field(
+                    document_path=document_file,
+                    field=str(document_update.type.value),
+                    new_value=document_update.csv_value,
+                    existing_value=document_update.db_value,
+                )
+            )
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     errors.append(
@@ -194,42 +210,57 @@ def parse(
             }
         },
     )
-
-    errors = [
-        update_file_field(
-            document_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
-            ),
-            field=str(document_update.type.value),
-            new_value=document_update.csv_value,
-            existing_value=document_update.db_value,
-        )
-        for prefix in [
-            update_config.parser_input,
-            update_config.embeddings_input,
-            update_config.indexer_input,
-        ]
-    ]
-    errors = [] if errors is None else errors
+    errors = []
+    for prefix_path in [
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.parser_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.embeddings_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.indexer_input
+            )
+        ),
+    ]:
+        # Might be translated and non-translated json objects
+        document_files = list(prefix_path.glob(f"{document_id}*.json"))
+        for document_file in document_files:
+            errors.append(
+                update_file_field(
+                    document_path=document_file,
+                    field=str(document_update.type.value),
+                    new_value=document_update.csv_value,
+                    existing_value=document_update.db_value,
+                )
+            )
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    [
-        errors.append(
-            rename(
-                existing_path=S3Path(
-                    f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{suffix}"
-                ),
-                rename_path=S3Path(
-                    f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{suffix}"
-                ),
-            )
+    for prefix in [
+        update_config.embeddings_input,
+        update_config.indexer_input,
+    ]:
+        prefix_path = S3Path(
+            os.path.join("s3://", update_config.pipeline_bucket, prefix)
         )
-        for prefix, suffix in [
-            (update_config.embeddings_input, "json"),
-            (update_config.indexer_input, "json"),
-            (update_config.indexer_input, "npy"),
-        ]
-    ]
+
+        # Might be translated and non-translated json objects
+        document_files = list(prefix_path.glob(f"{document_id}*.*"))
+        for document_file in document_files:
+            errors.append(
+                rename(
+                    existing_path=document_file,
+                    rename_path=S3Path(
+                        f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{document_file.suffix}"
+                    ),
+                )
+            )
+
     return [error for error in errors if error is not None]
 
 
