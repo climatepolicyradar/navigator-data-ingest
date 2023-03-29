@@ -172,7 +172,7 @@ def main(
             [
                 errors.append(f"ERROR updating '{result.document_id}': {result.error}")
                 for result in handle_result
-                if result.error is not None
+                if result.error is not None or result.error is not "None"
             ]
 
         for handle_result in handle_new_documents(
