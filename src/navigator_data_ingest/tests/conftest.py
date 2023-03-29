@@ -142,6 +142,7 @@ def s3_document_keys(s3_document_id, test_update_config) -> list:
     return [
         f"{test_update_config.parser_input}/{s3_document_id}.json",
         f"{test_update_config.embeddings_input}/{s3_document_id}.json",
+        f"{test_update_config.embeddings_input}/{s3_document_id}_translated_en.json",
         f"{test_update_config.indexer_input}/{s3_document_id}.json",
         f"{test_update_config.indexer_input}/{s3_document_id}.npy",
     ]

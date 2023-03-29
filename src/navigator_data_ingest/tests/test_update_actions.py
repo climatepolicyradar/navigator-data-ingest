@@ -106,6 +106,7 @@ def test_update_dont_parse(
     (
         parser_input_doc,
         embeddings_input_doc,
+        embeddings_input_translated_doc,
         indexer_input_doc_json,
         indexer_input_doc_npy,
     ) = [
@@ -115,6 +116,7 @@ def test_update_dont_parse(
 
     assert parser_input_doc.exists()
     assert embeddings_input_doc.exists()
+    assert embeddings_input_translated_doc.exists()
     assert indexer_input_doc_json.exists()
     assert not indexer_input_doc_npy.exists()
 
@@ -129,6 +131,16 @@ def test_update_dont_parse(
     embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
     assert (
         embeddings_input_doc_data[
+            PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
+        ]
+        == update_to_document_description.csv_value
+    )
+
+    embeddings_input_translated_doc_data = json.loads(
+        embeddings_input_translated_doc.read_text()
+    )
+    assert (
+        embeddings_input_translated_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
         == update_to_document_description.csv_value
