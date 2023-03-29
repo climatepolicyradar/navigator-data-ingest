@@ -5,15 +5,6 @@ from cloudpathlib import S3Path
 import pytest
 
 
-def get_bucket_files_with_suffix(bucket: S3Path, suffix: str) -> list[S3Path]:
-    """Get all the files in a bucket with a given suffix."""
-    bucket_files = []
-    for pattern in ["*", "*/*", "*/*/*", "*/*/*/*"]:
-        files = list(bucket.glob(pattern + suffix))
-        bucket_files.extend(set(files))
-    return bucket_files
-
-
 def get_local_dir_files(local_dir: str, suffix: str) -> list[Path]:
     """Get all the files in a local directory."""
     return list(
@@ -33,13 +24,24 @@ def timestamped_file(file: S3Path) -> bool:
     return file.name.startswith("20")
 
 
-# TODO assert that the files match as right now if the ingest stage missed a file we wouldn't catch that
+@pytest.mark.integration
+def test_pipeline_bucket_files(
+    bucket_files_npy, bucket_files_json, bucket_files_json_errors
+):
+    """Test that all the files we expect to exist in the bucket do exist after running the ingest stage."""
+    p = Path(Path(__file__).parent / os.path.join("data", "pipeline_out")).glob("**/*")
+    local_files = [x for x in p if x.is_file()]
+
+    bucket_files = bucket_files_json + bucket_files_npy + bucket_files_json_errors
+
+    # TODO add more detailed assertions here, would have to deal with timestamps etc.
+    assert len(local_files) == len(bucket_files)
 
 
 @pytest.mark.integration
-def test_pipeline_bucket_json(bucket_path):
+def test_pipeline_bucket_json(bucket_files_json):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
-    for file in get_bucket_files_with_suffix(bucket=bucket_path, suffix=".json"):
+    for file in bucket_files_json:
         s3_data = json.loads(file.read_text())
         if timestamped_file(file):
             local_data = json.loads(
@@ -54,9 +56,9 @@ def test_pipeline_bucket_json(bucket_path):
 
 
 @pytest.mark.integration
-def test_pipeline_bucket_npy(bucket_path):
+def test_pipeline_bucket_npy(bucket_files_npy):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
-    for file in get_bucket_files_with_suffix(bucket=bucket_path, suffix=".npy"):
+    for file in bucket_files_npy:
         if timestamped_file(file):
             local_file = get_local_dir_files(
                 local_dir=file.key.replace(file.name, ""), suffix=file.suffix
@@ -67,9 +69,9 @@ def test_pipeline_bucket_npy(bucket_path):
 
 
 @pytest.mark.integration
-def test_pipeline_bucket_json_errors(bucket_path):
+def test_pipeline_bucket_json_errors(bucket_files_json_errors):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
-    for file in get_bucket_files_with_suffix(bucket=bucket_path, suffix=".json_errors"):
+    for file in bucket_files_json_errors:
         s3_data = json.loads(file.read_text())
         local_data = json.loads(get_local_fp(file).read_text())
 
