@@ -176,6 +176,7 @@ def test_parse(
     (
         parser_input_doc,
         embeddings_input_doc,
+        embeddings_input_translated_doc,
         indexer_input_doc_json,
         indexer_input_doc_npy,
     ) = [
@@ -185,6 +186,7 @@ def test_parse(
 
     assert parser_input_doc.exists()
     assert not embeddings_input_doc.exists()
+    assert not embeddings_input_translated_doc.exists()
     assert not indexer_input_doc_json.exists()
     assert not indexer_input_doc_npy.exists()
 

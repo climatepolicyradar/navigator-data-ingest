@@ -115,8 +115,9 @@ def test_s3_objects(
     return {
         s3_document_keys[0]: bytes(json.dumps(parser_input_json).encode("UTF-8")),
         s3_document_keys[1]: bytes(json.dumps(embeddings_input_json).encode("UTF-8")),
-        s3_document_keys[2]: bytes(json.dumps(indexer_input_json).encode("UTF-8")),
-        s3_document_keys[3]: bytes(1024),
+        s3_document_keys[2]: bytes(json.dumps(embeddings_input_json).encode("UTF-8")),
+        s3_document_keys[3]: bytes(json.dumps(indexer_input_json).encode("UTF-8")),
+        s3_document_keys[4]: bytes(1024),
     }
 
 
