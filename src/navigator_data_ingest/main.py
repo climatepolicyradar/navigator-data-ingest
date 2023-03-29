@@ -160,19 +160,17 @@ def main(
             document_generator.process_updated_documents(),
             update_config,
         ):
-            # TODO None keeps getting added to the errors list for some reason, can be seen in the test data
-            [
-                errors.append(f"ERROR updating '{result.document_id}': {result.error}")
-                for result in handle_result
-                if result.error is not None or result.error is not "None"
-            ]
+            for result in handle_result:
+                if str(result.error) != "[]":
+                    errors.append(
+                        f"ERROR updating '{result.document_id}': {result.error}"
+                    )
+
             _LOGGER.info(
                 "Writing ERROR to JSON_ERRORS file",
                 extra={
                     "props": {
                         "errors": errors,
-                        "handle_result": handle_result,
-                        "result": handle_result[0].error,
                     }
                 },
             )
@@ -192,7 +190,7 @@ def main(
             )
             write_parser_input(output_location_path, handle_result.parser_input)
 
-    if errors:
+    if len(errors) > 0:
         error_output_location_path = cast(
             S3Path,
             pipeline_bucket_path / f"{input_file.strip().lstrip('/')}_errors",
