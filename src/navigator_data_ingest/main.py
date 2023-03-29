@@ -92,12 +92,6 @@ _LOGGER = logging.getLogger(__name__)
     help="S3 prefix to which to archive documents",
 )
 @click.option(
-    "--archive-trigger-prefix",
-    required=False,
-    default="reparse_archive",
-    help="S3 prefix to which to write archived files to enable reparsing",
-)
-@click.option(
     "--worker-count",
     required=False,
     default=4,
@@ -111,7 +105,6 @@ def main(
     embeddings_input_prefix: str,
     indexer_input_prefix: str,
     archive_prefix: str,
-    archive_trigger_prefix: str,
     worker_count: int,
 ):
     """
@@ -124,7 +117,6 @@ def main(
     param embeddings_input_prefix: S3 prefix containing the embeddings input files
     param indexer_input_prefix: S3 prefix containing the indexer input files
     param archive_prefix: S3 prefix to which to archive documents
-    param archive_trigger_prefix: S3 prefix to which to write archived files to enable reparsing
     param worker_count: Number of workers downloading/uploading cached documents
     return: None
     """
@@ -161,7 +153,6 @@ def main(
             embeddings_input=embeddings_input_prefix,
             indexer_input=indexer_input_prefix,
             archive_prefix=archive_prefix,
-            archive_trigger_parser=archive_trigger_prefix,
         )
 
         for handle_result in handle_document_updates(
@@ -169,11 +160,22 @@ def main(
             document_generator.process_updated_documents(),
             update_config,
         ):
+            # TODO None keeps getting added to the errors list for some reason, can be seen in the test data
             [
                 errors.append(f"ERROR updating '{result.document_id}': {result.error}")
                 for result in handle_result
                 if result.error is not None or result.error is not "None"
             ]
+            _LOGGER.info(
+                "Writing ERROR to JSON_ERRORS file",
+                extra={
+                    "props": {
+                        "errors": errors,
+                        "handle_result": handle_result,
+                        "result": handle_result[0].error,
+                    }
+                },
+            )
 
         for handle_result in handle_new_documents(
             executor,

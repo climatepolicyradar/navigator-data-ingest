@@ -16,6 +16,8 @@ from typing import (
 
 from pydantic import AnyHttpUrl, BaseModel
 
+from navigator_data_ingest.base.updated_document_actions import parse, update_dont_parse
+
 CONTENT_TYPE_PDF = "application/pdf"
 CONTENT_TYPE_DOCX = (
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -103,14 +105,11 @@ class Document(BaseModel):
 
     events: Sequence[Event]
 
-    document_status: DocumentStatusTypes
-
     def to_json(self) -> Mapping[str, Any]:
         """Output a JSON serialising friendly dict representing this model"""
         json_dict = self.dict()
         json_dict["publication_ts"] = self.publication_ts.isoformat()
         json_dict["events"] = [event.to_json() for event in self.events]
-        del json_dict["document_status"]
         return json_dict
 
 
@@ -135,14 +134,21 @@ class UpdateTypes(str, Enum):
     # SECTORS = "sectors"
     # TOPICS = "topics"
     # EVENTS = "events"
-    DOCUMENT_STATUS = "document_status"
+    # DOCUMENT_STATUS = "document_status"
+
+
+class UpdateTypeActions(UpdateTypes, Enum):
+    """Mapping of document updates to the action to perform."""
+
+    UpdateTypes.SOURCE_URL.value = (parse,)
+    UpdateTypes.NAME.value = (update_dont_parse,)
+    UpdateTypes.DESCRIPTION.value = (update_dont_parse,)
 
 
 PipelineFieldMapping = {
     UpdateTypes.NAME: "document_name",
     UpdateTypes.DESCRIPTION: "document_description",
     UpdateTypes.SOURCE_URL: "document_source_url",
-    UpdateTypes.DOCUMENT_STATUS: "document_status",
 }
 
 
@@ -230,7 +236,6 @@ class UpdateConfig:
     embeddings_input: str
     indexer_input: str
     archive_prefix: str
-    archive_trigger_parser: str
 
 
 class DocumentGenerator(ABC):

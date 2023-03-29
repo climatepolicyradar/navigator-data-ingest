@@ -3,7 +3,7 @@ import logging
 import traceback
 from concurrent.futures import as_completed, Executor
 from datetime import datetime
-from typing import Generator, List, Union, Callable, Tuple
+from typing import Generator, List, Union, Tuple
 
 from cloudpathlib import S3Path
 
@@ -11,10 +11,10 @@ from navigator_data_ingest.base.types import (
     UpdateConfig,
     Update,
     UpdateResult,
-    DocumentStatusTypes,
     UpdateTypes,
     Action,
     PipelineFieldMapping,
+    UpdateTypeActions,
 )
 
 _LOGGER = logging.getLogger(__file__)
@@ -65,8 +65,10 @@ def _update_document(
     document_id, updates = doc_updates
     _LOGGER.info("Updating document.", extra={"props": {"document_id": document_id}})
 
+    # TODO do we need a key error try catch here?
     actions = [
-        Action(action=identify_action(update), update=update) for update in updates
+        Action(action=UpdateTypeActions(UpdateTypes(update.type)), update=update)
+        for update in updates
     ]
     _LOGGER.info(
         "Identified actions for document.",
@@ -88,44 +90,7 @@ def _update_document(
     ]
 
 
-def identify_action(update: Update) -> Callable:
-    """Identify the action to be performed based upon the update type and field."""
-    _LOGGER.info(
-        "Identifying action with the following config.",
-        extra={
-            "props": {
-                "update_type": update.type,
-                "update_csv_value": update.csv_value,
-                "update_db_value": update.db_value,
-            },
-        },
-    )
-
-    if update.type in [UpdateTypes.SOURCE_URL.value]:
-        return parse
-
-    elif (
-        update.type == UpdateTypes.DOCUMENT_STATUS.value
-        and update.csv_value == DocumentStatusTypes.DELETED.value
-    ):
-        return archive
-
-    elif (
-        update.type == UpdateTypes.DOCUMENT_STATUS.value
-        and update.csv_value == DocumentStatusTypes.PUBLISHED.value
-    ):
-        return publish
-
-    elif update.type in [UpdateTypes.NAME.value, UpdateTypes.DESCRIPTION.value]:
-        return update_dont_parse
-
-    else:
-        raise ValueError(
-            f"Update type {update.type} is not supported. "
-            f"Supported update types are: {[name.value for name in UpdateTypes]}"
-        )
-
-
+# TODO unless we add more actions this is overkill
 def order_actions(actions: List[Action]) -> List[Action]:
     """
     Order the update actions to be performed on an s3 document based upon the action type.
@@ -133,10 +98,8 @@ def order_actions(actions: List[Action]) -> List[Action]:
     We need to ensure that we make object updates before archiving a document.
     """
     ordering = [
-        publish.__name__,
         update_dont_parse.__name__,
         parse.__name__,
-        archive.__name__,
     ]
     priorities = {letter: index for index, letter in enumerate(ordering)}
     _LOGGER.info(
@@ -163,111 +126,6 @@ def order_actions(actions: List[Action]) -> List[Action]:
     )
 
     return ordered_actions
-
-
-def archive(
-    update: Tuple[str, Update],
-    update_config: UpdateConfig,
-) -> List[Union[str, None]]:
-    """Archive the document by copying all instances of the document to the archive s3 directory with timestamp."""
-    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    document_id, document_update = update
-    _LOGGER.info(
-        "Archiving all instances of document.",
-        extra={
-            "props": {
-                "document_id": document_id,
-                "timestamp": timestamp,
-            }
-        },
-    )
-
-    errors = [
-        rename(
-            existing_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{suffix}"
-            ),
-            rename_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{suffix}"
-            ),
-        )
-        for prefix, suffix in [
-            (update_config.parser_input, "json"),
-            (update_config.embeddings_input, "json"),
-            (update_config.indexer_input, "json"),
-            (update_config.indexer_input, "npy"),
-        ]
-    ]
-    return [error for error in errors if error is not None]
-
-
-def get_latest_timestamp(
-    document_id: str, update_config: UpdateConfig
-) -> Union[str, None]:
-    """Get the latest time stamp for the archived instances of a document in the archive s3 directory."""
-    s3_prefix_file_generators = [
-        S3Path(
-            f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/"
-        ).glob("*")
-        for prefix in [
-            update_config.parser_input,
-            update_config.embeddings_input,
-            update_config.indexer_input,
-            update_config.indexer_input,
-        ]
-    ]
-
-    document_archived_files = []
-    for gen in s3_prefix_file_generators:
-        document_archived_files.extend(list(gen))
-
-    archive_timestamps = [
-        datetime.strptime(file.stem, "%Y-%m-%d-%H-%M-%S")
-        for file in document_archived_files
-    ]
-
-    return (
-        None
-        if archive_timestamps == []
-        else max(archive_timestamps).strftime("%Y-%m-%d-%H-%M-%S")
-    )
-
-
-def publish(
-    update: Tuple[str, Update],
-    update_config: UpdateConfig,
-) -> List[Union[str, None]]:
-    """Publish a deleted/archived document by copying all instances of the document to the live s3 directories."""
-    document_id, document_update = update
-    _LOGGER.info("Publishing document.", extra={"props": {"doc_id": document_id}})
-    timestamp = get_latest_timestamp(document_id, update_config)
-
-    if timestamp is None:
-        _LOGGER.info(
-            "Document has no archived files to publish.",
-            extra={"props": {"doc_id": document_id}},
-        )
-        errors = []
-        return errors
-
-    errors = [
-        rename(
-            existing_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{suffix}"
-            ),
-            rename_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{suffix}"
-            ),
-        )
-        for prefix, suffix in [
-            (update_config.parser_input, "json"),
-            (update_config.embeddings_input, "json"),
-            (update_config.indexer_input, "json"),
-            (update_config.indexer_input, "npy"),
-        ]
-    ]
-
-    return [error for error in errors if error is not None]
 
 
 def update_dont_parse(
@@ -349,7 +207,7 @@ def parse(
                     f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.{suffix}"
                 ),
                 rename_path=S3Path(
-                    f"s3://{update_config.pipeline_bucket}/{update_config.archive_trigger_parser}/{prefix}/{document_id}/{timestamp}.{suffix}"
+                    f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{suffix}"
                 ),
             )
         )
