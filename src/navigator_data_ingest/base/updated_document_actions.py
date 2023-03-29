@@ -198,7 +198,7 @@ def archive(
             (update_config.indexer_input, "npy"),
         ]
     ]
-    return errors
+    return [error for error in errors if error is not None]
 
 
 def get_latest_timestamp(
@@ -266,7 +266,8 @@ def publish(
             (update_config.indexer_input, "npy"),
         ]
     ]
-    return errors
+
+    return [error for error in errors if error is not None]
 
 
 def update_dont_parse(
@@ -315,7 +316,7 @@ def update_dont_parse(
             ),
         )
     )
-    return errors
+    return [error for error in errors if error is not None]
 
 
 def parse(
@@ -358,7 +359,7 @@ def parse(
             (update_config.indexer_input, "npy"),
         ]
     ]
-    return errors
+    return [error for error in errors if error is not None]
 
 
 def update_file_field(
