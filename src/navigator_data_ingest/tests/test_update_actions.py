@@ -6,7 +6,6 @@ from navigator_data_ingest.base.types import (
     Action,
     PipelineFieldMapping,
     UpdateTypes,
-    UpdateTypeActions,
 )
 from navigator_data_ingest.base.updated_document_actions import (
     update_dont_parse,
@@ -14,6 +13,7 @@ from navigator_data_ingest.base.updated_document_actions import (
     parse,
     update_file_field,
     rename,
+    update_type_actions,
 )
 
 
@@ -21,8 +21,8 @@ from navigator_data_ingest.base.updated_document_actions import (
 def test_identify_action_function(test_updates):
     """Test the UpdateTypeActions mapping returns the correct callable (function) given an UpdateResult."""
 
-    assert UpdateTypeActions(test_updates[0].type) == update_dont_parse
-    assert UpdateTypeActions(test_updates[2].type) == parse
+    assert update_type_actions[test_updates[0].type] == update_dont_parse
+    assert update_type_actions[test_updates[2].type] == parse
 
 
 @pytest.mark.unit

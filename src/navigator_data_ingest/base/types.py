@@ -16,8 +16,6 @@ from typing import (
 
 from pydantic import AnyHttpUrl, BaseModel
 
-from navigator_data_ingest.base.updated_document_actions import parse, update_dont_parse
-
 CONTENT_TYPE_PDF = "application/pdf"
 CONTENT_TYPE_DOCX = (
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -135,14 +133,6 @@ class UpdateTypes(str, Enum):
     # TOPICS = "topics"
     # EVENTS = "events"
     # DOCUMENT_STATUS = "document_status"
-
-
-class UpdateTypeActions(UpdateTypes, Enum):
-    """Mapping of document updates to the action to perform."""
-
-    UpdateTypes.SOURCE_URL.value = (parse,)
-    UpdateTypes.NAME.value = (update_dont_parse,)
-    UpdateTypes.DESCRIPTION.value = (update_dont_parse,)
 
 
 PipelineFieldMapping = {

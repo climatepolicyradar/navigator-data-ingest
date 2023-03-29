@@ -14,7 +14,6 @@ from navigator_data_ingest.base.types import (
     UpdateTypes,
     Action,
     PipelineFieldMapping,
-    UpdateTypeActions,
 )
 
 _LOGGER = logging.getLogger(__file__)
@@ -67,7 +66,7 @@ def _update_document(
 
     # TODO do we need a key error try catch here?
     actions = [
-        Action(action=UpdateTypeActions(UpdateTypes(update.type)), update=update)
+        Action(action=update_type_actions[UpdateTypes(update.type)], update=update)
         for update in updates
     ]
     _LOGGER.info(
@@ -196,8 +195,22 @@ def parse(
         },
     )
 
-    update_dont_parse_errors = update_dont_parse(update, update_config)
-    errors = [] if update_dont_parse_errors is None else update_dont_parse_errors
+    errors = [
+        update_file_field(
+            document_path=S3Path(
+                f"s3://{update_config.pipeline_bucket}/{prefix}/{document_id}.json"
+            ),
+            field=str(document_update.type.value),
+            new_value=document_update.csv_value,
+            existing_value=document_update.db_value,
+        )
+        for prefix in [
+            update_config.parser_input,
+            update_config.embeddings_input,
+            update_config.indexer_input,
+        ]
+    ]
+    errors = [] if errors is None else errors
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     [
@@ -326,3 +339,10 @@ def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
         )
         return str(e)
     return None
+
+
+update_type_actions = {
+    UpdateTypes.SOURCE_URL: parse,
+    UpdateTypes.NAME: update_dont_parse,
+    UpdateTypes.DESCRIPTION: update_dont_parse,
+}

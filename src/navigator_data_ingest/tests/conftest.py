@@ -134,7 +134,6 @@ def test_update_config(s3_bucket_and_region) -> UpdateConfig:
         embeddings_input="embeddings_input",
         indexer_input="indexer_input",
         archive_prefix="archive",
-        archive_trigger_parser="reparse_trigger",
     )
 
 
@@ -235,11 +234,6 @@ def test_updates(s3_document_id):
                 "type": "source_url",
                 "csv_value": "https://www.NEW_SOURCE_URL.pdf",
                 "db_value": "https://domain/path/to/document.pdf",
-            },
-            {
-                "type": "document_status",
-                "csv_value": "PUBLISHED",
-                "db_value": "DELETED",
             },
         ]
     }
