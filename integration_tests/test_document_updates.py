@@ -2,6 +2,7 @@
 import pytest
 
 
+# TODO add in individual assertions to check that what we have in the data/pipeline_out directory is correct
 @pytest.mark.integration
 def test_update_1():
     """

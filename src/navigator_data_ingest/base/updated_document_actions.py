@@ -20,7 +20,6 @@ from navigator_data_ingest.base.types import (
 _LOGGER = logging.getLogger(__file__)
 
 
-# TODO use os.path.join for file paths
 def handle_document_updates(
     executor: Executor,
     source: Generator[Tuple[str, List[Update]], None, None],
@@ -47,7 +46,6 @@ def handle_document_updates(
         try:
             handle_result = future.result()
         except Exception:
-            # TODO find an identifier for the document
             _LOGGER.exception(
                 "Updating document generated an unexpected exception.",
                 extra={"props": {"document_id": str(update[0])}},
@@ -66,7 +64,6 @@ def _update_document(
     document_id, updates = doc_updates
     _LOGGER.info("Updating document.", extra={"props": {"document_id": document_id}})
 
-    # TODO do we need a key error try catch here?
     actions = [
         Action(action=update_type_actions[UpdateTypes(update.type)], update=update)
         for update in updates
@@ -91,7 +88,6 @@ def _update_document(
     ]
 
 
-# TODO unless we add more actions this is overkill
 def order_actions(actions: List[Action]) -> List[Action]:
     """
     Order the update actions to be performed on an s3 document based upon the action type.
@@ -182,10 +178,22 @@ def update_dont_parse(
     errors.append(
         rename(
             existing_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.indexer_input}/{document_id}.npy"
+                os.path.join(
+                    "s3://",
+                    update_config.pipeline_bucket,
+                    update_config.indexer_input,
+                    f"{document_id}.npy",
+                )
             ),
             rename_path=S3Path(
-                f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{update_config.indexer_input}/{document_id}/{timestamp}.npy"
+                os.path.join(
+                    "s3://",
+                    update_config.pipeline_bucket,
+                    update_config.archive_prefix,
+                    update_config.indexer_input,
+                    document_id,
+                    f"{timestamp}.npy",
+                )
             ),
         )
     )

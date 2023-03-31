@@ -34,7 +34,6 @@ def test_pipeline_bucket_files(
 
     bucket_files = bucket_files_json + bucket_files_npy + bucket_files_json_errors
 
-    # TODO add more detailed assertions here, would have to deal with timestamps etc.
     assert len(local_files) == len(bucket_files)
 
 
