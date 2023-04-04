@@ -81,11 +81,11 @@ def parser_input_already_exists(
     """Check if the parser input file already exists."""
     output_file_location = cast(
         S3Path,
-        output_location / f"{document.import_id}.json",
+        output_location / f"{document.document_id}.json",
     )
     if output_file_location.exists():
         _LOGGER.info(
-            f"Parser input for document ID '{document.import_id}' already exists"
+            f"Parser input for document ID '{document.document_id}' already exists"
         )
         return True
     return False

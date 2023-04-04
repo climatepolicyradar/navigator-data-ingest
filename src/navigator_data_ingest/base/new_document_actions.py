@@ -81,7 +81,7 @@ def _upload_document(
 
     if not document.source_url:
         _LOGGER.info(
-            f"Skipping upload for '{document.source}:{document.import_id}:"
+            f"Skipping upload for '{document.source}:{document.document_id}:"
             f"{document.name}' because the source URL is empty"
         )
         return UploadResult(
@@ -93,7 +93,7 @@ def _upload_document(
     clean_url = document.source_url.split("|")[0].strip()
 
     return upload_document(
-        session, clean_url, file_name, document_bucket, document.import_id
+        session, clean_url, file_name, document_bucket, document.document_id
     )
 
 
@@ -110,7 +110,7 @@ def _handle_document(
 
     session = requests.Session()
     parser_input = DocumentParserInput(
-        document_id=document.import_id,
+        document_id=document.document_id,
         document_slug=document.slug,
         document_name=document.name,
         document_description=document.description,
@@ -124,10 +124,10 @@ def _handle_document(
             document,
             document_bucket,
         )
-        _LOGGER.info(f"Uploaded content for '{document.import_id}'")
+        _LOGGER.info(f"Uploaded content for '{document.document_id}'")
 
     except Exception:
-        _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed")
+        _LOGGER.exception(f"Ingesting document with ID '{document.document_id}' failed")
         return HandleResult(error=traceback.format_exc(), parser_input=parser_input)
 
     parser_input = parser_input.copy(
@@ -141,12 +141,12 @@ def _handle_document(
     try:
         update_document_details(
             session,
-            document.import_id,
+            document.document_id,
             uploaded_document_result,
         )
-        _LOGGER.info(f"Updating details for '{document.import_id}")
+        _LOGGER.info(f"Updating details for '{document.document_id}")
     except Exception:
-        _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed")
+        _LOGGER.exception(f"Ingesting document with ID '{document.document_id}' failed")
         return HandleResult(error=traceback.format_exc(), parser_input=parser_input)
 
     return HandleResult(parser_input=parser_input)
