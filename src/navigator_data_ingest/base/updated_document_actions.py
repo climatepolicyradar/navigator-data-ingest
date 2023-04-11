@@ -163,7 +163,9 @@ def update_dont_parse(
         ),
     ]:
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}*.json"))
+        document_files = list(prefix_path.glob(f"{document_id}.json")) + list(
+            prefix_path.glob(f"{document_id}_translated_*.json")
+        )
         for document_file in document_files:
             errors.append(
                 update_file_field(
@@ -237,7 +239,9 @@ def parse(
         ),
     ]:
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}*.json"))
+        document_files = list(prefix_path.glob(f"{document_id}.json")) + list(
+            prefix_path.glob(f"{document_id}_translated_*.json")
+        )
         for document_file in document_files:
             errors.append(
                 update_file_field(
@@ -258,7 +262,9 @@ def parse(
         )
 
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}*.*"))
+        document_files = list(prefix_path.glob(f"{document_id}.*")) + list(
+            prefix_path.glob(f"{document_id}_translated_*.*")
+        )
         for document_file in document_files:
             errors.append(
                 rename(
