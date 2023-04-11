@@ -5,7 +5,7 @@ WORKDIR /navigator-data-ingest
 
 # Install pip and poetry
 RUN pip install --upgrade pip
-RUN pip install "poetry==1.2.0"
+RUN pip install "poetry==1.3.2"
 
 # Copy files to image
 COPY . .

@@ -1,8 +1,18 @@
 """Base definitions for data ingest"""
 from abc import abstractmethod, ABC
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Generator, Mapping, Optional, Sequence
+from typing import (
+    Any,
+    Generator,
+    Mapping,
+    Optional,
+    Sequence,
+    Union,
+    List,
+    Callable,
+)
 
 from pydantic import AnyHttpUrl, BaseModel
 
@@ -26,6 +36,13 @@ class DocumentType(str, Enum):
     LAW = "Law"
     POLICY = "Policy"
     LITIGATION = "Litigation"
+
+
+class DocumentStatusTypes(str, Enum):
+    """Document statuses recognized by the ingest stage."""
+
+    DELETED = "DELETED"
+    PUBLISHED = "PUBLISHED"
 
 
 CATEGORY_MAPPING = {
@@ -94,6 +111,37 @@ class Document(BaseModel):
         return json_dict
 
 
+class UpdateTypes(str, Enum):
+    """Document types supported by the backend API."""
+
+    NAME = "name"
+    DESCRIPTION = "description"
+    # IMPORT_ID = "import_id"
+    # SLUG = "slug"
+    # PUBLICATION_TS = "publication_ts"
+    SOURCE_URL = "source_url"
+    # TYPE = "type"
+    # SOURCE = "source"
+    # CATEGORY = "category"
+    # GEOGRAPHY = "geography"
+    # FRAMEWORKS = "frameworks"
+    # INSTRUMENTS = "instruments"
+    # HAZARDS = "hazards"
+    # KEYWORDS = "keywords"
+    # LANGUAGES = "languages"
+    # SECTORS = "sectors"
+    # TOPICS = "topics"
+    # EVENTS = "events"
+    # DOCUMENT_STATUS = "document_status"
+
+
+PipelineFieldMapping = {
+    UpdateTypes.NAME: "document_name",
+    UpdateTypes.DESCRIPTION: "document_description",
+    UpdateTypes.SOURCE_URL: "document_source_url",
+}
+
+
 class DocumentParserInput(BaseModel):
     """Input specification for input to the parser."""
 
@@ -122,17 +170,7 @@ class DocumentParserInput(BaseModel):
         }
 
 
-class DocumentGenerator(ABC):
-    """Base class for all document sources."""
-
-    @abstractmethod
-    def process_source(self) -> Generator[Document, None, None]:
-        """Generate documents for processing from the configured source"""
-
-        raise NotImplementedError("process_source() not implemented")
-
-
-class DocumentUploadResult(BaseModel):
+class UploadResult(BaseModel):
     """Information generated during the upload of a document used by later processes"""
 
     cdn_object: Optional[str]
@@ -153,3 +191,61 @@ class UnsupportedContentTypeError(Exception):
     def __init__(self, content_type: str):
         self.content_type = content_type
         super().__init__(f"Content type '{content_type}' is not supported for caching")
+
+
+class Update(BaseModel):
+    """Class describing the results of comparing csv data against the db data to identify updates."""
+
+    db_value: Union[str, datetime]
+    csv_value: Union[str, datetime]
+    type: UpdateTypes
+
+
+class UpdateResult(BaseModel):
+    """Result of updating a document update via the ingest stage."""
+
+    document_id: str
+    update: Update
+    error: Optional[str] = None
+
+
+class InputData(BaseModel):
+    """Expected input data containing both document updates and new documents for the ingest stage of the pipeline."""
+
+    new_documents: List[Document]
+    updated_documents: dict[str, List[Update]]
+
+
+@dataclass
+class UpdateConfig:
+    """Shared configuration for document update functions."""
+
+    pipeline_bucket: str
+    input_prefix: str
+    parser_input: str
+    embeddings_input: str
+    indexer_input: str
+    archive_prefix: str
+
+
+class DocumentGenerator(ABC):
+    """Base class for all document sources."""
+
+    @abstractmethod
+    def process_new_documents(self) -> Generator[Document, None, None]:
+        """Generate new documents for processing from the configured source"""
+
+        raise NotImplementedError("process_new_documents() not implemented")
+
+    @abstractmethod
+    def process_updated_documents(self) -> Generator[Update, None, None]:
+        """Generate documents with updates for processing from the configured source"""
+
+        raise NotImplementedError("process_updated_documents() not implemented")
+
+
+class Action(BaseModel):
+    """Base class for associating an update with the relevant action."""
+
+    update: Update
+    action: Callable

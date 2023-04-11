@@ -1,4 +1,4 @@
-name: test
+name: unit_tests
 
 on:
   push:
@@ -7,15 +7,6 @@ on:
   pull_request:
     branches:
       - main
-
-env:
-  INGEST_DOCUMENT_BUCKET: ingest-unit-test-document-bucket
-  INGEST_PIPELINE_BUCKET: ingest-unit-test-pipeline-bucket
-  TEST_DATA_FILE_PATH: ./test/data/docs_test_subset.json
-  TEST_DATA_UPLOAD_PATH: input/docs_test_subset.json
-  INGEST_OUTPUT_PREFIX: ingest_unit_test_parser_input
-  DOCUMENT_NAME_KEY: document_id
-  TEST_DATA_EXPECTED_OUTPUT_FILE_PATH: test/data/docs_test_subset_parser_input_expected.json
 
 jobs:
   test:
@@ -36,31 +27,6 @@ jobs:
       - name: Building the Image
         run: make build_test
 
-      - name: Configuring AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }}
-          aws-region: ${{ secrets.UNIT_TESTS_AWS_REGION }}
-          aws-secret-access-key: ${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }}
-
-      - name: Building s3 bucket and uploading test data
-        run: |
-          python -m test.setup_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }} ${{ env.TEST_DATA_FILE_PATH }} ${{ env.TEST_DATA_UPLOAD_PATH }}
-
-      - name: Running the Ingest Stage
-        run: |
-          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --input-file ${{ env.TEST_DATA_UPLOAD_PATH }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }}
-
-      - name: Running Pytest on the Ingest Stage Output 🚀
-        run: |
-          python -m pytest -v
-        env:
-            INGEST_OUTPUT_PREFIX: ${{ env.INGEST_OUTPUT_PREFIX }}
-            INGEST_PIPELINE_BUCKET: ${{ env.INGEST_PIPELINE_BUCKET }}
-            DOCUMENT_NAME_KEY: ${{ env.DOCUMENT_NAME_KEY }}
-            TEST_DATA_EXPECTED_OUTPUT_FILE_PATH: ${{ env.TEST_DATA_EXPECTED_OUTPUT_FILE_PATH }}
-
-      - name: Destroying Infrastructure
-        if: always()
-        run: |
-          python -m test.clean_up_tests ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
+      - name: Running Unit Tests of the Ingest Application
+        run: | 
+          make test

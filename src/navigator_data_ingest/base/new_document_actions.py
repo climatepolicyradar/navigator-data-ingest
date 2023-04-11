@@ -1,45 +1,26 @@
-import json
 import logging
 import traceback
 from concurrent.futures import as_completed, Executor
 from typing import Generator, Iterable
 
 import requests
-from cloudpathlib import S3Path
 from slugify import slugify
 
-from navigator_data_ingest.base.types import (
-    Document,
-    DocumentGenerator,
-    DocumentParserInput,
-    DocumentUploadResult,
-    HandleResult,
-)
 from navigator_data_ingest.base.api_client import (
     upload_document,
     update_document_details,
+)
+from navigator_data_ingest.base.types import (
+    Document,
+    DocumentParserInput,
+    UploadResult,
+    HandleResult,
 )
 
 _LOGGER = logging.getLogger(__file__)
 
 
-class LawPolicyGenerator(DocumentGenerator):
-    """A generator of validated Document objects for inspection & upload"""
-
-    def __init__(self, input_file: S3Path):
-        self._input_file = input_file
-
-    def process_source(self) -> Generator[Document, None, None]:
-        """Generate documents for processing from the configured source."""
-
-        with self._input_file.open("r") as input:
-            json_docs = json.load(input)
-
-        for d in json_docs:
-            yield (Document(**d))
-
-
-def handle_all_documents(
+def handle_new_documents(
     executor: Executor,
     source: Iterable[Document],
     document_bucket: str,
@@ -85,7 +66,7 @@ def _upload_document(
     session: requests.Session,
     document: Document,
     document_bucket: str,
-) -> DocumentUploadResult:
+) -> UploadResult:
     """
     Upload a single document.
 
@@ -103,7 +84,7 @@ def _upload_document(
             f"Skipping upload for '{document.source}:{document.import_id}:"
             f"{document.name}' because the source URL is empty"
         )
-        return DocumentUploadResult(
+        return UploadResult(
             cdn_object=None,
             md5_sum=None,
             content_type=None,
@@ -112,11 +93,7 @@ def _upload_document(
     clean_url = document.source_url.split("|")[0].strip()
 
     return upload_document(
-        session,
-        clean_url,
-        file_name,
-        document_bucket,
-        document.import_id
+        session, clean_url, file_name, document_bucket, document.import_id
     )
 
 
@@ -173,4 +150,3 @@ def _handle_document(
         return HandleResult(error=traceback.format_exc(), parser_input=parser_input)
 
     return HandleResult(parser_input=parser_input)
-

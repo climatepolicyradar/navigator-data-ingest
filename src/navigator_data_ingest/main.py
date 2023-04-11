@@ -1,31 +1,20 @@
-import os
-import logging
 import logging.config
-import json_logging
+import os
 from concurrent.futures import ProcessPoolExecutor
 from typing import cast
 
 import click
-from cloudpathlib import CloudPath, S3Path
+import json_logging
+from cloudpathlib import S3Path
 
-from navigator_data_ingest.base.actions import LawPolicyGenerator, handle_all_documents
 from navigator_data_ingest.base.api_client import (
-    API_HOST_ENVVAR,
-    MACHINE_USER_EMAIL_ENVVAR,
-    MACHINE_USER_PASSWORD_ENVVAR,
     write_error_file,
     write_parser_input,
 )
-from navigator_data_ingest.base.types import Document
-
-
-REQUIRED_ENV_VARS = [
-    API_HOST_ENVVAR,
-    MACHINE_USER_EMAIL_ENVVAR,
-    MACHINE_USER_PASSWORD_ENVVAR,
-]
-ENV_VAR_MISSING_ERROR = 10
-
+from navigator_data_ingest.base.new_document_actions import handle_new_documents
+from navigator_data_ingest.base.types import UpdateConfig
+from navigator_data_ingest.base.updated_document_actions import handle_document_updates
+from navigator_data_ingest.base.utils import LawPolicyGenerator, check_required_env_vars
 
 # Clear existing log handlers so we always log in structured JSON
 root_logger = logging.getLogger()
@@ -80,8 +69,27 @@ _LOGGER = logging.getLogger(__name__)
 )
 @click.option(
     "--output-prefix",
-    required=True,
-    help="Prefix to apply to output files",
+    required=False,
+    default="parser_input",
+    help="Prefix to apply to output files, this s3 directory is the parser input",
+)
+@click.option(
+    "--embeddings-input-prefix",
+    required=False,
+    default="embeddings_input",
+    help="S3 prefix containing the embeddings input files",
+)
+@click.option(
+    "--indexer-input-prefix",
+    required=False,
+    default="indexer_input",
+    help="S3 prefix containing the indexer input files",
+)
+@click.option(
+    "--archive-prefix",
+    required=False,
+    default="archive",
+    help="S3 prefix to which to archive documents",
 )
 @click.option(
     "--worker-count",
@@ -94,26 +102,26 @@ def main(
     document_bucket: str,
     input_file: str,
     output_prefix: str,
+    embeddings_input_prefix: str,
+    indexer_input_prefix: str,
+    archive_prefix: str,
     worker_count: int,
 ):
     """
     Load documents from source JSON array file, updating details via API.
 
-    :param Optional[str] input_bucket: S3 bucket name from which to read the input file
-    :param str input_file: Location of JSON Document array input file
-    :param Optional[str] document_bucket: S3 bucket to which to upload documents
-    :param str
-    :return None:
+    param pipeline_bucket: S3 bucket name from which to read/write input/output files
+    param document_bucket: S3 bucket name in which to store cached documents
+    param input_file: Location of JSON Document array input file
+    param parser_input_prefix: Prefix to apply to output files that contains the parser input files
+    param embeddings_input_prefix: S3 prefix containing the embeddings input files
+    param indexer_input_prefix: S3 prefix containing the indexer input files
+    param archive_prefix: S3 prefix to which to archive documents
+    param worker_count: Number of workers downloading/uploading cached documents
+    return: None
     """
-    if os.getenv("ENV") != "production":
-        # for running locally (outside docker)
-        from dotenv import load_dotenv
+    check_required_env_vars()
 
-        load_dotenv("../../.env")
-        load_dotenv("../../.env.local")
-    _check_required_env_vars()
-
-    # Set up input/output paths
     pipeline_bucket_path = S3Path(f"s3://{pipeline_bucket.strip().rstrip('/')}")
     input_file_path = cast(
         S3Path,
@@ -123,22 +131,53 @@ def main(
         S3Path,
         pipeline_bucket_path / f"{output_prefix.strip().lstrip('/')}",
     )
+    _LOGGER.info(
+        "Loading and updating Law/Policy document data.",
+        extra={
+            "props": {
+                "input_file": str(input_file_path),
+                "output_location": str(output_location_path),
+            }
+        },
+    )
 
-    _LOGGER.info(f"Loading Law/Policy document data from '{input_file_path}'")
-
-    document_generator = LawPolicyGenerator(input_file_path)
+    document_generator = LawPolicyGenerator(input_file_path, output_location_path)
     errors = []
+
     # TODO: configure worker count
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
-        documents_to_process = [
-            document
-            for document in document_generator.process_source()
-            if not _parser_input_already_exists(output_location_path, document)
-        ]
+        update_config = UpdateConfig(
+            pipeline_bucket=pipeline_bucket,
+            input_prefix=input_file_path.key.replace(input_file_path.name, ""),
+            parser_input=output_prefix,
+            embeddings_input=embeddings_input_prefix,
+            indexer_input=indexer_input_prefix,
+            archive_prefix=archive_prefix,
+        )
 
-        for handle_result in handle_all_documents(
+        for handle_result in handle_document_updates(
             executor,
-            documents_to_process,
+            document_generator.process_updated_documents(),
+            update_config,
+        ):
+            for result in handle_result:
+                if str(result.error) != "[]":
+                    errors.append(
+                        f"ERROR updating '{result.document_id}': {result.error}"
+                    )
+
+            _LOGGER.info(
+                "Writing ERROR to JSON_ERRORS file",
+                extra={
+                    "props": {
+                        "errors": errors,
+                    }
+                },
+            )
+
+        for handle_result in handle_new_documents(
+            executor,
+            document_generator.process_new_documents(),
             document_bucket,
         ):
             if handle_result.error is not None:
@@ -151,39 +190,12 @@ def main(
             )
             write_parser_input(output_location_path, handle_result.parser_input)
 
-    if errors:
+    if len(errors) > 0:
         error_output_location_path = cast(
             S3Path,
             pipeline_bucket_path / f"{input_file.strip().lstrip('/')}_errors",
         )
         write_error_file(error_output_location_path, errors)
-
-
-def _parser_input_already_exists(
-    output_location: CloudPath,
-    document: Document,
-) -> bool:
-    output_file_location = cast(
-        S3Path,
-        output_location / f"{document.import_id}.json",
-    )
-    if output_file_location.exists():
-        _LOGGER.info(
-            f"Parser input for document ID '{document.import_id}' already exists"
-        )
-        return True
-    return False
-
-
-def _check_required_env_vars() -> None:
-    fail = False
-    for e in REQUIRED_ENV_VARS:
-        if e not in os.environ:
-            _LOGGER.error(f"Missing environment variable: {e}")
-            fail = True
-
-    if fail:
-        exit(ENV_VAR_MISSING_ERROR)
 
 
 if __name__ == "__main__":
