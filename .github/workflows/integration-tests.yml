@@ -49,6 +49,10 @@ jobs:
             echo "INGEST_DOCUMENT_BUCKET=testdocbucket${GITHUB_SHA}" >> $GITHUB_ENV
             echo "INGEST_PIPELINE_BUCKET=testpipbucket${GITHUB_SHA}" >> $GITHUB_ENV
 
+      - name: Destroying Infrastructure
+        run: |
+          python -m integration_tests.remove_test_buckets ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
+
       - name: Building s3 buckets and uploading test data
         run: |
           python -m integration_tests.setup_test_buckets ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
