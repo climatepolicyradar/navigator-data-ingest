@@ -16,6 +16,7 @@ from navigator_data_ingest.base.types import (
     Action,
     PipelineFieldMapping,
 )
+from navigator_data_ingest.base.utils import get_document_files
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -163,8 +164,8 @@ def update_dont_parse(
         ),
     ]:
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}.json")) + list(
-            prefix_path.glob(f"{document_id}_translated_*.json")
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
         )
         for document_file in document_files:
             errors.append(
@@ -239,8 +240,8 @@ def parse(
         ),
     ]:
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}.json")) + list(
-            prefix_path.glob(f"{document_id}_translated_*.json")
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
         )
         for document_file in document_files:
             errors.append(
@@ -262,9 +263,7 @@ def parse(
         )
 
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}.*")) + list(
-            prefix_path.glob(f"{document_id}_translated_*.*")
-        )
+        document_files = get_document_files(prefix_path, document_id, suffix_filter="*")
         for document_file in document_files:
             errors.append(
                 rename(
