@@ -158,7 +158,7 @@ def _store_document_in_cache(
     data: bytes,
 ) -> str:
     clean_name = name.lstrip("/")
-    output_file_location = S3Path(f"s3://{bucket}/{clean_name}")
+    output_file_location = S3Path(f"s3://{bucket}/navigator/{clean_name}")
     with output_file_location.open("wb") as output_file:
         output_file.write(data)
     return clean_name
