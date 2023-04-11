@@ -38,13 +38,6 @@ class DocumentType(str, Enum):
     LITIGATION = "Litigation"
 
 
-class DocumentStatusTypes(str, Enum):
-    """Document statuses recognized by the ingest stage."""
-
-    DELETED = "DELETED"
-    PUBLISHED = "PUBLISHED"
-
-
 CATEGORY_MAPPING = {
     "executive": DocumentType.POLICY,
     "legislative": DocumentType.LAW,
