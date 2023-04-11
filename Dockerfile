@@ -8,8 +8,8 @@ RUN pip install --no-cache --upgrade pip
 RUN pip install --no-cache "poetry==1.3.2"
 
 # Copy files to image
-COPY poetry.lock .
-COPY pyproject.toml .
+COPY poetry.lock ./poetry.lock
+COPY pyproject.toml ./pyproject.toml
 
 # Install python dependencies using poetry
 RUN poetry config virtualenvs.create false
