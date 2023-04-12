@@ -20,6 +20,15 @@ from navigator_data_ingest.base.types import (
 _LOGGER = logging.getLogger(__file__)
 
 
+def get_document_files(
+    prefix_path: S3Path, document_id: str, suffix_filter: str
+) -> List[S3Path]:
+    """Get the document files for a given document ID found in an s3 directory."""
+    return list(prefix_path.glob(f"{document_id}.{suffix_filter}")) + list(
+        prefix_path.glob(f"{document_id}_translated_*.{suffix_filter}")
+    )
+
+
 def handle_document_updates(
     executor: Executor,
     source: Generator[Tuple[str, List[Update]], None, None],
@@ -144,7 +153,9 @@ def update_dont_parse(
         ),
     ]:
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}*.json"))
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        )
         for document_file in document_files:
             errors.append(
                 update_file_field(
@@ -218,7 +229,9 @@ def parse(
         ),
     ]:
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}*.json"))
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        )
         for document_file in document_files:
             errors.append(
                 update_file_field(
@@ -239,7 +252,7 @@ def parse(
         )
 
         # Might be translated and non-translated json objects
-        document_files = list(prefix_path.glob(f"{document_id}*.*"))
+        document_files = get_document_files(prefix_path, document_id, suffix_filter="*")
         for document_file in document_files:
             errors.append(
                 rename(
