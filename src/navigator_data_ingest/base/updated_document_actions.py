@@ -16,9 +16,17 @@ from navigator_data_ingest.base.types import (
     Action,
     PipelineFieldMapping,
 )
-from navigator_data_ingest.base.utils import get_document_files
 
 _LOGGER = logging.getLogger(__file__)
+
+
+def get_document_files(
+    prefix_path: S3Path, document_id: str, suffix_filter: str
+) -> List[S3Path]:
+    """Get the document files for a given document ID found in an s3 directory."""
+    return list(prefix_path.glob(f"{document_id}.{suffix_filter}")) + list(
+        prefix_path.glob(f"{document_id}_translated_*.{suffix_filter}")
+    )
 
 
 def handle_document_updates(

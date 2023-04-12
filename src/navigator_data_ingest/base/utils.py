@@ -101,12 +101,3 @@ def check_required_env_vars() -> None:
 
     if fail:
         exit(ENV_VAR_MISSING_ERROR)
-
-
-def get_document_files(
-    prefix_path: S3Path, document_id: str, suffix_filter: str
-) -> List[S3Path]:
-    """Get the document files for a given document ID found in an s3 directory."""
-    return list(prefix_path.glob(f"{document_id}.{suffix_filter}")) + list(
-        prefix_path.glob(f"{document_id}_translated_*.{suffix_filter}")
-    )
