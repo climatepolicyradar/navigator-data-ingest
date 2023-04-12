@@ -94,35 +94,16 @@ def order_actions(actions: List[Action]) -> List[Action]:
 
     We need to ensure that we make object updates before archiving a document.
     """
-    ordering = [
-        update_dont_parse.__name__,
-        parse.__name__,
-    ]
-    priorities = {letter: index for index, letter in enumerate(ordering)}
-    _LOGGER.info(
-        "Ordering actions.",
-        extra={"props": {"priorities": str(priorities)}},
-    )
 
-    ordered_actions = [
+    def get_action_priority(action_name: str) -> int:
+        return 0 if action_name == update_dont_parse.__name__ else 1
+
+    return [
         action
         for action in sorted(
-            actions, key=lambda action: priorities[action.action.__name__]
+            actions, key=lambda action: get_action_priority(action.action.__name__)
         )
     ]
-    _LOGGER.info(
-        "Actions ordered.",
-        extra={
-            "props": {
-                "actions_initial": str([action.action.__name__ for action in actions]),
-                "actions_final": str(
-                    [action.action.__name__ for action in ordered_actions]
-                ),
-            }
-        },
-    )
-
-    return ordered_actions
 
 
 def update_dont_parse(
