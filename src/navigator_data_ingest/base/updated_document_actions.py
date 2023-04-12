@@ -203,7 +203,7 @@ def parse(
     """
     document_id, document_update = update
     _LOGGER.info(
-        "Updating document so as to parse during the next run.",
+        "Archiving document so as to re-download from source and parse during the next run.",
         extra={
             "props": {
                 "document_id": document_id,
@@ -211,39 +211,10 @@ def parse(
         },
     )
     errors = []
-    for prefix_path in [
-        S3Path(
-            os.path.join(
-                "s3://", update_config.pipeline_bucket, update_config.parser_input
-            )
-        ),
-        S3Path(
-            os.path.join(
-                "s3://", update_config.pipeline_bucket, update_config.embeddings_input
-            )
-        ),
-        S3Path(
-            os.path.join(
-                "s3://", update_config.pipeline_bucket, update_config.indexer_input
-            )
-        ),
-    ]:
-        # Might be translated and non-translated json objects
-        document_files = get_document_files(
-            prefix_path, document_id, suffix_filter="json"
-        )
-        for document_file in document_files:
-            errors.append(
-                update_file_field(
-                    document_path=document_file,
-                    field=str(document_update.type.value),
-                    new_value=document_update.csv_value,
-                    existing_value=document_update.db_value,
-                )
-            )
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     for prefix in [
+        update_config.parser_input,
         update_config.embeddings_input,
         update_config.indexer_input,
     ]:

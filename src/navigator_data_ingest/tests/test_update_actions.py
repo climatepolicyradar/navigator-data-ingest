@@ -184,16 +184,8 @@ def test_parse(
         for s3_key in s3_document_keys
     ]
 
-    assert parser_input_doc.exists()
+    assert not parser_input_doc.exists()
     assert not embeddings_input_doc.exists()
     assert not embeddings_input_translated_doc.exists()
     assert not indexer_input_doc_json.exists()
     assert not indexer_input_doc_npy.exists()
-
-    parser_input_doc_data = json.loads(parser_input_doc.read_text())
-    assert (
-        parser_input_doc_data[
-            PipelineFieldMapping[UpdateTypes(update_to_source_url.type)]
-        ]
-        == update_to_source_url.csv_value
-    )
