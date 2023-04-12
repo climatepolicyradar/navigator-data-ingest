@@ -24,7 +24,7 @@ Build the docker image locally
 
 Set up the test buckets 
 
-     python setup_test_buckets ${document_bucket} ${pipeline_bucket} ${region}
+     python -m integration_tests.setup_test_buckets ${document_bucket} ${pipeline_bucket} ${region}
 
 Sync the test data to the s3 bucket 
 
