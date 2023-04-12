@@ -22,6 +22,11 @@ Build the docker image locally
 
      make build_test
 
+
+MAKE SURE YOU HAVE THE CORRECT AWS CREDENTIALS SET UP.
+
+    export AWS_PROFILE=${PROFILE_NAME}
+
 Set up the test buckets 
 
      python -m integration_tests.setup_test_buckets ${document_bucket} ${pipeline_bucket} ${region}
@@ -44,3 +49,7 @@ Assert that the output is correct and if so manually delete all the files in the
      cd integration_tests/data/pipeline_out
 
      aws s3 sync s3://${pipeline_bucket}/ .
+
+Remove the test buckets 
+
+     python -m integration_tests.remove_test_buckets ${document_bucket} ${pipeline_bucket} ${region}
