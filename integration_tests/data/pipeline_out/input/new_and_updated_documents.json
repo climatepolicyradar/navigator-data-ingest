@@ -838,6 +838,102 @@
         }
       ],
       "slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017"
+    },
+    {
+      "publication_ts": "2013-01-01T00:00:00",
+      "name": "DECISION No 1386/2013/EU OF THE EUROPEAN PARLIAMENT AND OF THE COUNCIL of 20 November 2013 on a General Union Environment Action Programme to 2020 \u2018Living well, within the limits of our planet\u2019",
+      "description": "The Decision no 1386/2013/EU sets up the General Union Environment Action Programme to 2020 \u2018Living well, within the limits of our planet'. It adopts the '7th Environment Action programme' or \u20187th EAP'. The priority objectives of the 7th EAP are: (a) to protect, conserve and enhance the Union's natural capital; (b) to turn the Union into a resource-efficient, green and competitive low-carbon economy; (c) to safeguard the Union's citizens from environment-related pressures and risks to health and well-being; (d) to maximise the benefits of Union environment legislation by improving implementation; (e) to improve the knowledge and evidence base for Union environment policy; (f) to secure investment for environment and climate policy and address environmental externalities; (g) to improve environmental integration and policy coherence; (h) to enhance the sustainability of the Union's cities; (i) to increase the Union's effectiveness in addressing inter\u00ad national environmental and climate-related challenges.",
+      "source_url": "http://existing.com",
+      "url": null,
+      "md5_sum": null,
+      "type": "EU Decision",
+      "source": "CCLW",
+      "import_id": "TESTCCLW.executive.3.3",
+      "category": "Law",
+      "frameworks": [],
+      "geography": "EUR",
+      "hazards": [],
+      "instruments": [
+        "Capacity building|Governance",
+        "Education, training and knowledge dissemination|Information"
+      ],
+      "keywords": [
+        "Adaptation",
+        "Institutions / Administrative Arrangements",
+        "Research And Development",
+        "Energy Supply",
+        "Energy Demand",
+        "REDD+ And LULUCF",
+        "Transport"
+      ],
+      "languages": [
+        "English"
+      ],
+      "sectors": [
+        "Economy-wide",
+        "Health",
+        "Transport"
+      ],
+      "topics": [
+        "Adaptation",
+        "Mitigation"
+      ],
+      "events": [
+        {
+          "name": "Law passed",
+          "description": "",
+          "created_ts": "2013-11-20T00:00:00"
+        }
+      ],
+      "slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017"
+    },
+    {
+      "publication_ts": "2013-01-01T00:00:00",
+      "name": "DECISION No 1386/2013/EU OF THE EUROPEAN PARLIAMENT AND OF THE COUNCIL of 20 November 2013 on a General Union Environment Action Programme to 2020 \u2018Living well, within the limits of our planet\u2019",
+      "description": "description",
+      "source_url": "http://existing.com",
+      "url": null,
+      "md5_sum": null,
+      "type": "EU Decision",
+      "source": "CCLW",
+      "import_id": "TESTCCLW.executive.4.4",
+      "category": "Law",
+      "frameworks": [],
+      "geography": "EUR",
+      "hazards": [],
+      "instruments": [
+        "Capacity building|Governance",
+        "Education, training and knowledge dissemination|Information"
+      ],
+      "keywords": [
+        "Adaptation",
+        "Institutions / Administrative Arrangements",
+        "Research And Development",
+        "Energy Supply",
+        "Energy Demand",
+        "REDD+ And LULUCF",
+        "Transport"
+      ],
+      "languages": [
+        "English"
+      ],
+      "sectors": [
+        "Economy-wide",
+        "Health",
+        "Transport"
+      ],
+      "topics": [
+        "Adaptation",
+        "Mitigation"
+      ],
+      "events": [
+        {
+          "name": "Law passed",
+          "description": "",
+          "created_ts": "2013-11-20T00:00:00"
+        }
+      ],
+      "slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017"
     }
   ],
     "updated_documents": {
