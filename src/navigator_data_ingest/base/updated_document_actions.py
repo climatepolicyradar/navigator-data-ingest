@@ -20,13 +20,15 @@ from navigator_data_ingest.base.types import (
 _LOGGER = logging.getLogger(__file__)
 
 
+# TODO: hard coding translated language will lead to issues if we have more target languages in future
 def get_document_files(
     prefix_path: S3Path, document_id: str, suffix_filter: str
 ) -> List[S3Path]:
     """Get the document files for a given document ID found in an s3 directory."""
-    return list(prefix_path.glob(f"{document_id}.{suffix_filter}")) + list(
-        prefix_path.glob(f"{document_id}_translated_*.{suffix_filter}")
-    )
+    return [
+        prefix_path / f"{document_id}.{suffix_filter}",
+        prefix_path / f"{document_id}_translated_en.{suffix_filter}",
+    ]
 
 
 def handle_document_updates(
