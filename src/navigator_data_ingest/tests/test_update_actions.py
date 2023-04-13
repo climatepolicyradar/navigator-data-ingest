@@ -196,7 +196,7 @@ def test_parse(
 def test_update_metadata_field(
     test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
 ):
-    """Test that a document can successfully be updated by the pipeline."""
+    """Test that a field in the metdata of an s3 document can successfully be updated by the pipeline."""
     update_to_publication_ts = test_updates[3]
 
     parser_input_document_path = S3Path(

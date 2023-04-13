@@ -199,11 +199,7 @@ def parse(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
-    """
-    Update the fields in the json objects to reflect the change made to the data.
-
-    Then remove the desired files by moving them to an archive directory in s3 to re-trigger parsing of the document.
-    """
+    """Archive all instances of the document in the s3 pipeline cache to trigger full re-processing."""
     document_id, document_update = update
     _LOGGER.info(
         "Archiving document so as to re-download from source and parse during the next run.",
