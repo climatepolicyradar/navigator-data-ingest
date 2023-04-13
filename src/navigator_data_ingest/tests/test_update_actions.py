@@ -14,6 +14,7 @@ from navigator_data_ingest.base.updated_document_actions import (
     update_file_field,
     rename,
     update_type_actions,
+    update_file_metadata_field,
 )
 
 
@@ -167,6 +168,47 @@ def test_parse(
         for error in parse(
             update=(s3_document_id, update_to_source_url),
             update_config=test_update_config,
+        )
+        if not "None"
+    ]
+
+    assert errors == []
+
+    (
+        parser_input_doc,
+        embeddings_input_doc,
+        embeddings_input_translated_doc,
+        indexer_input_doc_json,
+        indexer_input_doc_npy,
+    ) = [
+        S3Path(f"s3://{test_update_config.pipeline_bucket}/{s3_key}")
+        for s3_key in s3_document_keys
+    ]
+
+    assert not parser_input_doc.exists()
+    assert not embeddings_input_doc.exists()
+    assert not embeddings_input_translated_doc.exists()
+    assert not indexer_input_doc_json.exists()
+    assert not indexer_input_doc_npy.exists()
+
+
+@pytest.mark.unit
+def test_update_metadata_field(
+    test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
+):
+    """Test that a document can successfully be updated by the pipeline."""
+    update_to_source_url = test_updates[3]
+
+    parser_input_document_path = S3Path(
+        f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/{s3_document_id}.json"
+    )
+
+    errors = [
+        error
+        for error in update_file_metadata_field(
+            document_path=parser_input_document_path,
+            metadata_field=update_to_source_url.type,
+            new_value=update_to_source_url.csv_value,
         )
         if not "None"
     ]

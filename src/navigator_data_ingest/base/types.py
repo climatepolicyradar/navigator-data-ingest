@@ -111,7 +111,7 @@ class UpdateTypes(str, Enum):
     DESCRIPTION = "description"
     # IMPORT_ID = "import_id"
     # SLUG = "slug"
-    # PUBLICATION_TS = "publication_ts"
+    PUBLICATION_TS = "publication_ts"
     SOURCE_URL = "source_url"
     # TYPE = "type"
     # SOURCE = "source"
@@ -132,6 +132,7 @@ PipelineFieldMapping = {
     UpdateTypes.NAME: "document_name",
     UpdateTypes.DESCRIPTION: "document_description",
     UpdateTypes.SOURCE_URL: "document_source_url",
+    UpdateTypes.PUBLICATION_TS: "publication_ts",
 }
 
 

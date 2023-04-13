@@ -237,6 +237,11 @@ def test_updates(s3_document_id):
                 "csv_value": "https://www.NEW_SOURCE_URL.pdf",
                 "db_value": "https://domain/path/to/document.pdf",
             },
+            {
+                "type": "publication_ts",
+                "csv_value": "2020-12-25T00:00:00",
+                "db_value": "2021-12-25T00:00:00",
+            },
         ]
     }
 

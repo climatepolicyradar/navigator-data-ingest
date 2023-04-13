@@ -20,6 +20,9 @@ from navigator_data_ingest.base.types import (
 _LOGGER = logging.getLogger(__file__)
 
 
+METADATA_KEY = os.environ.get("METADATA_KEY", "metadata")
+
+
 def get_document_files(
     prefix_path: S3Path, document_id: str, suffix_filter: str
 ) -> List[S3Path]:
@@ -295,6 +298,58 @@ def update_file_field(
         document[pipeline_field] = new_value
         document_path.write_text(json.dumps(document))
         return None
+    else:
+        _LOGGER.error(
+            "Expected to update document but it doesn't exist.",
+            extra={
+                "props": {
+                    "document_path": str(document_path),
+                }
+            },
+        )
+        return "NotFoundError: Expected to update document but it doesn't exist."
+
+
+def update_file_metadata_field(
+    document_path: S3Path,
+    metadata_field: str,
+    new_value: Union[str, datetime],
+) -> Union[str, None]:
+    """Update the value of a metadata field in a json object within s3 with the new value."""
+    if document_path.exists():
+        pipeline_metadata_field = PipelineFieldMapping[UpdateTypes(metadata_field)]
+        _LOGGER.info(
+            "Updating document metadata field.",
+            extra={
+                "props": {
+                    "document_path": str(document_path),
+                    "metadata_field": metadata_field,
+                    "pipeline_field": pipeline_metadata_field,
+                    "value": new_value,
+                }
+            },
+        )
+        document = json.loads(document_path.read_text())
+
+        try:
+            document[METADATA_KEY][pipeline_metadata_field] = new_value
+            document_path.write_text(json.dumps(document))
+            return None
+
+        except KeyError:
+            _LOGGER.error(
+                "Field not found in s3 object.",
+                extra={
+                    "props": {
+                        "document_path": str(document_path),
+                        "metadata_field": metadata_field,
+                        "pipeline_field": pipeline_metadata_field,
+                        "value": new_value,
+                        "document": document,
+                    }
+                },
+            )
+            return traceback.format_exc()
     else:
         _LOGGER.error(
             "Expected to update document but it doesn't exist.",
