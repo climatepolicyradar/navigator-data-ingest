@@ -262,7 +262,7 @@ def update_file_field(
 
         try:
             if not str(document[pipeline_field]) == str(existing_value):
-                _LOGGER.error(
+                _LOGGER.info(
                     "Existing value doesn't match.",
                     extra={
                         "props": {
@@ -278,7 +278,7 @@ def update_file_field(
 
             document[pipeline_field] = new_value
         except KeyError:
-            _LOGGER.error(
+            _LOGGER.exception(
                 "Field not found in s3 object.",
                 extra={
                     "props": {
