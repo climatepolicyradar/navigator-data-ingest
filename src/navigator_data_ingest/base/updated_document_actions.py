@@ -20,13 +20,15 @@ from navigator_data_ingest.base.types import (
 _LOGGER = logging.getLogger(__file__)
 
 
+# TODO: hard coding translated language will lead to issues if we have more target languages in future
 def get_document_files(
     prefix_path: S3Path, document_id: str, suffix_filter: str
 ) -> List[S3Path]:
     """Get the document files for a given document ID found in an s3 directory."""
-    return list(prefix_path.glob(f"{document_id}.{suffix_filter}")) + list(
-        prefix_path.glob(f"{document_id}_translated_*.{suffix_filter}")
-    )
+    return [
+        prefix_path / f"{document_id}.{suffix_filter}",
+        prefix_path / f"{document_id}_translated_en.{suffix_filter}",
+    ]
 
 
 def handle_document_updates(
@@ -223,7 +225,9 @@ def parse(
         )
 
         # Might be translated and non-translated json objects
-        document_files = get_document_files(prefix_path, document_id, suffix_filter="*")
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        ) + get_document_files(prefix_path, document_id, suffix_filter="npy")
         for document_file in document_files:
             errors.append(
                 rename(
@@ -296,15 +300,17 @@ def update_file_field(
         document_path.write_text(json.dumps(document))
         return None
     else:
-        _LOGGER.error(
-            "Expected to update document but it doesn't exist.",
+        _LOGGER.info(
+            "Tried to update document but it doesn't exist.",
             extra={
                 "props": {
                     "document_path": str(document_path),
                 }
             },
         )
-        return "NotFoundError: Expected to update document but it doesn't exist."
+        # TODO: convert to an f-string with more details when we can identify the expected files
+        # return "NotFoundError: Expected to update document but it doesn't exist."
+        return None
 
 
 def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
