@@ -224,18 +224,18 @@ def test_updates(s3_document_id):
         s3_document_id: [
             {
                 "type": "name",
-                "csv_value": "NEW NAME",
-                "db_value": "An example document name.",
+                "db_value": "NEW NAME",
+                "s3_value": "An example document name.",
             },
             {
                 "type": "description",
-                "csv_value": "NEW DESCRIPTION",
-                "db_value": "An example document description.",
+                "db_value": "NEW DESCRIPTION",
+                "s3_value": "An example document description.",
             },
             {
                 "type": "source_url",
-                "csv_value": "https://www.NEW_SOURCE_URL.pdf",
-                "db_value": "https://domain/path/to/document.pdf",
+                "db_value": "https://www.NEW_SOURCE_URL.pdf",
+                "s3_value": "https://domain/path/to/document.pdf",
             },
             {
                 "type": "publication_ts",
@@ -248,7 +248,7 @@ def test_updates(s3_document_id):
     return [
         Update(
             type=UpdateTypes(update["type"]),
-            csv_value=update["csv_value"],
+            s3_value=update["s3_value"],
             db_value=update["db_value"],
         )
         for update in updates[s3_document_id]

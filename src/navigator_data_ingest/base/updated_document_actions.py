@@ -164,8 +164,8 @@ def update_dont_parse(
                 update_file_field(
                     document_path=document_file,
                     field=str(document_update.type.value),
-                    new_value=document_update.csv_value,
-                    existing_value=document_update.db_value,
+                    new_value=document_update.db_value,
+                    existing_value=document_update.s3_value,
                 )
             )
 
@@ -264,24 +264,24 @@ def update_file_field(
         document = json.loads(document_path.read_text())
 
         try:
-            assert str(document[pipeline_field]) == str(existing_value)
-        except AssertionError:
-            _LOGGER.error(
-                "Field value mismatch - expected value not found in s3 object.",
-                extra={
-                    "props": {
-                        "document_path": str(document_path),
-                        "field": field,
-                        "pipeline_field": pipeline_field,
-                        "value": new_value,
-                        "existing_value": existing_value,
-                        "document": document,
-                    }
-                },
-            )
-            return "FieldMismatchError: Expected value not found in s3 object."
+            if not str(document[pipeline_field]) == str(existing_value):
+                _LOGGER.info(
+                    "Existing value doesn't match.",
+                    extra={
+                        "props": {
+                            "document_path": str(document_path),
+                            "field": field,
+                            "pipeline_field": pipeline_field,
+                            "value": new_value,
+                            "existing_value": existing_value,
+                            "document": document,
+                        }
+                    },
+                )
+
+            document[pipeline_field] = new_value
         except KeyError:
-            _LOGGER.error(
+            _LOGGER.exception(
                 "Field not found in s3 object.",
                 extra={
                     "props": {
@@ -295,7 +295,7 @@ def update_file_field(
                 },
             )
             return traceback.format_exc()
-        document[pipeline_field] = new_value
+
         document_path.write_text(json.dumps(document))
         return None
     else:
