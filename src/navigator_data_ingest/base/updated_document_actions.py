@@ -260,22 +260,22 @@ def update_file_field(
         )
         document = json.loads(document_path.read_text())
 
-        if not str(document[pipeline_field]) == str(existing_value):
-            _LOGGER.error(
-                "Existing value doesn't match.",
-                extra={
-                    "props": {
-                        "document_path": str(document_path),
-                        "field": field,
-                        "pipeline_field": pipeline_field,
-                        "value": new_value,
-                        "existing_value": existing_value,
-                        "document": document,
-                    }
-                },
-            )
-
         try:
+            if not str(document[pipeline_field]) == str(existing_value):
+                _LOGGER.error(
+                    "Existing value doesn't match.",
+                    extra={
+                        "props": {
+                            "document_path": str(document_path),
+                            "field": field,
+                            "pipeline_field": pipeline_field,
+                            "value": new_value,
+                            "existing_value": existing_value,
+                            "document": document,
+                        }
+                    },
+                )
+
             document[pipeline_field] = new_value
         except KeyError:
             _LOGGER.error(
