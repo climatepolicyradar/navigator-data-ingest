@@ -125,7 +125,7 @@ def test_update_dont_parse(
         parser_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.csv_value
+        == update_to_document_description.db_value
     )
 
     embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
@@ -133,7 +133,7 @@ def test_update_dont_parse(
         embeddings_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.csv_value
+        == update_to_document_description.db_value
     )
 
     embeddings_input_translated_doc_data = json.loads(
@@ -143,7 +143,7 @@ def test_update_dont_parse(
         embeddings_input_translated_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.csv_value
+        == update_to_document_description.db_value
     )
 
     indexer_input_doc_json_data = json.loads(indexer_input_doc_json.read_text())
@@ -151,7 +151,7 @@ def test_update_dont_parse(
         indexer_input_doc_json_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.csv_value
+        == update_to_document_description.db_value
     )
 
 

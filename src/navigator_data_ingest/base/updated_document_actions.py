@@ -161,8 +161,8 @@ def update_dont_parse(
                 update_file_field(
                     document_path=document_file,
                     field=str(document_update.type.value),
-                    new_value=document_update.csv_value,
-                    existing_value=document_update.db_value,
+                    new_value=document_update.db_value,
+                    existing_value=document_update.s3_value,
                 )
             )
 
