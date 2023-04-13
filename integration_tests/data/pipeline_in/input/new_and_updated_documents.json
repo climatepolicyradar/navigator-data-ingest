@@ -939,41 +939,41 @@
     "updated_documents": {
        "TESTCCLW.executive.1.1": [
         {
-          "db_value": "name",
-          "csv_value": "new name",
+          "s3_value": "name",
+          "db_value": "new name",
           "type": "name"
         }
       ],
         "TESTCCLW.executive.2.2": [
         {
-          "db_value": "description",
-          "csv_value": "new description",
+          "s3_value": "description",
+          "db_value": "new description",
           "type": "description"
         }
       ],
       "TESTCCLW.executive.3.3": [
         {
-          "db_value": "http://existing.com",
-          "csv_value": "http://new.com",
+          "s3_value": "http://existing.com",
+          "db_value": "http://new.com",
           "type": "source_url"
         }
       ],
       "TESTCCLW.executive.4.4": [
         {
-          "db_value": "description",
-          "csv_value": "new description",
+          "s3_value": "description",
+          "db_value": "new description",
           "type": "description"
         },
         {
-          "db_value": "http://existing.com",
-          "csv_value": "http://new.com",
+          "s3_value": "http://existing.com",
+          "db_value": "http://new.com",
           "type": "source_url"
         }
       ],
       "TESTCCLW.executive.5.5": [
         {
-          "db_value": "description",
-          "csv_value": "new description",
+          "s3_value": "description",
+          "db_value": "new description",
           "type": "description"
         }
       ]
