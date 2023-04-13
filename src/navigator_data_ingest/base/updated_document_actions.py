@@ -225,7 +225,9 @@ def parse(
         )
 
         # Might be translated and non-translated json objects
-        document_files = get_document_files(prefix_path, document_id, suffix_filter="*")
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        ) + get_document_files(prefix_path, document_id, suffix_filter="npy")
         for document_file in document_files:
             errors.append(
                 rename(
