@@ -300,15 +300,17 @@ def update_file_field(
         document_path.write_text(json.dumps(document))
         return None
     else:
-        _LOGGER.error(
-            "Expected to update document but it doesn't exist.",
+        _LOGGER.info(
+            "Tried to update document but it doesn't exist.",
             extra={
                 "props": {
                     "document_path": str(document_path),
                 }
             },
         )
-        return "NotFoundError: Expected to update document but it doesn't exist."
+        # TODO: convert to an f-string with more details when we can identify the expected files
+        # return "NotFoundError: Expected to update document but it doesn't exist."
+        return None
 
 
 def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
