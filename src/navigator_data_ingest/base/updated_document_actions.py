@@ -314,6 +314,7 @@ def update_file_metadata_field(
     document_path: S3Path,
     metadata_field: str,
     new_value: Union[str, datetime],
+    existing_value: Union[str, datetime],
 ) -> Union[str, None]:
     """Update the value of a metadata field in a json object within s3 with the new value."""
     if document_path.exists():
@@ -332,12 +333,26 @@ def update_file_metadata_field(
         document = json.loads(document_path.read_text())
 
         try:
-            document[METADATA_KEY][pipeline_metadata_field] = new_value
-            document_path.write_text(json.dumps(document))
-            return None
+            if not str(document[METADATA_KEY][pipeline_metadata_field]) == str(
+                existing_value
+            ):
+                _LOGGER.info(
+                    "Existing value doesn't match.",
+                    extra={
+                        "props": {
+                            "document_path": str(document_path),
+                            "metadata_field": metadata_field,
+                            "pipeline_field": pipeline_metadata_field,
+                            "value": new_value,
+                            "existing_value": existing_value,
+                            "document": document,
+                        }
+                    },
+                )
 
+            document[METADATA_KEY][pipeline_metadata_field] = new_value
         except KeyError:
-            _LOGGER.error(
+            _LOGGER.exception(
                 "Field not found in s3 object.",
                 extra={
                     "props": {
@@ -350,6 +365,9 @@ def update_file_metadata_field(
                 },
             )
             return traceback.format_exc()
+
+        document_path.write_text(json.dumps(document))
+        return None
     else:
         _LOGGER.error(
             "Expected to update document but it doesn't exist.",

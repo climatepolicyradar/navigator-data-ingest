@@ -197,7 +197,7 @@ def test_update_metadata_field(
     test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
 ):
     """Test that a document can successfully be updated by the pipeline."""
-    update_to_source_url = test_updates[3]
+    update_to_publication_ts = test_updates[3]
 
     parser_input_document_path = S3Path(
         f"s3://{test_update_config.pipeline_bucket}/{test_update_config.parser_input}/{s3_document_id}.json"
@@ -207,8 +207,9 @@ def test_update_metadata_field(
         error
         for error in update_file_metadata_field(
             document_path=parser_input_document_path,
-            metadata_field=update_to_source_url.type,
-            new_value=update_to_source_url.csv_value,
+            metadata_field=update_to_publication_ts.type,
+            new_value=update_to_publication_ts.db_value,
+            existing_value=update_to_publication_ts.s3_value,
         )
         if not "None"
     ]
@@ -226,8 +227,16 @@ def test_update_metadata_field(
         for s3_key in s3_document_keys
     ]
 
-    assert not parser_input_doc.exists()
-    assert not embeddings_input_doc.exists()
-    assert not embeddings_input_translated_doc.exists()
-    assert not indexer_input_doc_json.exists()
-    assert not indexer_input_doc_npy.exists()
+    assert parser_input_doc.exists()
+    parser_input_doc_data = json.loads(parser_input_doc.read_text())
+    assert (
+        parser_input_doc_data[
+            PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
+        ]
+        == update_to_publication_ts.db_value
+    )
+    # TODO add for other files
+    assert embeddings_input_doc.exists()
+    assert embeddings_input_translated_doc.exists()
+    assert indexer_input_doc_json.exists()
+    assert indexer_input_doc_npy.exists()
