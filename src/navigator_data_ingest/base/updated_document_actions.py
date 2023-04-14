@@ -114,8 +114,12 @@ def order_actions(actions: List[Action]) -> List[Action]:
         if action.action == parse:
             return [action]
 
+    # TODO: Currently only two actions other than 'parse' are 'update_dont_parse' and 'publication_ts'. We want to
+    #  update publication_ts before update_dont_parse as we don't want to attempt update of a document that is
+    #  archived during the update_dont_parse process. Thus, we order the actions so that 'publication_ts' is first.
     def get_action_priority(action_name: str) -> int:
-        return 0 if action_name == update_dont_parse.__name__ else 1
+        """Get the priority of an action."""
+        return 1 if action_name == update_dont_parse.__name__ else 0
 
     return [
         action
@@ -317,6 +321,54 @@ def update_file_field(
         return None
 
 
+def update_publication_ts(
+    update: Tuple[str, Update],
+    update_config: UpdateConfig,
+) -> List[Union[str, None]]:
+    """Update the value of the publication_ts field in all json objects for a document within s3 with the new value."""
+    document_id, document_update = update
+    _LOGGER.info(
+        "Updating publication_ts for document instances in s3.",
+        extra={
+            "props": {
+                "document_id": document_id,
+            }
+        },
+    )
+    errors = []
+    for prefix_path in [
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.parser_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.embeddings_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.indexer_input
+            )
+        ),
+    ]:
+        # Might be translated and non-translated json objects
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        )
+        for document_file in document_files:
+            errors.append(
+                update_file_metadata_field(
+                    document_path=document_file,
+                    metadata_field=str(document_update.type.value),
+                    new_value=document_update.db_value,
+                    existing_value=document_update.s3_value,
+                )
+            )
+    return [error for error in errors if error is not None]
+
+
 def update_file_metadata_field(
     document_path: S3Path,
     metadata_field: str,
@@ -431,4 +483,5 @@ update_type_actions = {
     UpdateTypes.SOURCE_URL: parse,
     UpdateTypes.NAME: update_dont_parse,
     UpdateTypes.DESCRIPTION: update_dont_parse,
+    UpdateTypes.PUBLICATION_TS: update_publication_ts,
 }
