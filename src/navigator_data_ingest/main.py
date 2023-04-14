@@ -166,15 +166,6 @@ def main(
                         f"ERROR updating '{result.document_id}': {result.error}"
                     )
 
-            _LOGGER.info(
-                "Writing ERROR to JSON_ERRORS file",
-                extra={
-                    "props": {
-                        "errors": errors,
-                    }
-                },
-            )
-
         for handle_result in handle_new_documents(
             executor,
             document_generator.process_new_documents(),
@@ -194,6 +185,15 @@ def main(
         error_output_location_path = cast(
             S3Path,
             pipeline_bucket_path / f"{input_file.strip().lstrip('/')}_errors",
+        )
+        _LOGGER.info(
+            "Writing errors to JSON_ERRORS file",
+            extra={
+                "props": {
+                    "errors": errors,
+                    "error_output_location_path": str(error_output_location_path),
+                }
+            },
         )
         write_error_file(error_output_location_path, errors)
 
