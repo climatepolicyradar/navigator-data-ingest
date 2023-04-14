@@ -234,8 +234,32 @@ def test_update_metadata_field(
         ]
         == update_to_publication_ts.db_value
     )
-    # TODO add for other files
+
     assert embeddings_input_doc.exists()
+    embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
+    assert (
+        embeddings_input_doc_data[METADATA_KEY][
+            PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
+        ]
+        == update_to_publication_ts.db_value
+    )
+
     assert embeddings_input_translated_doc.exists()
+    embeddings_input_translated_doc_data = json.loads(embeddings_input_translated_doc.read_text())
+    assert (
+        embeddings_input_translated_doc_data[METADATA_KEY][
+            PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
+        ]
+        == update_to_publication_ts.db_value
+    )
+
     assert indexer_input_doc_json.exists()
+    indexer_input_doc_json_data = json.loads(indexer_input_doc_json.read_text())
+    assert (
+        indexer_input_doc_json_data[METADATA_KEY][
+            PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
+        ]
+        == update_to_publication_ts.db_value
+    )
+
     assert indexer_input_doc_npy.exists()
