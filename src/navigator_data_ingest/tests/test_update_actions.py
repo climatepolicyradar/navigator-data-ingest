@@ -14,7 +14,7 @@ from navigator_data_ingest.base.updated_document_actions import (
     update_file_field,
     rename,
     update_type_actions,
-    update_file_metadata_field,
+    update_file_metadata_field, METADATA_KEY,
 )
 
 
@@ -184,7 +184,7 @@ def test_parse(
         for s3_key in s3_document_keys
     ]
 
-    assert not parser_input_doc.exists()
+    assert parser_input_doc.exists()
     assert not embeddings_input_doc.exists()
     assert not embeddings_input_translated_doc.exists()
     assert not indexer_input_doc_json.exists()
@@ -204,12 +204,12 @@ def test_update_metadata_field(
 
     errors = [
         error
-        for error in update_file_metadata_field(
+        for error in [update_file_metadata_field(
             document_path=parser_input_document_path,
             metadata_field=update_to_publication_ts.type,
             new_value=update_to_publication_ts.db_value,
             existing_value=update_to_publication_ts.s3_value,
-        )
+        )]
         if not "None"
     ]
 
@@ -229,7 +229,7 @@ def test_update_metadata_field(
     assert parser_input_doc.exists()
     parser_input_doc_data = json.loads(parser_input_doc.read_text())
     assert (
-        parser_input_doc_data[
+        parser_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
         == update_to_publication_ts.db_value
