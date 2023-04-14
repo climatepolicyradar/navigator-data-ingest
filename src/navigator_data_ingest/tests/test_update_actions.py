@@ -14,7 +14,9 @@ from navigator_data_ingest.base.updated_document_actions import (
     update_file_field,
     rename,
     update_type_actions,
-    update_file_metadata_field, METADATA_KEY, update_publication_ts,
+    update_file_metadata_field,
+    METADATA_KEY,
+    update_publication_ts,
 )
 
 
