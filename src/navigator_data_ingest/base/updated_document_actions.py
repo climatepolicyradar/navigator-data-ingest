@@ -23,13 +23,15 @@ _LOGGER = logging.getLogger(__file__)
 METADATA_KEY = os.environ.get("METADATA_KEY", "metadata")
 
 
+# TODO: hard coding translated language will lead to issues if we have more target languages in future
 def get_document_files(
     prefix_path: S3Path, document_id: str, suffix_filter: str
 ) -> List[S3Path]:
     """Get the document files for a given document ID found in an s3 directory."""
-    return list(prefix_path.glob(f"{document_id}.{suffix_filter}")) + list(
-        prefix_path.glob(f"{document_id}_translated_*.{suffix_filter}")
-    )
+    return [
+        prefix_path / f"{document_id}.{suffix_filter}",
+        prefix_path / f"{document_id}_translated_en.{suffix_filter}",
+    ]
 
 
 def handle_document_updates(
@@ -104,8 +106,13 @@ def order_actions(actions: List[Action]) -> List[Action]:
     """
     Order the update actions to be performed on an s3 document based upon the action type.
 
-    We need to ensure that we make object updates before archiving a document.
+    We need to ensure that we make object updates in a particular order.
+
+    If the action is to parse then we only perform this action.
     """
+    for action in actions:
+        if action.action == parse:
+            return [action]
 
     def get_action_priority(action_name: str) -> int:
         return 0 if action_name == update_dont_parse.__name__ else 1
@@ -295,15 +302,17 @@ def update_file_field(
         document_path.write_text(json.dumps(document))
         return None
     else:
-        _LOGGER.error(
-            "Expected to update document but it doesn't exist.",
+        _LOGGER.info(
+            "Tried to update document but it doesn't exist.",
             extra={
                 "props": {
                     "document_path": str(document_path),
                 }
             },
         )
-        return "NotFoundError: Expected to update document but it doesn't exist."
+        # TODO: convert to an f-string with more details when we can identify the expected files
+        # return "NotFoundError: Expected to update document but it doesn't exist."
+        return None
 
 
 def update_file_metadata_field(
@@ -365,15 +374,17 @@ def update_file_metadata_field(
         document_path.write_text(json.dumps(document))
         return None
     else:
-        _LOGGER.error(
-            "Expected to update document but it doesn't exist.",
+        _LOGGER.info(
+            "Tried to update document but it doesn't exist.",
             extra={
                 "props": {
                     "document_path": str(document_path),
                 }
             },
         )
-        return "NotFoundError: Expected to update document but it doesn't exist."
+        # TODO: convert to an f-string with more details when we can identify the expected files
+        # return "NotFoundError: Expected to update document but it doesn't exist."
+        return None
 
 
 def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
