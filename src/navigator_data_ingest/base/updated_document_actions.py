@@ -20,7 +20,7 @@ from navigator_data_ingest.base.types import (
 _LOGGER = logging.getLogger(__file__)
 
 
-METADATA_KEY = os.environ.get("METADATA_KEY", "metadata")
+METADATA_KEY = os.environ.get("METADATA_KEY", "document_metadata")
 
 
 # TODO: hard coding translated language will lead to issues if we have more target languages in future
