@@ -34,7 +34,6 @@ def test_order_actions_function(test_updates):
     ]
 
     assert order_actions(actions) == [
-        Action(action=update_dont_parse, update=test_updates[0]),
         Action(action=parse, update=test_updates[0]),
     ]
 

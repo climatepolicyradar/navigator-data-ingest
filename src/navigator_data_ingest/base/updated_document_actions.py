@@ -103,8 +103,13 @@ def order_actions(actions: List[Action]) -> List[Action]:
     """
     Order the update actions to be performed on an s3 document based upon the action type.
 
-    We need to ensure that we make object updates before archiving a document.
+    We need to ensure that we make object updates in a particular order.
+
+    If the action is to parse then we only perform this action.
     """
+    for action in actions:
+        if action.action == parse:
+            return [action]
 
     def get_action_priority(action_name: str) -> int:
         return 0 if action_name == update_dont_parse.__name__ else 1
