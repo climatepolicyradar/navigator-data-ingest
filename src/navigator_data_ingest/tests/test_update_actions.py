@@ -14,7 +14,7 @@ from navigator_data_ingest.base.updated_document_actions import (
     update_file_field,
     rename,
     update_type_actions,
-    update_file_metadata_field, METADATA_KEY,
+    update_file_metadata_field, METADATA_KEY, update_publication_ts,
 )
 
 
@@ -244,10 +244,10 @@ def test_update_publication_ts(
         for s3_key in s3_document_keys
     ]
 
-    assert parser_input_doc.exists()
-    parser_input_doc_data = json.loads(parser_input_doc.read_text())
+    assert embeddings_input_doc.exists()
+    embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
     assert (
-        parser_input_doc_data[METADATA_KEY][
+        embeddings_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
         == update_to_publication_ts.s3_value
@@ -255,8 +255,8 @@ def test_update_publication_ts(
 
     errors = [
         error
-        for error in update_to_publication_ts(
-            update=update_to_publication_ts,
+        for error in update_publication_ts(
+            update=(s3_document_id, update_to_publication_ts),
             update_config=test_update_config,
         )
         if not "None"
