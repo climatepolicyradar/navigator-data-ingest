@@ -238,7 +238,7 @@ def parse(
                 rename(
                     existing_path=document_file,
                     rename_path=S3Path(
-                        f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}.{document_file.suffix}"
+                        f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}{document_file.suffix}"
                     ),
                 )
             )
