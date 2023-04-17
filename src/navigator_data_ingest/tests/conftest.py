@@ -35,7 +35,7 @@ def parser_input_json():
         "document_cdn_object": None,
         "document_content_type": "text/html",
         "document_md5_sum": None,
-        "document_metadata": {},
+        "document_metadata": {"publication_ts": "2021-12-25T00:00:00"},
         "document_slug": "an_example_slug_1000_1000",
     }
 
@@ -50,7 +50,7 @@ def embeddings_input_json():
         "document_cdn_object": None,
         "document_content_type": "text/html",
         "document_md5_sum": None,
-        "document_metadata": {},
+        "document_metadata": {"publication_ts": "2021-12-25T00:00:00"},
         "document_slug": "an_example_slug_1000_1000",
         "languages": ["en"],
         "translated": False,
@@ -84,7 +84,7 @@ def indexer_input_json():
         "document_cdn_object": None,
         "document_content_type": "text/html",
         "document_md5_sum": None,
-        "document_metadata": {},
+        "document_metadata": {"publication_ts": "2021-12-25T00:00:00"},
         "document_slug": "an_example_slug_1000_1000",
         "languages": ["en"],
         "translated": False,
@@ -236,6 +236,11 @@ def test_updates(s3_document_id):
                 "type": "source_url",
                 "db_value": "https://www.NEW_SOURCE_URL.pdf",
                 "s3_value": "https://domain/path/to/document.pdf",
+            },
+            {
+                "type": "publication_ts",
+                "db_value": "2020-12-25T00:00:00",
+                "s3_value": "2021-12-25T00:00:00",
             },
         ]
     }

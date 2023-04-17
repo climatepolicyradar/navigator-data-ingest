@@ -949,6 +949,11 @@
           "s3_value": "description",
           "db_value": "new description",
           "type": "description"
+        },
+        {
+          "s3_value": "2021-12-25T00:00:00",
+          "db_value": "2020-12-25T00:00:00",
+          "type": "publication_ts"
         }
       ],
       "TESTCCLW.executive.3.3": [

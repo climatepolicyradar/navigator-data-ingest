@@ -20,6 +20,9 @@ from navigator_data_ingest.base.types import (
 _LOGGER = logging.getLogger(__file__)
 
 
+METADATA_KEY = os.environ.get("METADATA_KEY", "document_metadata")
+
+
 # TODO: hard coding translated language will lead to issues if we have more target languages in future
 def get_document_files(
     prefix_path: S3Path, document_id: str, suffix_filter: str
@@ -111,8 +114,12 @@ def order_actions(actions: List[Action]) -> List[Action]:
         if action.action == parse:
             return [action]
 
+    # TODO: Currently only two actions other than 'parse' are 'update_dont_parse' and 'publication_ts'. We want to
+    #  update publication_ts before update_dont_parse as we don't want to attempt update of a document that is
+    #  archived during the update_dont_parse process. Thus, we order the actions so that 'publication_ts' is first.
     def get_action_priority(action_name: str) -> int:
-        return 0 if action_name == update_dont_parse.__name__ else 1
+        """Get the priority of an action."""
+        return 1 if action_name == update_dont_parse.__name__ else 0
 
     return [
         action
@@ -203,11 +210,7 @@ def parse(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
-    """
-    Update the fields in the json objects to reflect the change made to the data.
-
-    Then remove the desired files by moving them to an archive directory in s3 to re-trigger parsing of the document.
-    """
+    """Archive all instances of the document in the s3 pipeline cache to trigger full re-processing."""
     document_id, document_update = update
     _LOGGER.info(
         "Archiving document so as to re-download from source and parse during the next run.",
@@ -318,6 +321,126 @@ def update_file_field(
         return None
 
 
+def update_publication_ts(
+    update: Tuple[str, Update],
+    update_config: UpdateConfig,
+) -> List[Union[str, None]]:
+    """Update the value of the publication_ts field in all json objects for a document within s3 with the new value."""
+    document_id, document_update = update
+    _LOGGER.info(
+        "Updating publication_ts for document instances in s3.",
+        extra={
+            "props": {
+                "document_id": document_id,
+            }
+        },
+    )
+    errors = []
+    for prefix_path in [
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.parser_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.embeddings_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.indexer_input
+            )
+        ),
+    ]:
+        # Might be translated and non-translated json objects
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        )
+        for document_file in document_files:
+            errors.append(
+                update_file_metadata_field(
+                    document_path=document_file,
+                    metadata_field=str(document_update.type.value),
+                    new_value=document_update.db_value,
+                    existing_value=document_update.s3_value,
+                )
+            )
+    return [error for error in errors if error is not None]
+
+
+def update_file_metadata_field(
+    document_path: S3Path,
+    metadata_field: str,
+    new_value: Union[str, datetime],
+    existing_value: Union[str, datetime],
+) -> Union[str, None]:
+    """Update the value of a metadata field in a json object within s3 with the new value."""
+    if document_path.exists():
+        pipeline_metadata_field = PipelineFieldMapping[UpdateTypes(metadata_field)]
+        _LOGGER.info(
+            "Updating document metadata field.",
+            extra={
+                "props": {
+                    "document_path": str(document_path),
+                    "metadata_field": metadata_field,
+                    "pipeline_field": pipeline_metadata_field,
+                    "value": new_value,
+                }
+            },
+        )
+        document = json.loads(document_path.read_text())
+
+        try:
+            if not str(document[METADATA_KEY][pipeline_metadata_field]) == str(
+                existing_value
+            ):
+                _LOGGER.info(
+                    "Existing value doesn't match.",
+                    extra={
+                        "props": {
+                            "document_path": str(document_path),
+                            "metadata_field": metadata_field,
+                            "pipeline_field": pipeline_metadata_field,
+                            "value": new_value,
+                            "existing_value": existing_value,
+                            "document": document,
+                        }
+                    },
+                )
+
+            document[METADATA_KEY][pipeline_metadata_field] = new_value
+        except KeyError:
+            _LOGGER.exception(
+                "Field not found in s3 object.",
+                extra={
+                    "props": {
+                        "document_path": str(document_path),
+                        "metadata_field": metadata_field,
+                        "pipeline_field": pipeline_metadata_field,
+                        "value": new_value,
+                        "document": document,
+                    }
+                },
+            )
+            return traceback.format_exc()
+
+        document_path.write_text(json.dumps(document))
+        return None
+    else:
+        _LOGGER.info(
+            "Tried to update document but it doesn't exist.",
+            extra={
+                "props": {
+                    "document_path": str(document_path),
+                }
+            },
+        )
+        # TODO: convert to an f-string with more details when we can identify the expected files
+        # return "NotFoundError: Expected to update document but it doesn't exist."
+        return None
+
+
 def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
     """Rename the document to the new path."""
     try:
@@ -360,4 +483,5 @@ update_type_actions = {
     UpdateTypes.SOURCE_URL: parse,
     UpdateTypes.NAME: update_dont_parse,
     UpdateTypes.DESCRIPTION: update_dont_parse,
+    UpdateTypes.PUBLICATION_TS: update_publication_ts,
 }

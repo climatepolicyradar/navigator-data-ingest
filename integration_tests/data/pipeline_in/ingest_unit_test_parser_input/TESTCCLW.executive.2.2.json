@@ -6,6 +6,6 @@
   "document_cdn_object": null,
   "document_content_type": "text/html",
   "document_md5_sum": null,
-  "document_metadata": {},
+  "document_metadata": {"publication_ts": "2021-12-25T00:00:00"},
   "document_slug": "fake_slug"
 }
