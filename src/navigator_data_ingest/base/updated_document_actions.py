@@ -160,11 +160,13 @@ def update_dont_parse(
                 "s3://", update_config.pipeline_bucket, update_config.embeddings_input
             )
         ),
-        S3Path(
-            os.path.join(
-                "s3://", update_config.pipeline_bucket, update_config.indexer_input
-            )
-        ),
+        # Do not update the indexer input file - archiving the json is required
+        # to trigger re-processing
+        # S3Path(
+        #     os.path.join(
+        #         "s3://", update_config.pipeline_bucket, update_config.indexer_input
+        #     )
+        # ),
     ]:
         # Might be translated and non-translated json objects
         document_files = get_document_files(
@@ -181,27 +183,51 @@ def update_dont_parse(
             )
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    errors.append(
-        rename(
-            existing_path=S3Path(
-                os.path.join(
-                    "s3://",
-                    update_config.pipeline_bucket,
-                    update_config.indexer_input,
-                    f"{document_id}.npy",
-                )
+    errors.extend(
+        [
+            # Archive npy file
+            rename(
+                existing_path=S3Path(
+                    os.path.join(
+                        "s3://",
+                        update_config.pipeline_bucket,
+                        update_config.indexer_input,
+                        f"{document_id}.npy",
+                    )
+                ),
+                rename_path=S3Path(
+                    os.path.join(
+                        "s3://",
+                        update_config.pipeline_bucket,
+                        update_config.archive_prefix,
+                        update_config.indexer_input,
+                        document_id,
+                        f"{timestamp}.npy",
+                    )
+                ),
             ),
-            rename_path=S3Path(
-                os.path.join(
-                    "s3://",
-                    update_config.pipeline_bucket,
-                    update_config.archive_prefix,
-                    update_config.indexer_input,
-                    document_id,
-                    f"{timestamp}.npy",
-                )
+            # Archive json file
+            rename(
+                existing_path=S3Path(
+                    os.path.join(
+                        "s3://",
+                        update_config.pipeline_bucket,
+                        update_config.indexer_input,
+                        f"{document_id}.json",
+                    )
+                ),
+                rename_path=S3Path(
+                    os.path.join(
+                        "s3://",
+                        update_config.pipeline_bucket,
+                        update_config.archive_prefix,
+                        update_config.indexer_input,
+                        document_id,
+                        f"{timestamp}.json",
+                    )
+                ),
             ),
-        )
+        ]
     )
     return [error for error in errors if error is not None]
 
