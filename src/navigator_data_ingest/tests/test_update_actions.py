@@ -119,7 +119,7 @@ def test_update_dont_parse(
     assert parser_input_doc.exists()
     assert embeddings_input_doc.exists()
     assert embeddings_input_translated_doc.exists()
-    assert indexer_input_doc_json.exists()
+    assert not indexer_input_doc_json.exists()
     assert not indexer_input_doc_npy.exists()
 
     parser_input_doc_data = json.loads(parser_input_doc.read_text())
@@ -143,14 +143,6 @@ def test_update_dont_parse(
     )
     assert (
         embeddings_input_translated_doc_data[
-            PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
-        ]
-        == update_to_document_description.db_value
-    )
-
-    indexer_input_doc_json_data = json.loads(indexer_input_doc_json.read_text())
-    assert (
-        indexer_input_doc_json_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
         == update_to_document_description.db_value
@@ -206,12 +198,14 @@ def test_update_metadata_field(
 
     errors = [
         error
-        for error in [update_file_metadata_field(
-            document_path=parser_input_document_path,
-            metadata_field=update_to_publication_ts.type,
-            new_value=update_to_publication_ts.db_value,
-            existing_value=update_to_publication_ts.s3_value,
-        )]
+        for error in [
+            update_file_metadata_field(
+                document_path=parser_input_document_path,
+                metadata_field=update_to_publication_ts.type,
+                new_value=update_to_publication_ts.db_value,
+                existing_value=update_to_publication_ts.s3_value,
+            )
+        ]
         if not "None"
     ]
 
@@ -231,8 +225,7 @@ def test_update_metadata_field(
 def test_update_publication_ts(
     test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
 ):
-    """Test that a field in the metdata of all s3 instances of a document can successfully be updated by the
-    pipeline."""
+    """Test that a field in the metdata of all s3 instances of a document can successfully be updated by the pipeline."""
     update_to_publication_ts = test_updates[3]
 
     (
@@ -269,37 +262,39 @@ def test_update_publication_ts(
     assert parser_input_doc.exists()
     parser_input_doc_data = json.loads(parser_input_doc.read_text())
     assert (
-            parser_input_doc_data[METADATA_KEY][
-                PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
-            ]
-            == update_to_publication_ts.db_value
+        parser_input_doc_data[METADATA_KEY][
+            PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
+        ]
+        == update_to_publication_ts.db_value
     )
 
     assert embeddings_input_doc.exists()
     embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
     assert (
-            embeddings_input_doc_data[METADATA_KEY][
-                PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
-            ]
-            == update_to_publication_ts.db_value
+        embeddings_input_doc_data[METADATA_KEY][
+            PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
+        ]
+        == update_to_publication_ts.db_value
     )
 
     assert embeddings_input_translated_doc.exists()
-    embeddings_input_translated_doc_data = json.loads(embeddings_input_translated_doc.read_text())
+    embeddings_input_translated_doc_data = json.loads(
+        embeddings_input_translated_doc.read_text()
+    )
     assert (
-            embeddings_input_translated_doc_data[METADATA_KEY][
-                PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
-            ]
-            == update_to_publication_ts.db_value
+        embeddings_input_translated_doc_data[METADATA_KEY][
+            PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
+        ]
+        == update_to_publication_ts.db_value
     )
 
     assert indexer_input_doc_json.exists()
     indexer_input_doc_json_data = json.loads(indexer_input_doc_json.read_text())
     assert (
-            indexer_input_doc_json_data[METADATA_KEY][
-                PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
-            ]
-            == update_to_publication_ts.db_value
+        indexer_input_doc_json_data[METADATA_KEY][
+            PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
+        ]
+        == update_to_publication_ts.db_value
     )
 
     assert indexer_input_doc_npy.exists()
