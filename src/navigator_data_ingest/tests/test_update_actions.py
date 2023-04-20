@@ -119,7 +119,6 @@ def test_update_dont_parse(
     assert parser_input_doc.exists()
     assert embeddings_input_doc.exists()
     assert embeddings_input_translated_doc.exists()
-    assert indexer_input_doc_json.exists()
     assert not indexer_input_doc_json.exists()
     assert not indexer_input_doc_npy.exists()
 
