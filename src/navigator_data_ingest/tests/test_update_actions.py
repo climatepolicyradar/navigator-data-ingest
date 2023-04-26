@@ -5,6 +5,7 @@ import pytest
 from navigator_data_ingest.base.types import (
     Action,
     PipelineFieldMapping,
+    UpdateDefinition,
     UpdateTypes,
 )
 from navigator_data_ingest.base.updated_document_actions import (
@@ -26,6 +27,16 @@ def test_identify_action_function(test_updates):
 
     assert update_to_action(test_updates[0]) == update_embeddings_only
     assert update_to_action(test_updates[2]) == parse
+
+
+@pytest.mark.unit
+def test_update_cclw_source_url():
+    update = UpdateDefinition(
+        type=UpdateTypes.SOURCE_URL,
+        old_value="http://climate-laws.org/something",
+        new_value="",
+    )
+    assert update_to_action(update) == update_field_only
 
 
 @pytest.mark.unit

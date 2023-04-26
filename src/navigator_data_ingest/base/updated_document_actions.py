@@ -1,10 +1,11 @@
 import json
 import logging
+import re
 import os
 import traceback
 from concurrent.futures import as_completed, Executor
 from datetime import datetime
-from typing import Generator, List, Union, Tuple
+from typing import Generator, List, Union, Tuple, cast
 
 from cloudpathlib import S3Path
 
@@ -21,6 +22,7 @@ _LOGGER = logging.getLogger(__file__)
 
 
 METADATA_KEY = os.environ.get("METADATA_KEY", "document_metadata")
+CLIMATE_LAWS_MATCH = re.compile(r"^https?://(.+\.)?climate-laws.org(/|$)")
 
 
 # TODO: hard coding translated language will lead to issues if we have more target languages in future
@@ -506,8 +508,13 @@ def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
 
 def update_to_action(update: UpdateDefinition):
     if update.type == UpdateTypes.SOURCE_URL:
-        return parse
-    # CLIMATE_LAWS_MATCH = re.compile(r"^https?://(.+\.)?climate-laws.org/")
+        if (
+            update.new_value == ""
+            and CLIMATE_LAWS_MATCH.match(cast(str, update.old_value)) is not None
+        ):
+            return update_field_only
+        else:
+            return parse
     else:
         update_type_actions = {
             UpdateTypes.NAME: update_embeddings_only,
