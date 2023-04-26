@@ -187,7 +187,7 @@ class UnsupportedContentTypeError(Exception):
         super().__init__(f"Content type '{content_type}' is not supported for caching")
 
 
-class Update(BaseModel):
+class UpdateDefinition(BaseModel):
     """Class describing the results of comparing csv data against the db data to identify updates."""
 
     db_value: Union[str, datetime]
@@ -199,7 +199,7 @@ class UpdateResult(BaseModel):
     """Result of updating a document update via the ingest stage."""
 
     document_id: str
-    update: Update
+    update: UpdateDefinition
     error: Optional[str] = None
 
 
@@ -207,7 +207,7 @@ class InputData(BaseModel):
     """Expected input data containing both document updates and new documents for the ingest stage of the pipeline."""
 
     new_documents: List[Document]
-    updated_documents: dict[str, List[Update]]
+    updated_documents: dict[str, List[UpdateDefinition]]
 
 
 @dataclass
@@ -232,7 +232,7 @@ class DocumentGenerator(ABC):
         raise NotImplementedError("process_new_documents() not implemented")
 
     @abstractmethod
-    def process_updated_documents(self) -> Generator[Update, None, None]:
+    def process_updated_documents(self) -> Generator[UpdateDefinition, None, None]:
         """Generate documents with updates for processing from the configured source"""
 
         raise NotImplementedError("process_updated_documents() not implemented")
@@ -241,5 +241,5 @@ class DocumentGenerator(ABC):
 class Action(BaseModel):
     """Base class for associating an update with the relevant action."""
 
-    update: Update
+    update: UpdateDefinition
     action: Callable

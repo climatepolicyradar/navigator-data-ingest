@@ -10,7 +10,7 @@ from cloudpathlib import S3Path
 
 from navigator_data_ingest.base.types import (
     UpdateConfig,
-    Update,
+    UpdateDefinition,
     UpdateResult,
     UpdateTypes,
     Action,
@@ -36,7 +36,7 @@ def get_document_files(
 
 def handle_document_updates(
     executor: Executor,
-    source: Generator[Tuple[str, List[Update]], None, None],
+    source: Generator[Tuple[str, List[UpdateDefinition]], None, None],
     update_config: UpdateConfig,
 ) -> Generator[List[UpdateResult], None, None]:
     """
@@ -71,7 +71,7 @@ def handle_document_updates(
 
 
 def _update_document(
-    doc_updates: Tuple[str, List[Update]],
+    doc_updates: Tuple[str, List[UpdateDefinition]],
     update_config: UpdateConfig,
 ) -> List[UpdateResult]:
     """Perform the document update."""
@@ -79,8 +79,7 @@ def _update_document(
     _LOGGER.info("Updating document.", extra={"props": {"document_id": document_id}})
 
     actions = [
-        Action(action=update_type_actions[UpdateTypes(update.type)], update=update)
-        for update in updates
+        Action(action=update_to_action(update), update=update) for update in updates
     ]
     _LOGGER.info(
         "Identified actions for document.",
@@ -114,12 +113,12 @@ def order_actions(actions: List[Action]) -> List[Action]:
         if action.action == parse:
             return [action]
 
-    # TODO: Currently only two actions other than 'parse' are 'update_dont_parse' and 'publication_ts'. We want to
-    #  update publication_ts before update_dont_parse as we don't want to attempt update of a document that is
-    #  archived during the update_dont_parse process. Thus, we order the actions so that 'publication_ts' is first.
+    # TODO: Currently only two actions other than 'parse' are 'update_embeddings_only' and 'publication_ts'. We want to
+    #  update publication_ts before update_embeddings_only as we don't want to attempt update of a document that is
+    #  archived during the update_embeddings_only process. Thus, we order the actions so that 'publication_ts' is first.
     def get_action_priority(action_name: str) -> int:
         """Get the priority of an action."""
-        return 1 if action_name == update_dont_parse.__name__ else 0
+        return 1 if action_name == update_embeddings_only.__name__ else 0
 
     return [
         action
@@ -129,8 +128,8 @@ def order_actions(actions: List[Action]) -> List[Action]:
     ]
 
 
-def update_dont_parse(
-    update: Tuple[str, Update],
+def update_embeddings_only(
+    update: Tuple[str, UpdateDefinition],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
     """
@@ -174,7 +173,7 @@ def update_dont_parse(
         )
         for document_file in document_files:
             errors.append(
-                update_file_field(
+                _update_file_field(
                     document_path=document_file,
                     field=str(document_update.type.value),
                     new_value=document_update.db_value,
@@ -233,7 +232,7 @@ def update_dont_parse(
 
 
 def parse(
-    update: Tuple[str, Update],
+    update: Tuple[str, UpdateDefinition],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
     """Archive all instances of the document in the s3 pipeline cache to trigger full re-processing."""
@@ -247,6 +246,8 @@ def parse(
         },
     )
     errors = []
+
+    # look for conditions of source_url (2) current cclw (3) new is blank
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     for prefix in [
@@ -275,7 +276,7 @@ def parse(
     return [error for error in errors if error is not None]
 
 
-def update_file_field(
+def _update_file_field(
     document_path: S3Path,
     field: str,
     new_value: Union[str, datetime],
@@ -347,8 +348,8 @@ def update_file_field(
         return None
 
 
-def update_publication_ts(
-    update: Tuple[str, Update],
+def update_field_only(
+    update: Tuple[str, UpdateDefinition],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
     """Update the value of the publication_ts field in all json objects for a document within s3 with the new value."""
@@ -385,7 +386,7 @@ def update_publication_ts(
         )
         for document_file in document_files:
             errors.append(
-                update_file_metadata_field(
+                _update_file_metadata_field(
                     document_path=document_file,
                     metadata_field=str(document_update.type.value),
                     new_value=document_update.db_value,
@@ -395,7 +396,7 @@ def update_publication_ts(
     return [error for error in errors if error is not None]
 
 
-def update_file_metadata_field(
+def _update_file_metadata_field(
     document_path: S3Path,
     metadata_field: str,
     new_value: Union[str, datetime],
@@ -505,9 +506,11 @@ def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
     return None
 
 
-update_type_actions = {
-    UpdateTypes.SOURCE_URL: parse,
-    UpdateTypes.NAME: update_dont_parse,
-    UpdateTypes.DESCRIPTION: update_dont_parse,
-    UpdateTypes.PUBLICATION_TS: update_publication_ts,
-}
+def update_to_action(update: UpdateDefinition):
+    update_type_actions = {
+        UpdateTypes.SOURCE_URL: parse,
+        UpdateTypes.NAME: update_embeddings_only,
+        UpdateTypes.DESCRIPTION: update_embeddings_only,
+        UpdateTypes.PUBLICATION_TS: update_field_only,
+    }
+    return update_type_actions[UpdateTypes(update.type)]

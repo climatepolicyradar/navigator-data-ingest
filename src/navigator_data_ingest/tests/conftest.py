@@ -6,7 +6,7 @@ import pytest
 from moto import mock_s3
 import json
 
-from navigator_data_ingest.base.types import UpdateConfig, Update, UpdateTypes
+from navigator_data_ingest.base.types import UpdateConfig, UpdateDefinition, UpdateTypes
 
 
 class S3Client:
@@ -246,7 +246,7 @@ def test_updates(s3_document_id):
     }
 
     return [
-        Update(
+        UpdateDefinition(
             type=UpdateTypes(update["type"]),
             s3_value=update["s3_value"],
             db_value=update["db_value"],
