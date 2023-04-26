@@ -248,8 +248,8 @@ def test_updates(s3_document_id):
     return [
         UpdateDefinition(
             type=UpdateTypes(update["type"]),
-            s3_value=update["s3_value"],
-            db_value=update["db_value"],
+            old_value=update["s3_value"],
+            new_value=update["db_value"],
         )
         for update in updates[s3_document_id]
     ]

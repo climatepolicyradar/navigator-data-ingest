@@ -127,7 +127,7 @@ def test_update_embeddings_only(
         parser_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.db_value
+        == update_to_document_description.new_value
     )
 
     embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
@@ -135,7 +135,7 @@ def test_update_embeddings_only(
         embeddings_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.db_value
+        == update_to_document_description.new_value
     )
 
     embeddings_input_translated_doc_data = json.loads(
@@ -145,7 +145,7 @@ def test_update_embeddings_only(
         embeddings_input_translated_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.db_value
+        == update_to_document_description.new_value
     )
 
 
@@ -202,8 +202,8 @@ def test_update_metadata_field(
             update_file_metadata_field(
                 document_path=parser_input_document_path,
                 metadata_field=update_to_publication_ts.type,
-                new_value=update_to_publication_ts.db_value,
-                existing_value=update_to_publication_ts.s3_value,
+                new_value=update_to_publication_ts.new_value,
+                existing_value=update_to_publication_ts.old_value,
             )
         ]
         if not "None"
@@ -217,7 +217,7 @@ def test_update_metadata_field(
         parser_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
 
@@ -245,7 +245,7 @@ def test_update_field_only(
         embeddings_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.s3_value
+        == update_to_publication_ts.old_value
     )
 
     errors = [
@@ -265,7 +265,7 @@ def test_update_field_only(
         parser_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
     assert embeddings_input_doc.exists()
@@ -274,7 +274,7 @@ def test_update_field_only(
         embeddings_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
     assert embeddings_input_translated_doc.exists()
@@ -285,7 +285,7 @@ def test_update_field_only(
         embeddings_input_translated_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
     assert indexer_input_doc_json.exists()
@@ -294,7 +294,7 @@ def test_update_field_only(
         indexer_input_doc_json_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
     assert indexer_input_doc_npy.exists()

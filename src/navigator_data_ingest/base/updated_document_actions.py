@@ -176,8 +176,8 @@ def update_embeddings_only(
                 update_file_field(
                     document_path=document_file,
                     field=str(document_update.type.value),
-                    new_value=document_update.db_value,
-                    existing_value=document_update.s3_value,
+                    new_value=document_update.new_value,
+                    existing_value=document_update.old_value,
                 )
             )
 
@@ -387,8 +387,8 @@ def update_field_only(
                 update_file_metadata_field(
                     document_path=document_file,
                     metadata_field=str(document_update.type.value),
-                    new_value=document_update.db_value,
-                    existing_value=document_update.s3_value,
+                    new_value=document_update.new_value,
+                    existing_value=document_update.old_value,
                 )
             )
     return [error for error in errors if error is not None]

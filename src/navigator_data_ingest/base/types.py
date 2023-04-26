@@ -190,8 +190,8 @@ class UnsupportedContentTypeError(Exception):
 class UpdateDefinition(BaseModel):
     """Class describing the results of comparing csv data against the db data to identify updates."""
 
-    db_value: Union[str, datetime]
-    s3_value: Union[str, datetime]
+    new_value: Union[str, datetime]
+    old_value: Union[str, datetime]
     type: UpdateTypes
 
 
