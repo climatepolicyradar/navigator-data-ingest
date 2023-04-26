@@ -173,7 +173,7 @@ def update_embeddings_only(
         )
         for document_file in document_files:
             errors.append(
-                _update_file_field(
+                update_file_field(
                     document_path=document_file,
                     field=str(document_update.type.value),
                     new_value=document_update.db_value,
@@ -247,8 +247,6 @@ def parse(
     )
     errors = []
 
-    # look for conditions of source_url (2) current cclw (3) new is blank
-
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     for prefix in [
         update_config.parser_input,
@@ -276,7 +274,7 @@ def parse(
     return [error for error in errors if error is not None]
 
 
-def _update_file_field(
+def update_file_field(
     document_path: S3Path,
     field: str,
     new_value: Union[str, datetime],
@@ -386,7 +384,7 @@ def update_field_only(
         )
         for document_file in document_files:
             errors.append(
-                _update_file_metadata_field(
+                update_file_metadata_field(
                     document_path=document_file,
                     metadata_field=str(document_update.type.value),
                     new_value=document_update.db_value,
@@ -396,7 +394,7 @@ def update_field_only(
     return [error for error in errors if error is not None]
 
 
-def _update_file_metadata_field(
+def update_file_metadata_field(
     document_path: S3Path,
     metadata_field: str,
     new_value: Union[str, datetime],
@@ -507,10 +505,13 @@ def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
 
 
 def update_to_action(update: UpdateDefinition):
-    update_type_actions = {
-        UpdateTypes.SOURCE_URL: parse,
-        UpdateTypes.NAME: update_embeddings_only,
-        UpdateTypes.DESCRIPTION: update_embeddings_only,
-        UpdateTypes.PUBLICATION_TS: update_field_only,
-    }
-    return update_type_actions[UpdateTypes(update.type)]
+    if update.type == UpdateTypes.SOURCE_URL:
+        return parse
+    # CLIMATE_LAWS_MATCH = re.compile(r"^https?://(.+\.)?climate-laws.org/")
+    else:
+        update_type_actions = {
+            UpdateTypes.NAME: update_embeddings_only,
+            UpdateTypes.DESCRIPTION: update_embeddings_only,
+            UpdateTypes.PUBLICATION_TS: update_field_only,
+        }
+        return update_type_actions[UpdateTypes(update.type)]
