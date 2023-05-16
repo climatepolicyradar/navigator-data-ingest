@@ -80,6 +80,7 @@ class Document(BaseModel):
     slug: str  # Unique identifier created by backend
     publication_ts: datetime
     source_url: Optional[AnyHttpUrl]  # Original source URL
+    download_url: Optional[AnyHttpUrl]  # Cached document URL
 
     type: str
     source: str
