@@ -79,10 +79,10 @@ def _upload_document(
     doc_year = document.publication_ts.year
     file_name = f"{doc_geo}/{doc_year}/{doc_slug}"
 
-    if not document.source_url:
+    if not document.source_url and not document.download_url:
         _LOGGER.info(
             f"Skipping upload for '{document.source}:{document.import_id}:"
-            f"{document.name}' because the source URL is empty"
+            f"{document.name}' because both the source URL and download URL are empty."
         )
         return UploadResult(
             cdn_object=None,
@@ -90,10 +90,22 @@ def _upload_document(
             content_type=None,
         )
 
-    clean_url = document.source_url.split("|")[0].strip()
+    def get_url_to_use(_document: Document) -> str:
+        """
+        Get the URL to use for when downloading a document.
+
+        We use the download_url (cached document) if one is provided or default to the source_url.
+        """
+        if _document.download_url is not None:
+            return _document.download_url
+        return _document.source_url.split("|")[0].strip()
 
     return upload_document(
-        session, clean_url, file_name, document_bucket, document.import_id
+        session,
+        get_url_to_use(document),
+        file_name,
+        document_bucket,
+        document.import_id
     )
 
 
