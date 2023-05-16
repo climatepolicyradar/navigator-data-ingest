@@ -90,11 +90,19 @@ def _upload_document(
             content_type=None,
         )
 
-    clean_source_url = document.source_url.split("|")[0].strip()
+    def get_url_to_use(_document: Document) -> str:
+        """
+        Get the URL to use for when downloading a document.
+
+        We use the download_url (cached document) if one is provided or default to the source_url.
+        """
+        if _document.download_url is not None:
+            return _document.download_url
+        return _document.source_url.split("|")[0].strip()
 
     return upload_document(
         session,
-        (document.download_url if document.download_url is not None else clean_source_url),
+        get_url_to_use(document),
         file_name,
         document_bucket,
         document.import_id
