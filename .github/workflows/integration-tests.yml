@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+#  pull_request:
+#    branches:
+#      - main
 
 env:
   TEST_DATA_FILE_PATH: ./integration_tests/data/new_and_updated_documents.json

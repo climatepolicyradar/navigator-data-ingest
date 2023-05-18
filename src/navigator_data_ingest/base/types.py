@@ -244,3 +244,8 @@ class Action(BaseModel):
 
     update: Update
     action: Callable
+
+
+class ExecutionData(BaseModel):
+    """Data unique to a step functions execution that is required at later stages."""
+    input_dir_path: str

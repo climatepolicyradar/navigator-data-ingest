@@ -1,3 +1,4 @@
+import json
 import logging.config
 import os
 from concurrent.futures import ProcessPoolExecutor
@@ -12,7 +13,7 @@ from navigator_data_ingest.base.api_client import (
     write_parser_input,
 )
 from navigator_data_ingest.base.new_document_actions import handle_new_documents
-from navigator_data_ingest.base.types import UpdateConfig
+from navigator_data_ingest.base.types import UpdateConfig, ExecutionData
 from navigator_data_ingest.base.updated_document_actions import handle_document_updates
 from navigator_data_ingest.base.utils import LawPolicyGenerator, check_required_env_vars
 
@@ -63,9 +64,9 @@ _LOGGER = logging.getLogger(__name__)
     help="S3 bucket name in which to store cached documents",
 )
 @click.option(
-    "--input-file",
+    "--updates-file-name",
     required=True,
-    help="Location of JSON Document array input file",
+    help="Location of JSON Document array input file that contains the updates",
 )
 @click.option(
     "--output-prefix",
@@ -97,40 +98,75 @@ _LOGGER = logging.getLogger(__name__)
     default=4,
     help="Number of workers downloading/uploading cached documents",
 )
+@click.option(
+    "--execution-id",
+    required=True,
+    help="Unique identifier for the execution",
+)
+@click.option(
+    "--execution-data-prefix",
+    required=True,
+    help="The s3 prefix for the execution data file",
+)
 def main(
     pipeline_bucket: str,
     document_bucket: str,
-    input_file: str,
+    updates_file_name: str,
     output_prefix: str,
     embeddings_input_prefix: str,
     indexer_input_prefix: str,
     archive_prefix: str,
     worker_count: int,
+    execution_id: str,
+    execution_data_prefix: str,
 ):
     """
     Load documents from source JSON array file, updating details via API.
 
     param pipeline_bucket: S3 bucket name from which to read/write input/output files
     param document_bucket: S3 bucket name in which to store cached documents
-    param input_file: Location of JSON Document array input file
+    param updates_file_name: Location of JSON Document array input file that contains the updates
     param parser_input_prefix: Prefix to apply to output files that contains the parser input files
     param embeddings_input_prefix: S3 prefix containing the embeddings input files
     param indexer_input_prefix: S3 prefix containing the indexer input files
     param archive_prefix: S3 prefix to which to archive documents
     param worker_count: Number of workers downloading/uploading cached documents
+    param execution_id: Unique identifier for the execution
+    param execution_data_prefix: Prefix to apply to output files that contains the execution data files
     return: None
     """
     check_required_env_vars()
 
+    # Read the execution data file to get the unique execution timestamp s3 path
+    # (input/${timestamp}/)
+    execution_data_path = (
+        S3Path(os.path.join("s3://", pipeline_bucket, execution_data_prefix))
+        / f"{execution_id}.json"
+    )
+
+    input_dir_path = S3Path(
+        ExecutionData.parse_obj(
+            json.loads(execution_data_path.read_text())
+        ).input_dir_path
+    )
+
+    # Get the key of the updates file contain information on the new and updated documents
+    # (input/${timestamp}/updates.json)
+    updates_file_key = str(input_dir_path / updates_file_name).replace(
+        f"s3://{pipeline_bucket}/", ""
+    )
+
     pipeline_bucket_path = S3Path(f"s3://{pipeline_bucket.strip().rstrip('/')}")
+
     input_file_path = cast(
         S3Path,
-        pipeline_bucket_path / f"{input_file.strip().lstrip('/')}",
+        pipeline_bucket_path / f"{updates_file_key.strip().lstrip('/')}",
     )
     output_location_path = cast(
         S3Path,
         pipeline_bucket_path / f"{output_prefix.strip().lstrip('/')}",
     )
+
     _LOGGER.info(
         "Loading and updating Law/Policy document data.",
         extra={
@@ -184,7 +220,7 @@ def main(
     if len(errors) > 0:
         error_output_location_path = cast(
             S3Path,
-            pipeline_bucket_path / f"{input_file.strip().lstrip('/')}_errors",
+            pipeline_bucket_path / f"{updates_file_name.strip().lstrip('/')}_errors",
         )
         _LOGGER.info(
             "Writing errors to JSON_ERRORS file",
