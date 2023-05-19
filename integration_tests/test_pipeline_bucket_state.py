@@ -51,6 +51,8 @@ def test_pipeline_bucket_json(bucket_files_json):
         else:
             local_data = json.loads(get_local_fp(file).read_text())
 
+        if 'input_dir_path' in s3_data.keys():  # skip execution_data file as the content changes each run (bucket name)
+            continue
         assert s3_data == local_data
 
 
