@@ -18,31 +18,56 @@ The integration tests strongly assert the output against the expected output. Sh
 
 Effectively follow the first 3 steps of the integration-tests.yml github actions flow, assert the output is correct and then sync to bucket to the pipeline_out directory.
 
-Build the docker image locally
+[//]: # (TODO: Build these steps into a bash script or something)
+
+**Build the docker image locally**
 
      make build_test
 
 
-MAKE SURE YOU HAVE THE CORRECT AWS CREDENTIALS SET UP.
+**MAKE SURE YOU HAVE THE CORRECT AWS CREDENTIALS SET UP.**
 
     export AWS_PROFILE=${PROFILE_NAME}
 
-Set up the test buckets
+Example: 
+
+    export AWS_PROFILE=sandbox
+
+**Set up the test buckets**
 
      python -m integration_tests.setup_test_buckets ${document_bucket} ${pipeline_bucket} ${region}
 
-Sync the test data to the s3 bucket
+Example:
+
+     python -m integration_tests.setup_test_buckets docbucket123123123 pipbucket123123123 eu-west-1
+
+**Create the execution data file locally from the nev variables** 
+
+     python -m integration_tests.setup_execution_data_file ${pipeline_bucket} ${EXECUTION_DATA_PREFIX}/${EXECUTION_DATA_ID}.json ${TEST_DATA_UPLOAD_PATH}
+
+Example: 
+
+     python -m integration_tests.setup_execution_data_file pipbucket123123123 execution_data/123456.json input/2022-11-01T21.53.26.945831/new_and_updated_documents.json
+
+**Sync the test data to the s3 bucket**
 
      aws s3 sync integration_tests/data/pipeline_in s3://${pipeline_bucket}
 
-Run the docker image. If you are trying to figure out what the variables are look in the env var section of the following file: .github/workflows/integration-tests.yml. Also note that the prefixes used must match the subdirectory names of the data/pipeline_in directory.
+Example: 
 
-     docker run -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${PIPELINE_BUCKET} --document-bucket ${DOCUMENT_BUCKET} --input-file ${TEST_DATA_UPLOAD_PATH} --output-prefix ${OUTPUT_PREFIX} --embeddings-input-prefix ${EMBEDDINGS_INPUT_PREFIX} --indexer-input-prefix ${INDEXER_INPUT_PREFIX}
+     aws s3 sync integration_tests/data/pipeline_in s3://pipbucket123123123
 
-Example:
+**Run the docker image**
 
-    docker run -e AWS_ACCESS_KEY_ID=XXXX -e AWS_SECRET_ACCESS_KEY=XXXX -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket pipbucket123123123 --document-bucket docbucket123123123 --input-file input/new_and_updated_documents.json --output-prefix ingest_unit_test_parser_input --embeddings-input-prefix ingest_unit_test_embeddings_input --indexer-input-prefix ingest_unit_test_indexer_input
+If you are trying to figure out what the variables are look in the env var section of the following file: .github/workflows/integration-tests.yml. Also note that the prefixes used must match the subdirectory names of the data/pipeline_in directory.
 
+    docker run -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${PIPELINE_BUCKET} --document-bucket ${DOCUMENT_BUCKET} --input-file ${TEST_DATA_UPLOAD_PATH} --output-prefix ${OUTPUT_PREFIX} --embeddings-input-prefix ${EMBEDDINGS_INPUT_PREFIX} --indexer-input-prefix ${INDEXER_INPUT_PREFIX} --execution-id ${EXECUTION_DATA_ID} --execution-data-prefix ${EXECUTION_DATA_PREFIX}
+
+Example: 
+
+    docker run -e AWS_ACCESS_KEY_ID=XXX -e AWS_SECRET_ACCESS_KEY=XXX -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket pipbucket123123123 --document-bucket docbucket123123123 --updates-file-name new_and_updated_documents.json --output-prefix ingest_unit_test_parser_input --embeddings-input-prefix ingest_unit_test_embeddings_input --indexer-input-prefix ingest_unit_test_indexer_input --execution-id 123456 --execution-data-prefix execution_data
+
+**Sync Down Output**
 
 Assert that the output is correct and if so manually delete all the files in the pipeline_out directory and sync the data locally to the pipeline_out directory
 
@@ -50,6 +75,10 @@ Assert that the output is correct and if so manually delete all the files in the
 
      aws s3 sync s3://${pipeline_bucket}/ .
 
-Remove the test buckets
+**Remove the test buckets**
 
      python -m integration_tests.remove_test_buckets ${document_bucket} ${pipeline_bucket} ${region}
+
+Example:
+
+     python -m integration_tests.remove_test_buckets docbucket123123123 pipbucket123123123 eu-west-1

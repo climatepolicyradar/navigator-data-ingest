@@ -218,10 +218,7 @@ def main(
             write_parser_input(output_location_path, handle_result.parser_input)
 
     if len(errors) > 0:
-        error_output_location_path = cast(
-            S3Path,
-            pipeline_bucket_path / f"{updates_file_name.strip().lstrip('/')}_errors",
-        )
+        error_output_location_path = input_file_path.parent / str(input_file_path.stem + '.json_errors')
         _LOGGER.info(
             "Writing errors to JSON_ERRORS file",
             extra={
