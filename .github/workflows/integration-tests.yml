@@ -11,6 +11,7 @@ on:
 env:
   TEST_DATA_FILE_PATH: ./integration_tests/data/new_and_updated_documents.json
   TEST_DATA_UPLOAD_PATH: input/2022-11-01T21.53.26.945831/new_and_updated_documents.json
+  UPDATES_FILE_NAME: new_and_updated_documents.json
   INGEST_OUTPUT_PREFIX: ingest_unit_test_parser_input
   INDEXER_INPUT_PREFIX: ingest_unit_test_indexer_input
   EMBEDDINGS_INPUT_PREFIX: ingest_unit_test_embeddings_input
@@ -64,7 +65,7 @@ jobs:
 
       - name: Running the Ingest Stage
         run: |
-          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --input-file ${{ env.TEST_DATA_UPLOAD_PATH }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }} --embeddings-input-prefix ${{ env.EMBEDDINGS_INPUT_PREFIX }} --indexer-input-prefix ${{ env.INDEXER_INPUT_PREFIX }} --execution-id ${{ env.EXECUTION_DATA_ID }} --execution-data-prefix ${{ env.EXECUTION_DATA_PREFIX }}
+          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --updates-file-name ${{ env.UPDATES_FILE_NAME }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }} --embeddings-input-prefix ${{ env.EMBEDDINGS_INPUT_PREFIX }} --indexer-input-prefix ${{ env.INDEXER_INPUT_PREFIX }} --execution-id ${{ env.EXECUTION_DATA_ID }} --execution-data-prefix ${{ env.EXECUTION_DATA_PREFIX }}
 
       - name: Running Integration Tests on the Ingest Stage Output 🚀
         run: |
