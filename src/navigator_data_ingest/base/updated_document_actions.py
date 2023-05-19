@@ -1,16 +1,17 @@
 import json
 import logging
+import re
 import os
 import traceback
 from concurrent.futures import as_completed, Executor
 from datetime import datetime
-from typing import Generator, List, Union, Tuple
+from typing import Generator, List, Union, Tuple, cast
 
 from cloudpathlib import S3Path
 
 from navigator_data_ingest.base.types import (
     UpdateConfig,
-    Update,
+    UpdateDefinition,
     UpdateResult,
     UpdateTypes,
     Action,
@@ -21,6 +22,7 @@ _LOGGER = logging.getLogger(__file__)
 
 
 METADATA_KEY = os.environ.get("METADATA_KEY", "document_metadata")
+CLIMATE_LAWS_MATCH = re.compile(r"^https?://(.+\.)?climate-laws.org(/|$)")
 
 
 # TODO: hard coding translated language will lead to issues if we have more target languages in future
@@ -36,7 +38,7 @@ def get_document_files(
 
 def handle_document_updates(
     executor: Executor,
-    source: Generator[Tuple[str, List[Update]], None, None],
+    source: Generator[Tuple[str, List[UpdateDefinition]], None, None],
     update_config: UpdateConfig,
 ) -> Generator[List[UpdateResult], None, None]:
     """
@@ -71,7 +73,7 @@ def handle_document_updates(
 
 
 def _update_document(
-    doc_updates: Tuple[str, List[Update]],
+    doc_updates: Tuple[str, List[UpdateDefinition]],
     update_config: UpdateConfig,
 ) -> List[UpdateResult]:
     """Perform the document update."""
@@ -79,8 +81,7 @@ def _update_document(
     _LOGGER.info("Updating document.", extra={"props": {"document_id": document_id}})
 
     actions = [
-        Action(action=update_type_actions[UpdateTypes(update.type)], update=update)
-        for update in updates
+        Action(action=update_to_action(update), update=update) for update in updates
     ]
     _LOGGER.info(
         "Identified actions for document.",
@@ -114,12 +115,12 @@ def order_actions(actions: List[Action]) -> List[Action]:
         if action.action == parse:
             return [action]
 
-    # TODO: Currently only two actions other than 'parse' are 'update_dont_parse' and 'publication_ts'. We want to
-    #  update publication_ts before update_dont_parse as we don't want to attempt update of a document that is
-    #  archived during the update_dont_parse process. Thus, we order the actions so that 'publication_ts' is first.
+    # TODO: Currently only two actions other than 'parse' are 'update_embeddings_only' and 'publication_ts'. We want to
+    #  update publication_ts before update_embeddings_only as we don't want to attempt update of a document that is
+    #  archived during the update_embeddings_only process. Thus, we order the actions so that 'publication_ts' is first.
     def get_action_priority(action_name: str) -> int:
         """Get the priority of an action."""
-        return 1 if action_name == update_dont_parse.__name__ else 0
+        return 1 if action_name == update_embeddings_only.__name__ else 0
 
     return [
         action
@@ -129,8 +130,8 @@ def order_actions(actions: List[Action]) -> List[Action]:
     ]
 
 
-def update_dont_parse(
-    update: Tuple[str, Update],
+def update_embeddings_only(
+    update: Tuple[str, UpdateDefinition],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
     """
@@ -177,8 +178,8 @@ def update_dont_parse(
                 update_file_field(
                     document_path=document_file,
                     field=str(document_update.type.value),
-                    new_value=document_update.db_value,
-                    existing_value=document_update.s3_value,
+                    new_value=document_update.new_value,
+                    existing_value=document_update.old_value,
                 )
             )
 
@@ -233,7 +234,7 @@ def update_dont_parse(
 
 
 def parse(
-    update: Tuple[str, Update],
+    update: Tuple[str, UpdateDefinition],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
     """Archive all instances of the document in the s3 pipeline cache to trigger full re-processing."""
@@ -347,8 +348,8 @@ def update_file_field(
         return None
 
 
-def update_publication_ts(
-    update: Tuple[str, Update],
+def update_field_only(
+    update: Tuple[str, UpdateDefinition],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
     """Update the value of the publication_ts field in all json objects for a document within s3 with the new value."""
@@ -388,8 +389,8 @@ def update_publication_ts(
                 update_file_metadata_field(
                     document_path=document_file,
                     metadata_field=str(document_update.type.value),
-                    new_value=document_update.db_value,
-                    existing_value=document_update.s3_value,
+                    new_value=document_update.new_value,
+                    existing_value=document_update.old_value,
                 )
             )
     return [error for error in errors if error is not None]
@@ -505,9 +506,19 @@ def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
     return None
 
 
-update_type_actions = {
-    UpdateTypes.SOURCE_URL: parse,
-    UpdateTypes.NAME: update_dont_parse,
-    UpdateTypes.DESCRIPTION: update_dont_parse,
-    UpdateTypes.PUBLICATION_TS: update_publication_ts,
-}
+def update_to_action(update: UpdateDefinition):
+    if update.type == UpdateTypes.SOURCE_URL:
+        if (
+            update.new_value == ""
+            and CLIMATE_LAWS_MATCH.match(cast(str, update.old_value)) is not None
+        ):
+            return update_field_only
+        else:
+            return parse
+    else:
+        update_type_actions = {
+            UpdateTypes.NAME: update_embeddings_only,
+            UpdateTypes.DESCRIPTION: update_embeddings_only,
+            UpdateTypes.PUBLICATION_TS: update_field_only,
+        }
+        return update_type_actions[UpdateTypes(update.type)]

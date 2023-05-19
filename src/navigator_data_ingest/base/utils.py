@@ -13,7 +13,7 @@ from navigator_data_ingest.base.api_client import (
 )
 from navigator_data_ingest.base.types import (
     DocumentGenerator,
-    Update,
+    UpdateDefinition,
     InputData,
     Document,
 )
@@ -52,7 +52,7 @@ class LawPolicyGenerator(DocumentGenerator):
 
     def process_updated_documents(
         self,
-    ) -> Generator[Tuple[str, List[Update]], None, None]:
+    ) -> Generator[Tuple[str, List[UpdateDefinition]], None, None]:
         """Generate documents for updating in s3 from the configured source."""
         _LOGGER.info("Processing updated documents")
         for document_id, document_updates in self.input_data.updated_documents.items():

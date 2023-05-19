@@ -5,18 +5,19 @@ import pytest
 from navigator_data_ingest.base.types import (
     Action,
     PipelineFieldMapping,
+    UpdateDefinition,
     UpdateTypes,
 )
 from navigator_data_ingest.base.updated_document_actions import (
-    update_dont_parse,
+    update_embeddings_only,
     order_actions,
     parse,
     update_file_field,
     rename,
-    update_type_actions,
     update_file_metadata_field,
     METADATA_KEY,
-    update_publication_ts,
+    update_field_only,
+    update_to_action,
 )
 
 
@@ -24,8 +25,18 @@ from navigator_data_ingest.base.updated_document_actions import (
 def test_identify_action_function(test_updates):
     """Test the UpdateTypeActions mapping returns the correct callable (function) given an UpdateResult."""
 
-    assert update_type_actions[test_updates[0].type] == update_dont_parse
-    assert update_type_actions[test_updates[2].type] == parse
+    assert update_to_action(test_updates[0]) == update_embeddings_only
+    assert update_to_action(test_updates[2]) == parse
+
+
+@pytest.mark.unit
+def test_update_cclw_source_url():
+    update = UpdateDefinition(
+        type=UpdateTypes.SOURCE_URL,
+        old_value="http://climate-laws.org/something",
+        new_value="",
+    )
+    assert update_to_action(update) == update_field_only
 
 
 @pytest.mark.unit
@@ -33,7 +44,7 @@ def test_order_actions_function(test_updates):
     """Test the order_actions function returns the correct order of actions given a list of actions."""
     actions = [
         Action(action=parse, update=test_updates[0]),
-        Action(action=update_dont_parse, update=test_updates[0]),
+        Action(action=update_embeddings_only, update=test_updates[0]),
     ]
 
     assert order_actions(actions) == [
@@ -88,15 +99,15 @@ def test_rename(
 
 
 @pytest.mark.unit
-def test_update_dont_parse(
+def test_update_embeddings_only(
     test_s3_client, test_update_config, test_updates, s3_document_id, s3_document_keys
 ):
-    """Test the update_dont_parse function effectively updates a document such that it isn't parsed in the pipeline."""
+    """Test the update_embeddings_only function effectively updates a document such that it isn't parsed in the pipeline."""
     update_to_document_description = test_updates[1]
 
     errors = [
         error
-        for error in update_dont_parse(
+        for error in update_embeddings_only(
             update=(s3_document_id, update_to_document_description),
             update_config=test_update_config,
         )
@@ -127,7 +138,7 @@ def test_update_dont_parse(
         parser_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.db_value
+        == update_to_document_description.new_value
     )
 
     embeddings_input_doc_data = json.loads(embeddings_input_doc.read_text())
@@ -135,7 +146,7 @@ def test_update_dont_parse(
         embeddings_input_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.db_value
+        == update_to_document_description.new_value
     )
 
     embeddings_input_translated_doc_data = json.loads(
@@ -145,7 +156,7 @@ def test_update_dont_parse(
         embeddings_input_translated_doc_data[
             PipelineFieldMapping[UpdateTypes(update_to_document_description.type)]
         ]
-        == update_to_document_description.db_value
+        == update_to_document_description.new_value
     )
 
 
@@ -202,8 +213,8 @@ def test_update_metadata_field(
             update_file_metadata_field(
                 document_path=parser_input_document_path,
                 metadata_field=update_to_publication_ts.type,
-                new_value=update_to_publication_ts.db_value,
-                existing_value=update_to_publication_ts.s3_value,
+                new_value=update_to_publication_ts.new_value,
+                existing_value=update_to_publication_ts.old_value,
             )
         ]
         if not "None"
@@ -217,12 +228,12 @@ def test_update_metadata_field(
         parser_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
 
 @pytest.mark.unit
-def test_update_publication_ts(
+def test_update_field_only(
     test_s3_client, test_update_config, test_updates, s3_document_keys, s3_document_id
 ):
     """Test that a field in the metdata of all s3 instances of a document can successfully be updated by the pipeline."""
@@ -245,12 +256,12 @@ def test_update_publication_ts(
         embeddings_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.s3_value
+        == update_to_publication_ts.old_value
     )
 
     errors = [
         error
-        for error in update_publication_ts(
+        for error in update_field_only(
             update=(s3_document_id, update_to_publication_ts),
             update_config=test_update_config,
         )
@@ -265,7 +276,7 @@ def test_update_publication_ts(
         parser_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
     assert embeddings_input_doc.exists()
@@ -274,7 +285,7 @@ def test_update_publication_ts(
         embeddings_input_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
     assert embeddings_input_translated_doc.exists()
@@ -285,7 +296,7 @@ def test_update_publication_ts(
         embeddings_input_translated_doc_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
     assert indexer_input_doc_json.exists()
@@ -294,7 +305,7 @@ def test_update_publication_ts(
         indexer_input_doc_json_data[METADATA_KEY][
             PipelineFieldMapping[UpdateTypes(update_to_publication_ts.type)]
         ]
-        == update_to_publication_ts.db_value
+        == update_to_publication_ts.new_value
     )
 
     assert indexer_input_doc_npy.exists()
