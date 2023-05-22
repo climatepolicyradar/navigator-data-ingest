@@ -14,7 +14,7 @@ from typing import (
     Callable,
 )
 
-from pydantic import AnyHttpUrl, BaseModel
+from pydantic import BaseModel
 
 CONTENT_TYPE_PDF = "application/pdf"
 CONTENT_TYPE_DOCX = (
@@ -79,8 +79,8 @@ class Document(BaseModel):
     import_id: str  # Unique source derived ID
     slug: str  # Unique identifier created by backend
     publication_ts: datetime
-    source_url: Optional[AnyHttpUrl]  # Original source URL
-    download_url: Optional[AnyHttpUrl]  # Cached document URL
+    source_url: Optional[str]  # Original source URL
+    download_url: Optional[str]  # Cached document URL
 
     type: str
     source: str
@@ -143,7 +143,7 @@ class DocumentParserInput(BaseModel):
     document_id: str
     document_name: str
     document_description: str
-    document_source_url: Optional[AnyHttpUrl]
+    document_source_url: Optional[str]
     document_cdn_object: Optional[str] = None
     document_content_type: Optional[str] = None
     document_md5_sum: Optional[str] = None
