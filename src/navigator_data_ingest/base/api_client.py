@@ -57,6 +57,7 @@ def get_machine_user_token():
 def upload_document(
     session: requests.Session,
     source_url: str,
+    s3_prefix: str,
     file_name_without_suffix: str,
     document_bucket: str,
     import_id: str,
@@ -95,21 +96,31 @@ def upload_document(
 
         # Calculate the m5sum & update the result object with the calculated value
         file_content = download_response.content
-        file_content_hash = hashlib.md5(file_content).hexdigest()
-        upload_result.md5_sum = file_content_hash
+        file_hash = hashlib.md5(file_content).hexdigest()
+        upload_result.md5_sum = file_hash
+
+        # ext4 used in Amazon Linux /tmp directory has a max filename length of
+        # 255 bytes, so trim to ensure we don't exceed that. Choose 240 initially to
+        # allow for suffix.
+        file_name_max_fs_len_no_suffix = file_name_without_suffix[:240]
+        while len(file_name_max_fs_len_no_suffix.encode("utf-8")) > 240:
+            file_name_max_fs_len_no_suffix = file_name_max_fs_len_no_suffix[:-5]
 
         # s3 can only handle paths of up to 1024 bytes. To ensure we don't exceed that,
         # we trim the filename if it's too long
         file_suffix = FILE_EXTENSION_MAPPING.get(content_type, "")
         filename_max_len = (
             1024
+            - len(s3_prefix)
             - len(file_suffix)
-            - len(file_content_hash)
+            - len(file_hash)
             - len("_.")  # length of additional characters for joining path components
         )
-        file_name_without_suffix_trimmed = file_name_without_suffix[:filename_max_len]
+        file_name_no_suffix_trimmed = file_name_max_fs_len_no_suffix[:filename_max_len]
+        # Safe not to loop over the encoding of file_name because everything we're
+        # adding is 1byte == 1char
         file_name = (
-            f"{file_name_without_suffix_trimmed}_{file_content_hash}{file_suffix}"
+            f"{s3_prefix}/{file_name_no_suffix_trimmed}_{file_hash}{file_suffix}"
         )
 
         _LOGGER.info(
