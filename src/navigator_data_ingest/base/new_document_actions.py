@@ -77,35 +77,30 @@ def _upload_document(
     doc_slug = slugify(document.name)
     doc_geo = document.geography
     doc_year = document.publication_ts.year
-    file_name = f"{doc_geo}/{doc_year}/{doc_slug}"
+    s3_prefix = f"{doc_geo}/{doc_year}"
 
-    if not document.source_url and not document.download_url:
-        _LOGGER.info(
-            f"Skipping upload for '{document.source}:{document.import_id}:"
-            f"{document.name}' because both the source URL and download URL are empty."
-        )
-        return UploadResult(
-            cdn_object=None,
-            md5_sum=None,
-            content_type=None,
-        )
-
-    def get_url_to_use(_document: Document) -> str:
-        """
-        Get the URL to use for when downloading a document.
-
-        We use the download_url (cached document) if one is provided or default to the source_url.
-        """
-        if _document.download_url is not None:
-            return _document.download_url
-        return _document.source_url.split("|")[0].strip()
+    if not document.download_url:
+        if not document.source_url:
+            _LOGGER.info(
+                f"Skipping upload for '{document.source}:{document.import_id}:"
+                f"{document.name}' because both the source URL and download URL are empty."
+            )
+            return UploadResult(
+                cdn_object=None,
+                md5_sum=None,
+                content_type=None,
+            )
+        file_download_source = document.source_url
+    else:
+        file_download_source = document.download_url
 
     return upload_document(
         session,
-        get_url_to_use(document),
-        file_name,
+        file_download_source,
+        s3_prefix,
+        doc_slug,
         document_bucket,
-        document.import_id
+        document.import_id,
     )
 
 
