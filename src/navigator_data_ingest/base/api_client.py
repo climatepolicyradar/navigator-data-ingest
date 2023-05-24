@@ -140,6 +140,13 @@ def _download_from_source(
     session: requests.Session, source_url: str
 ) -> requests.Response:
     download_response = session.get(source_url, allow_redirects=True, timeout=5)
+
+    # TODO this is a hack and we should handle source urls upstream in the backend
+    if download_response.status_code == 404:
+        download_response_altered = session.get(source_url.replace("%", ""), allow_redirects=True, timeout=5)
+        if download_response_altered.status_code == 200:
+            download_response = download_response_altered
+
     if download_response.status_code >= 300:
         raise Exception(
             f"Downloading source document failed: {download_response.status_code} "
