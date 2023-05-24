@@ -142,8 +142,8 @@ def _download_from_source(
     def should_raise(resp: requests.Response):
         if resp.status_code >= 300:
             raise Exception(
-                f"Downloading source document failed: {download_response.status_code} "
-                f"{download_response.text}"
+                f"Downloading source document failed: {resp.status_code} "
+                f"{resp.text}"
             )
 
     # Try the orginal source url
