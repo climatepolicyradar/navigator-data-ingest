@@ -139,35 +139,27 @@ def upload_document(
 def _download_from_source(
     session: requests.Session, source_url: str
 ) -> requests.Response:
-    def should_raise(resp: requests.Response):
-        if resp.status_code >= 300:
-            raise Exception(
-                f"Downloading source document failed: {resp.status_code} "
-                f"{resp.text}"
-            )
-
     # Try the orginal source url
     download_response = session.get(source_url, allow_redirects=True, timeout=5)
-    should_raise(download_response)
 
     # TODO this is a hack and we should handle source urls upstream in the backend
-    if download_response.status_code != 404:
-        return download_response
+    if download_response.status_code == 404:
+        # mutation 1 - remove %
+        download_response = session.get(
+            source_url.replace("%", ""), allow_redirects=True, timeout=5
+        )
 
-    # mutation 1 - remove %
-    download_response = session.get(
-        source_url.replace("%", ""), allow_redirects=True, timeout=5
-    )
-    should_raise(download_response)
-    if download_response.status_code != 404:
-        return download_response
+    if download_response.status_code == 404:
+        # mutation 2 - replace % with the encoded version, i.e. %25
+        download_response = session.get(
+            source_url.replace("%", "%25"), allow_redirects=True, timeout=5
+        )
 
-    # mutation 2 - replace % with the encoded version, i.e. %25
-    download_response = session.get(
-        source_url.replace("%", "%25"), allow_redirects=True, timeout=5
-    )
-    should_raise(download_response)
-
+    if download_response.status_code >= 300:
+        raise Exception(
+            f"Downloading source document failed: {download_response.status_code} "
+            f"{download_response.text}"
+        )
     return download_response
 
 
