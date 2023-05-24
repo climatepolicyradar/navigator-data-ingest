@@ -102,8 +102,8 @@ def upload_document(
         # ext4 used in Amazon Linux /tmp directory has a max filename length of
         # 255 bytes, so trim to ensure we don't exceed that. Choose 240 initially to
         # allow for suffix.
-        file_name_max_fs_len_no_suffix = file_name_without_suffix[:240]
-        while len(file_name_max_fs_len_no_suffix.encode("utf-8")) > 240:
+        file_name_max_fs_len_no_suffix = file_name_without_suffix[:200]
+        while len(file_name_max_fs_len_no_suffix.encode("utf-8")) > 200:
             file_name_max_fs_len_no_suffix = file_name_max_fs_len_no_suffix[:-5]
 
         # s3 can only handle paths of up to 1024 bytes. To ensure we don't exceed that,
