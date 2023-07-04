@@ -6,10 +6,7 @@ from typing import Generator, Iterable
 import requests
 from slugify import slugify
 
-from navigator_data_ingest.base.api_client import (
-    upload_document,
-    update_document_details,
-)
+from navigator_data_ingest.base.api_client import upload_document
 from navigator_data_ingest.base.types import (
     Document,
     DocumentParserInput,
@@ -144,16 +141,5 @@ def _handle_document(
             "document_md5_sum": uploaded_document_result.md5_sum,
         },
     )
-
-    try:
-        update_document_details(
-            session,
-            document.import_id,
-            uploaded_document_result,
-        )
-        _LOGGER.info(f"Updating details for '{document.import_id}")
-    except Exception:
-        _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed")
-        return HandleResult(error=traceback.format_exc(), parser_input=parser_input)
 
     return HandleResult(parser_input=parser_input)
