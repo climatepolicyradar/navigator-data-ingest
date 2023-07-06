@@ -15,7 +15,7 @@ from navigator_data_ingest.base.api_client import (
 from navigator_data_ingest.base.new_document_actions import handle_new_documents
 from navigator_data_ingest.base.types import UpdateConfig, ExecutionData
 from navigator_data_ingest.base.updated_document_actions import handle_document_updates
-from navigator_data_ingest.base.utils import LawPolicyGenerator, check_required_env_vars
+from navigator_data_ingest.base.utils import LawPolicyGenerator
 
 # Clear existing log handlers so we always log in structured JSON
 root_logger = logging.getLogger()
@@ -135,7 +135,6 @@ def main(
     param execution_data_prefix: Prefix to apply to output files that contains the execution data files
     return: None
     """
-    check_required_env_vars()
 
     # Read the execution data file to get the unique execution timestamp s3 path
     # (input/${timestamp}/)

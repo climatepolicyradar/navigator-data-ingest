@@ -21,37 +21,9 @@ from navigator_data_ingest.base.types import (
     UnsupportedContentTypeError,
 )
 
-API_HOST_ENVVAR = "API_HOST"
-MACHINE_USER_EMAIL_ENVVAR = "MACHINE_USER_EMAIL"
-MACHINE_USER_PASSWORD_ENVVAR = "MACHINE_USER_PASSWORD"
-
 _LOGGER = logging.getLogger(__file__)
 
 META_KEY = "metadata"
-
-
-@lru_cache()
-def _get_api_host():
-    """Returns API host configured in environment."""
-    return os.environ[API_HOST_ENVVAR].rstrip("/")
-
-
-@lru_cache()
-def get_machine_user_token():
-    username = os.environ[MACHINE_USER_EMAIL_ENVVAR]
-    password = os.environ[MACHINE_USER_PASSWORD_ENVVAR]
-    api_host = _get_api_host()
-
-    login_data = {
-        "username": username,
-        "password": password,
-    }
-    get_token_response = requests.post(f"{api_host}/api/tokens", data=login_data)
-    tokens = get_token_response.json()
-    _LOGGER.debug(f"Response from api/tokens: {get_token_response.status_code} ")
-    access_token = tokens["access_token"]
-
-    return access_token
 
 
 def upload_document(
@@ -188,40 +160,6 @@ def _store_document_in_cache(
     with output_file_location.open("wb") as output_file:
         output_file.write(data)
     return clean_name
-
-
-@retry(
-    stop=stop_after_attempt(4),
-    wait=wait_random_exponential(multiplier=1, min=1, max=10),
-)
-def update_document_details(
-    session: requests.Session, import_id: str, result: UploadResult
-) -> requests.Response:
-
-    token = get_machine_user_token()
-
-    headers = {"Authorization": f"Bearer {token}"}
-
-    url = f"{_get_api_host()}/api/v1/admin/documents/{import_id}"
-
-    response = session.put(
-        url,
-        headers=headers,
-        json=result.dict(),
-    )
-    _LOGGER.info(
-        "Response from backend to updating document",
-        extra={"props": {"url": url, "status_code": response.status_code}},
-    )
-
-    if response.status_code >= 300:
-        # TODO: More nuanced status response handling
-        raise Exception(
-            f"Failed to update entry in the database for '{import_id}': "
-            f"[{response.status_code}] {response.text}"
-        )
-
-    return response
 
 
 @retry(

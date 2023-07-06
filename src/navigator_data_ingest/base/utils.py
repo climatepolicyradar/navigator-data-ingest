@@ -1,29 +1,16 @@
 import json
 import logging
-import os
 from typing import Generator, List, Tuple
 from typing import cast
 
 from cloudpathlib import CloudPath, S3Path
 
-from navigator_data_ingest.base.api_client import (
-    API_HOST_ENVVAR,
-    MACHINE_USER_EMAIL_ENVVAR,
-    MACHINE_USER_PASSWORD_ENVVAR,
-)
 from navigator_data_ingest.base.types import (
     DocumentGenerator,
     Update,
     InputData,
     Document,
 )
-
-REQUIRED_ENV_VARS = [
-    API_HOST_ENVVAR,
-    MACHINE_USER_EMAIL_ENVVAR,
-    MACHINE_USER_PASSWORD_ENVVAR,
-]
-ENV_VAR_MISSING_ERROR = 10
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -89,15 +76,3 @@ def parser_input_already_exists(
         )
         return True
     return False
-
-
-def check_required_env_vars() -> None:
-    """Check that all required environment variables are set."""
-    fail = False
-    for e in REQUIRED_ENV_VARS:
-        if e not in os.environ:
-            _LOGGER.error(f"Missing environment variable: {e}")
-            fail = True
-
-    if fail:
-        exit(ENV_VAR_MISSING_ERROR)
