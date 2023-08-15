@@ -83,8 +83,8 @@ class Document(BaseModel):
     family_import_id: str
     slug: str
     publication_ts: datetime
-    source_url: Optional[str]
-    download_url: Optional[str]
+    source_url: Optional[str]  # Original source URL
+    download_url: Optional[str]  # Cached document URL
 
     type: str
     source: str
