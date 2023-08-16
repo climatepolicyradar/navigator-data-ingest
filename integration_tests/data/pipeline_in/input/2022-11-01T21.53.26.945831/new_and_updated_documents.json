@@ -89,7 +89,7 @@
       "type": "Act",
       "source": "CCLW",
       "import_id": "TESTCCLW.executive.1332.1549",
-      "import_id": "TESTCCLW.family.1332.0",
+      "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
       "geography": "JPN",
       "languages": [
@@ -469,7 +469,7 @@
       "type": "Plan",
       "source": "CCLW",
       "import_id": "TESTCCLW.executive.1332.1558",
-      "family_import_id": "TESTCCLW.json.1332.0",
+      "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
       "frameworks": [],
       "geography": "KOR",
