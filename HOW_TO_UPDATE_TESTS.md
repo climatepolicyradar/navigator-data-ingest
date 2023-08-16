@@ -29,7 +29,7 @@ Effectively follow the first 3 steps of the integration-tests.yml github actions
 
     export AWS_PROFILE=${PROFILE_NAME}
 
-Example: 
+Example:
 
     export AWS_PROFILE=sandbox
 
@@ -41,11 +41,11 @@ Example:
 
      python -m integration_tests.setup_test_buckets docbucket123123123 pipbucket123123123 eu-west-1
 
-**Create the execution data file locally from the nev variables** 
+**Create the execution data file locally from the nev variables**
 
      python -m integration_tests.setup_execution_data_file ${pipeline_bucket} ${EXECUTION_DATA_PREFIX}/${EXECUTION_DATA_ID}.json ${TEST_DATA_UPLOAD_PATH}
 
-Example: 
+Example:
 
      python -m integration_tests.setup_execution_data_file pipbucket123123123 execution_data/123456.json input/2022-11-01T21.53.26.945831/new_and_updated_documents.json
 
@@ -53,7 +53,7 @@ Example:
 
      aws s3 sync integration_tests/data/pipeline_in s3://${pipeline_bucket}
 
-Example: 
+Example:
 
      aws s3 sync integration_tests/data/pipeline_in s3://pipbucket123123123
 
@@ -63,7 +63,7 @@ If you are trying to figure out what the variables are look in the env var secti
 
     docker run -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${PIPELINE_BUCKET} --document-bucket ${DOCUMENT_BUCKET} --input-file ${TEST_DATA_UPLOAD_PATH} --output-prefix ${OUTPUT_PREFIX} --embeddings-input-prefix ${EMBEDDINGS_INPUT_PREFIX} --indexer-input-prefix ${INDEXER_INPUT_PREFIX} --execution-id ${EXECUTION_DATA_ID} --execution-data-prefix ${EXECUTION_DATA_PREFIX}
 
-Example: 
+Example:
 
     docker run -e AWS_ACCESS_KEY_ID=XXX -e AWS_SECRET_ACCESS_KEY=XXX -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket pipbucket123123123 --document-bucket docbucket123123123 --updates-file-name new_and_updated_documents.json --output-prefix ingest_unit_test_parser_input --embeddings-input-prefix ingest_unit_test_embeddings_input --indexer-input-prefix ingest_unit_test_indexer_input --execution-id 123456 --execution-data-prefix execution_data
 
