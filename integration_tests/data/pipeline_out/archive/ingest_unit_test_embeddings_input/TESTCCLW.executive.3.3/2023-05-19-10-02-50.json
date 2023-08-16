@@ -9,24 +9,24 @@
   "document_metadata": {},
   "document_slug": "fake_slug",
   "languages": [
-        "en"
-    ],
-    "translated": false,
-    "html_data": {
-        "detected_title": "One Stop Shop Service",
-        "detected_date": null,
-        "has_valid_text": true,
-        "text_blocks": [
-            {
-                "text": [
-                    "Why use a One Stop Shop"
-                ],
-                "text_block_id": "b0",
-                "language": "en",
-                "type": "Text",
-                "type_confidence": 1.0
-            }
-        ]
-    },
-    "pdf_data": null
+    "en"
+  ],
+  "translated": false,
+  "html_data": {
+    "detected_title": "One Stop Shop Service",
+    "detected_date": null,
+    "has_valid_text": true,
+    "text_blocks": [
+      {
+        "text": [
+          "Why use a One Stop Shop"
+        ],
+        "text_block_id": "b0",
+        "language": "en",
+        "type": "Text",
+        "type_confidence": 1.0
+      }
+    ]
+  },
+  "pdf_data": null
 }

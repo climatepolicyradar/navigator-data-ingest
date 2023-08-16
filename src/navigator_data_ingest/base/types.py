@@ -66,6 +66,9 @@ class Event(BaseModel):  # noqa: D101
         }
 
 
+Json = dict[str, Any]
+
+
 class Document(BaseModel):
     """
     A representation of all information expected to be provided for a document.
@@ -76,8 +79,9 @@ class Document(BaseModel):
 
     name: str
     description: str
-    import_id: str  # Unique source derived ID
-    slug: str  # Unique identifier created by backend
+    import_id: str
+    family_import_id: str
+    slug: str
     publication_ts: datetime
     source_url: Optional[str]  # Original source URL
     download_url: Optional[str]  # Cached document URL
@@ -86,22 +90,14 @@ class Document(BaseModel):
     source: str
     category: str
     geography: str
-
-    frameworks: Sequence[str]
-    instruments: Sequence[str]
-    hazards: Sequence[str]
-    keywords: Sequence[str]
     languages: Sequence[str]
-    sectors: Sequence[str]
-    topics: Sequence[str]
 
-    events: Sequence[Event]
+    metadata: Json
 
     def to_json(self) -> Mapping[str, Any]:
-        """Output a JSON serialising friendly dict representing this model"""
+        """Output a JSON serialising friendly dict representing this model."""
         json_dict = self.dict()
         json_dict["publication_ts"] = self.publication_ts.isoformat()
-        json_dict["events"] = [event.to_json() for event in self.events]
         return json_dict
 
 
@@ -118,15 +114,9 @@ class UpdateTypes(str, Enum):
     # SOURCE = "source"
     # CATEGORY = "category"
     # GEOGRAPHY = "geography"
-    # FRAMEWORKS = "frameworks"
-    # INSTRUMENTS = "instruments"
-    # HAZARDS = "hazards"
-    # KEYWORDS = "keywords"
     # LANGUAGES = "languages"
-    # SECTORS = "sectors"
-    # TOPICS = "topics"
-    # EVENTS = "events"
     # DOCUMENT_STATUS = "document_status"
+    # METADATA = "metadata"
 
 
 PipelineFieldMapping = {
@@ -248,4 +238,5 @@ class Action(BaseModel):
 
 class ExecutionData(BaseModel):
     """Data unique to a step functions execution that is required at later stages."""
+
     input_dir_path: str
