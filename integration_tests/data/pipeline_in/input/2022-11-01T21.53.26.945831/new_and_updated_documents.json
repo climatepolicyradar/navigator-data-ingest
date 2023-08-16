@@ -311,15 +311,15 @@
       "import_id": "TESTCCLW.executive.1332.1554",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Policy",
-      "frameworks": [
-        "Mitigation"
-      ],
       "geography": "ESP",
       "languages": [
         "Spanish"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [
+          "Mitigation"
+        ],
         "instruments": [
           "Capacity building|Governance",
           "Processes, plans and strategies|Governance",
