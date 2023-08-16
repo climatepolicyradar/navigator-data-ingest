@@ -137,15 +137,15 @@
       "import_id": "TESTCCLW.executive.1332.1550",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [
-        "Mitigation"
-      ],
       "geography": "JPN",
       "languages": [
         "Japanese"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [
+          "Mitigation"
+        ],
         "instruments": [
           "Capacity building|Governance",
           "Institutional mandates|Governance",
