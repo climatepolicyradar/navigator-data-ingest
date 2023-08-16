@@ -356,11 +356,11 @@
       "import_id": "TESTCCLW.executive.1332.1555",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "AUS",
       "languages": [],
-      "hazards": [],
       "metadata": {
+        "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Provision of climate funds|Direct Investment"
         ],
@@ -389,13 +389,13 @@
       "import_id": "TESTCCLW.executive.1332.1556",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "KOR",
       "languages": [
         "English"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Processes, plans and strategies|Governance"
         ],
@@ -430,13 +430,13 @@
       "import_id": "TESTCCLW.executive.1332.1557",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "KOR",
       "languages": [
         "Korean"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Processes, plans and strategies|Governance"
         ],
@@ -471,13 +471,13 @@
       "import_id": "TESTCCLW.executive.1332.1558",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "KOR",
       "languages": [
         "Korean"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Processes, plans and strategies|Governance"
         ],
@@ -512,13 +512,13 @@
       "import_id": "TESTCCLW.executive.1332.1559",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "BEL",
       "languages": [
         "French"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Institutional mandates|Governance",
           "Processes, plans and strategies|Governance",
@@ -553,13 +553,13 @@
       "import_id": "TESTCCLW.executive.1332.1560",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "BEL",
       "languages": [
         "French"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Institutional mandates|Governance",
           "Processes, plans and strategies|Governance",
@@ -594,13 +594,13 @@
       "import_id": "TESTCCLW.executive.1332.1562",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "EUR",
       "languages": [
         "English"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Capacity building|Governance",
           "Education, training and knowledge dissemination|Information"
@@ -639,13 +639,13 @@
       "import_id": "TESTCCLW.executive.1332.1563",
       "family_import_id": "TESTCCLW.family.1332.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "EUR",
       "languages": [
         "English"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Capacity building|Governance",
           "Education, training and knowledge dissemination|Information"
@@ -684,13 +684,13 @@
       "import_id": "TESTCCLW.executive.3.3",
       "family_import_id": "TESTCCLW.family.3.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "EUR",
       "languages": [
         "English"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Capacity building|Governance",
           "Education, training and knowledge dissemination|Information"
@@ -729,13 +729,13 @@
       "import_id": "TESTCCLW.executive.4.4",
       "family_import_id": "TESTCCLW.family.4.0",
       "category": "Law",
-      "frameworks": [],
       "geography": "EUR",
       "languages": [
         "English"
       ],
       "metadata": {
         "hazards": [],
+        "frameworks": [],
         "instruments": [
           "Capacity building|Governance",
           "Education, training and knowledge dissemination|Information"
