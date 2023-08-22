@@ -1,4 +1,5 @@
 import json
+import logging
 import logging.config
 import os
 from concurrent.futures import ProcessPoolExecutor
@@ -13,7 +14,8 @@ from navigator_data_ingest.base.api_client import (
     write_parser_input,
 )
 from navigator_data_ingest.base.new_document_actions import handle_new_documents
-from navigator_data_ingest.base.types import UpdateConfig, ExecutionData
+from navigator_data_ingest.base.types import UpdateConfig
+from cpr_data_access.pipeline_general_models import ExecutionData
 from navigator_data_ingest.base.updated_document_actions import handle_document_updates
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 
@@ -124,16 +126,15 @@ def main(
     Load documents from source JSON array file, updating details via API.
 
     param pipeline_bucket: S3 bucket name from which to read/write input/output files
-    param document_bucket: S3 bucket name in which to store cached documents
-    param updates_file_name: Location of JSON Document array input file that contains the updates
-    param parser_input_prefix: Prefix to apply to output files that contains the parser input files
-    param embeddings_input_prefix: S3 prefix containing the embeddings input files
-    param indexer_input_prefix: S3 prefix containing the indexer input files
-    param archive_prefix: S3 prefix to which to archive documents
-    param worker_count: Number of workers downloading/uploading cached documents
-    param execution_id: Unique identifier for the execution
-    param execution_data_prefix: Prefix to apply to output files that contains the execution data files
-    return: None
+    param document_bucket: S3 bucket name in which to store cached documents param
+    updates_file_name: Location of JSON Document array input file that contains the
+    updates param parser_input_prefix: Prefix to apply to output files that contains
+    the parser input files param embeddings_input_prefix: S3 prefix containing the
+    embeddings input files param indexer_input_prefix: S3 prefix containing the
+    indexer input files param archive_prefix: S3 prefix to which to archive documents
+    param worker_count: Number of workers downloading/uploading cached documents param
+    execution_id: Unique identifier for the execution param execution_data_prefix:
+    Prefix to apply to output files that contains the execution data files return: None
     """
 
     # Read the execution data file to get the unique execution timestamp s3 path
@@ -149,15 +150,15 @@ def main(
         ).input_dir_path
     )
 
-    # Get the key of the updates file contain information on the new and updated documents
-    # (input/${timestamp}/updates.json)
+    # Get the key of the updates file contain information on the new and updated
+    # documents (input/${timestamp}/updates.json)
     updates_file_key = str(input_dir_path / updates_file_name).replace(
         f"s3://{pipeline_bucket}/", ""
     )
 
     pipeline_bucket_path = S3Path(f"s3://{pipeline_bucket.strip().rstrip('/')}")
 
-    input_file_path = cast(
+    input_file_path: S3Path = cast(
         S3Path,
         pipeline_bucket_path / f"{updates_file_key.strip().lstrip('/')}",
     )
@@ -183,7 +184,7 @@ def main(
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,
-            input_prefix=input_file_path.key.replace(input_file_path.name, ""),
+            input_prefix=input_file_path.key.replace(input_file_path.name, ""),  # type: ignore
             parser_input=output_prefix,
             embeddings_input=embeddings_input_prefix,
             indexer_input=indexer_input_prefix,
@@ -217,7 +218,9 @@ def main(
             write_parser_input(output_location_path, handle_result.parser_input)
 
     if len(errors) > 0:
-        error_output_location_path = input_file_path.parent / str(input_file_path.stem + '.json_errors')
+        error_output_location_path = input_file_path.parent / str(
+            input_file_path.stem + ".json_errors"
+        )
         _LOGGER.info(
             "Writing errors to JSON_ERRORS file",
             extra={

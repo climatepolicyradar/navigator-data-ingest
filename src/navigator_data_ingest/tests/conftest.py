@@ -6,7 +6,8 @@ import pytest
 from moto import mock_s3
 import json
 
-from navigator_data_ingest.base.types import UpdateConfig, Update, UpdateTypes
+from navigator_data_ingest.base.types import UpdateConfig
+from cpr_data_access.pipeline_general_models import UpdateTypes, Update
 
 
 class S3Client:

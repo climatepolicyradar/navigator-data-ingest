@@ -8,18 +8,18 @@ from slugify import slugify
 
 from navigator_data_ingest.base.api_client import upload_document
 from navigator_data_ingest.base.types import (
-    Document,
-    DocumentParserInput,
     UploadResult,
     HandleResult,
 )
+from cpr_data_access.pipeline_general_models import BackendDocument
+from cpr_data_access.parser_models import ParserInput
 
 _LOGGER = logging.getLogger(__file__)
 
 
 def handle_new_documents(
     executor: Executor,
-    source: Iterable[Document],
+    source: Iterable[BackendDocument],
     document_bucket: str,
 ) -> Generator[HandleResult, None, None]:
     """
@@ -61,7 +61,7 @@ def handle_new_documents(
 
 def _upload_document(
     session: requests.Session,
-    document: Document,
+    document: BackendDocument,
     document_bucket: str,
 ) -> UploadResult:
     """
@@ -102,7 +102,7 @@ def _upload_document(
 
 
 def _handle_document(
-    document: Document,
+    document: BackendDocument,
     document_bucket: str,
 ) -> HandleResult:
     """
@@ -113,7 +113,7 @@ def _handle_document(
     _LOGGER.info(f"Handling document: {document}")
 
     session = requests.Session()
-    parser_input = DocumentParserInput(
+    parser_input = ParserInput(
         document_id=document.import_id,
         document_slug=document.slug,
         document_name=document.name,
