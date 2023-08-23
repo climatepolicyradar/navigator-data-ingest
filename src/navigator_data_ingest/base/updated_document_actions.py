@@ -39,7 +39,7 @@ def handle_document_updates(
     """
     Handle documents updates.
 
-    For each document: - Iterate through the document updates and perform the relevant
+    For each document: Iterate through the document updates and perform the relevant
     action based upon the update type.
     """
     tasks = {
