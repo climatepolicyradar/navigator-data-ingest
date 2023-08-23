@@ -6,8 +6,11 @@ from typing import cast
 from cloudpathlib import CloudPath, S3Path
 
 from navigator_data_ingest.base.types import DocumentGenerator
-from cpr_data_access.pipeline_general_models import Update
-from cpr_data_access.pipeline_general_models import InputData, BackendDocument
+from cpr_data_access.pipeline_general_models import (
+    Update,
+    PipelineUpdates,
+    BackendDocument,
+)
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -24,7 +27,7 @@ class LawPolicyGenerator(DocumentGenerator):
         """Initialize the generator."""
         _LOGGER.info("Initializing LawPolicyGenerator")
         json_data = read_s3_json_file(input_file)
-        self.input_data = InputData.parse_obj(json_data)
+        self.input_data = PipelineUpdates.parse_obj(json_data)
         self.output_location_path = output_location_path
 
     def process_new_documents(self) -> Generator[BackendDocument, None, None]:

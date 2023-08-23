@@ -556,8 +556,8 @@ tqdm = "^4.64.1"
 [package.source]
 type = "git"
 url = "https://github.com/climatepolicyradar/data-access.git"
-reference = "a5783ed71f6dad88bf3dc00bdacd4d9b8cf3e49c"
-resolved_reference = "a5783ed71f6dad88bf3dc00bdacd4d9b8cf3e49c"
+reference = "v0.1.1"
+resolved_reference = "591171d9b08d30fb4fa01d7ef19764dfc6b65967"
 
 [[package]]
 name = "cryptography"
@@ -2707,4 +2707,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4f09b392f46175ef98f471c82693ed290c4c4bcbfcdcad54c8b1f78a13f0faa0"
+content-hash = "83bd072fc9336ec03440257d5ed41e84182403203de99b7a1560119bc4f5bb24"

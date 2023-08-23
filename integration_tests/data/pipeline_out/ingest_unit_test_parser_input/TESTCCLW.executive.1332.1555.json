@@ -13,6 +13,7 @@
     "family_import_id": "TESTCCLW.family.1332.0",
     "slug": "australia_2014_carbon-farming-initiative-amendment-bill-2014",
     "publication_ts": "2014-12-13T00:00:00",
+    "date": "13/12/2014",
     "source_url": null,
     "download_url": null,
     "type": "Law",
@@ -21,11 +22,11 @@
     "geography": "AUS",
     "languages": [],
     "metadata": {
+      "hazards": [],
       "frameworks": [],
       "instruments": [
         "Provision of climate funds|Direct Investment"
       ],
-      "hazards": [],
       "keywords": [
         "Carbon Pricing"
       ],

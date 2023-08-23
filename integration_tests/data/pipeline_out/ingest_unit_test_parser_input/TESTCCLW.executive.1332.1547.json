@@ -13,6 +13,7 @@
     "family_import_id": "TESTCCLW.family.1332.0",
     "slug": "indonesia_2013_presidential-instruction-6-year-2013-on-suspension-of-new-licenses-and-improving-forest-governance-of-primary-forest-and-peatland",
     "publication_ts": "2013-01-01T00:00:00",
+    "date": "01/01/2013",
     "source_url": "https://www.africau.edu/images/default/sample.pdf",
     "download_url": "http://ronlaw.gov.nr/nauru_lpms/files/subordinate_legislation/aab912643572c84083c256fa0857809b.pdf",
     "type": "Decree",
@@ -23,11 +24,11 @@
       "Indonesian"
     ],
     "metadata": {
+      "hazards": [],
       "frameworks": [],
       "instruments": [
         "Processes, plans and strategies|Governance"
       ],
-      "hazards": [],
       "keywords": [
         "REDD+ And LULUCF",
         "Forests",

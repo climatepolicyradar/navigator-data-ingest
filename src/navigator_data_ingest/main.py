@@ -125,16 +125,19 @@ def main(
     """
     Load documents from source JSON array file, updating details via API.
 
-    param pipeline_bucket: S3 bucket name from which to read/write input/output files
-    param document_bucket: S3 bucket name in which to store cached documents param
-    updates_file_name: Location of JSON Document array input file that contains the
-    updates param parser_input_prefix: Prefix to apply to output files that contains
-    the parser input files param embeddings_input_prefix: S3 prefix containing the
-    embeddings input files param indexer_input_prefix: S3 prefix containing the
-    indexer input files param archive_prefix: S3 prefix to which to archive documents
-    param worker_count: Number of workers downloading/uploading cached documents param
-    execution_id: Unique identifier for the execution param execution_data_prefix:
-    Prefix to apply to output files that contains the execution data files return: None
+    param pipeline_bucket: S3 bucket name from which to read/write input/output files.
+    param document_bucket: S3 bucket name in which to store cached documents.
+    param updates_file_name: Location of JSON Document array input file that contains the
+    updates.
+    param parser_input_prefix: Prefix to apply to output files that contains
+    the parser input files.
+    param embeddings_input_prefix: S3 prefix containing the embeddings input files.
+    param indexer_input_prefix: S3 prefix containing the indexer input files.
+    param archive_prefix: S3 prefix to which to archive documents.
+    param worker_count: Number of workers downloading/uploading cached documents.
+    param execution_id: Unique identifier for the execution.
+    param execution_data_prefix: Prefix to apply to output files that contains the
+    execution data files.
     """
 
     # Read the execution data file to get the unique execution timestamp s3 path

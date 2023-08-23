@@ -10,20 +10,17 @@ from cloudpathlib import S3Path
 
 from navigator_data_ingest.base.types import (
     UpdateConfig,
-    Update,
     UpdateResult,
-    UpdateTypes,
     Action,
     PipelineFieldMapping,
 )
+from cpr_data_access.pipeline_general_models import Update, UpdateTypes
 
 _LOGGER = logging.getLogger(__file__)
 
 
-METADATA_KEY = os.environ.get("METADATA_KEY", "document_metadata")
-
-
-# TODO: hard coding translated language will lead to issues if we have more target languages in future
+# TODO: hard coding translated language will lead to issues if we have more target
+#  languages in future, this could be solved by defining target languages in the DAL.
 def get_document_files(
     prefix_path: S3Path, document_id: str, suffix_filter: str
 ) -> List[S3Path]:
@@ -42,8 +39,8 @@ def handle_document_updates(
     """
     Handle documents updates.
 
-    For each document:
-      - Iterate through the document updates and perform the relevant action based upon the update type.
+    For each document: - Iterate through the document updates and perform the relevant
+    action based upon the update type.
     """
     tasks = {
         executor.submit(
@@ -104,7 +101,7 @@ def _update_document(
 
 def order_actions(actions: List[Action]) -> List[Action]:
     """
-    Order the update actions to be performed on an s3 document based upon the action type.
+    Order update actions to be performed on an s3 document based upon the action type.
 
     We need to ensure that we make object updates in a particular order.
 
@@ -114,9 +111,6 @@ def order_actions(actions: List[Action]) -> List[Action]:
         if action.action == parse:
             return [action]
 
-    # TODO: Currently only two actions other than 'parse' are 'update_dont_parse' and 'publication_ts'. We want to
-    #  update publication_ts before update_dont_parse as we don't want to attempt update of a document that is
-    #  archived during the update_dont_parse process. Thus, we order the actions so that 'publication_ts' is first.
     def get_action_priority(action_name: str) -> int:
         """Get the priority of an action."""
         return 1 if action_name == update_dont_parse.__name__ else 0
@@ -136,8 +130,9 @@ def update_dont_parse(
     """
     Update the json objects and remove the npy file in the s3 pipeline cache.
 
-    This is done so that the npy file of embeddings is recreated to reflect the change in the json object field and
-    incorporated into the corpus during the next pipeline run whilst not triggering re-parsing of the document.
+    This is done so that the npy file of embeddings is recreated to reflect the change
+    in the json object field and incorporated into the corpus during the next pipeline
+    run whilst not triggering re-parsing of the document.
     """
     document_id, document_update = update
     _LOGGER.info(
@@ -160,13 +155,6 @@ def update_dont_parse(
                 "s3://", update_config.pipeline_bucket, update_config.embeddings_input
             )
         ),
-        # Do not update the indexer input file - archiving the json is required
-        # to trigger re-processing
-        # S3Path(
-        #     os.path.join(
-        #         "s3://", update_config.pipeline_bucket, update_config.indexer_input
-        #     )
-        # ),
     ]:
         # Might be translated and non-translated json objects
         document_files = get_document_files(
@@ -236,10 +224,15 @@ def parse(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
-    """Archive all instances of the document in the s3 pipeline cache to trigger full re-processing."""
+    """
+    Archive all instances of the document in the s3 pipeline cache.
+
+    This is done to trigger full re-processing.
+    """
     document_id, document_update = update
     _LOGGER.info(
-        "Archiving document so as to re-download from source and parse during the next run.",
+        "Archiving document so as to re-download from source and parse during the next "
+        "run.",
         extra={
             "props": {
                 "document_id": document_id,
@@ -267,7 +260,10 @@ def parse(
                 rename(
                     existing_path=document_file,
                     rename_path=S3Path(
-                        f"s3://{update_config.pipeline_bucket}/{update_config.archive_prefix}/{prefix}/{document_id}/{timestamp}{document_file.suffix}"
+                        f"s3://{update_config.pipeline_bucket}"
+                        f"/{update_config.archive_prefix}"
+                        f"/{prefix}/{document_id}"
+                        f"/{timestamp}{document_file.suffix} "
                     ),
                 )
             )
@@ -278,8 +274,8 @@ def parse(
 def update_file_field(
     document_path: S3Path,
     field: str,
-    new_value: Union[str, datetime],
-    existing_value: Union[str, datetime],
+    new_value: Union[str, datetime, dict],
+    existing_value: Union[str, datetime, dict],
 ) -> Union[str, None]:
     """Update the value of a field in a json object within s3 with the new value."""
     if document_path.exists():
@@ -342,128 +338,9 @@ def update_file_field(
                 }
             },
         )
-        # TODO: convert to an f-string with more details when we can identify the expected files
-        # return "NotFoundError: Expected to update document but it doesn't exist."
-        return None
-
-
-def update_publication_ts(
-    update: Tuple[str, Update],
-    update_config: UpdateConfig,
-) -> List[Union[str, None]]:
-    """Update the value of the publication_ts field in all json objects for a document within s3 with the new value."""
-    document_id, document_update = update
-    _LOGGER.info(
-        "Updating publication_ts for document instances in s3.",
-        extra={
-            "props": {
-                "document_id": document_id,
-            }
-        },
-    )
-    errors = []
-    for prefix_path in [
-        S3Path(
-            os.path.join(
-                "s3://", update_config.pipeline_bucket, update_config.parser_input
-            )
-        ),
-        S3Path(
-            os.path.join(
-                "s3://", update_config.pipeline_bucket, update_config.embeddings_input
-            )
-        ),
-        S3Path(
-            os.path.join(
-                "s3://", update_config.pipeline_bucket, update_config.indexer_input
-            )
-        ),
-    ]:
-        # Might be translated and non-translated json objects
-        document_files = get_document_files(
-            prefix_path, document_id, suffix_filter="json"
-        )
-        for document_file in document_files:
-            errors.append(
-                update_file_metadata_field(
-                    document_path=document_file,
-                    metadata_field=str(document_update.type.value),
-                    new_value=document_update.db_value,
-                    existing_value=document_update.s3_value,
-                )
-            )
-    return [error for error in errors if error is not None]
-
-
-def update_file_metadata_field(
-    document_path: S3Path,
-    metadata_field: str,
-    new_value: Union[str, datetime],
-    existing_value: Union[str, datetime],
-) -> Union[str, None]:
-    """Update the value of a metadata field in a json object within s3 with the new value."""
-    if document_path.exists():
-        pipeline_metadata_field = PipelineFieldMapping[UpdateTypes(metadata_field)]
-        _LOGGER.info(
-            "Updating document metadata field.",
-            extra={
-                "props": {
-                    "document_path": str(document_path),
-                    "metadata_field": metadata_field,
-                    "pipeline_field": pipeline_metadata_field,
-                    "value": new_value,
-                }
-            },
-        )
-        document = json.loads(document_path.read_text())
-
-        try:
-            if not str(document[METADATA_KEY][pipeline_metadata_field]) == str(
-                existing_value
-            ):
-                _LOGGER.info(
-                    "Existing value doesn't match.",
-                    extra={
-                        "props": {
-                            "document_path": str(document_path),
-                            "metadata_field": metadata_field,
-                            "pipeline_field": pipeline_metadata_field,
-                            "value": new_value,
-                            "existing_value": existing_value,
-                            "document": document,
-                        }
-                    },
-                )
-
-            document[METADATA_KEY][pipeline_metadata_field] = new_value
-        except KeyError:
-            _LOGGER.exception(
-                "Field not found in s3 object.",
-                extra={
-                    "props": {
-                        "document_path": str(document_path),
-                        "metadata_field": metadata_field,
-                        "pipeline_field": pipeline_metadata_field,
-                        "value": new_value,
-                        "document": document,
-                    }
-                },
-            )
-            return traceback.format_exc()
-
-        document_path.write_text(json.dumps(document))
-        return None
-    else:
-        _LOGGER.info(
-            "Tried to update document but it doesn't exist.",
-            extra={
-                "props": {
-                    "document_path": str(document_path),
-                }
-            },
-        )
-        # TODO: convert to an f-string with more details when we can identify the expected files
-        # return "NotFoundError: Expected to update document but it doesn't exist."
+        # TODO: convert to an f-string with more details when we can identify the
+        #  expected files return "NotFoundError: Expected to update document but it
+        #  doesn't exist."
         return None
 
 
@@ -509,5 +386,5 @@ update_type_actions = {
     UpdateTypes.SOURCE_URL: parse,
     UpdateTypes.NAME: update_dont_parse,
     UpdateTypes.DESCRIPTION: update_dont_parse,
-    UpdateTypes.PUBLICATION_TS: update_publication_ts,
+    UpdateTypes.METADATA: update_dont_parse,
 }
