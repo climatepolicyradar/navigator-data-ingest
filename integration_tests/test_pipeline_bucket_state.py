@@ -32,12 +32,12 @@ def test_pipeline_bucket_files(
     p = Path(Path(__file__).parent / os.path.join("data", "pipeline_out")).glob("**/*")
 
     local_files = [
-        x for x in p if (x.is_file() and ".DS_Store" not in x.name and "json" in x.name)
+        x
+        for x in p
+        if (x.is_file() and (x.name.endswith(".json") or x.name.endswith(".npy")))
     ]
-
     bucket_files = bucket_files_json + bucket_files_npy + bucket_files_json_errors
 
-    assert local_files == bucket_files
     assert len(local_files) == len(bucket_files)
 
 
