@@ -40,6 +40,7 @@ def test_pipeline_bucket_files(
 @pytest.mark.integration
 def test_pipeline_bucket_json(bucket_files_json):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
+    assert len(bucket_files_json) > 0
     for file in bucket_files_json:
         s3_data = json.loads(file.read_text())
         if timestamped_file(file):
@@ -51,7 +52,9 @@ def test_pipeline_bucket_json(bucket_files_json):
         else:
             local_data = json.loads(get_local_fp(file).read_text())
 
-        if 'input_dir_path' in s3_data.keys():  # skip execution_data file as the content changes each run (bucket name)
+        if (
+            "input_dir_path" in s3_data.keys()
+        ):  # skip execution_data file as the content changes each run (bucket name)
             continue
         assert s3_data == local_data
 
@@ -59,6 +62,7 @@ def test_pipeline_bucket_json(bucket_files_json):
 @pytest.mark.integration
 def test_pipeline_bucket_npy(bucket_files_npy):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
+    assert len(bucket_files_npy) > 0
     for file in bucket_files_npy:
         if timestamped_file(file):
             local_file = get_local_dir_files(
@@ -72,6 +76,7 @@ def test_pipeline_bucket_npy(bucket_files_npy):
 @pytest.mark.integration
 def test_pipeline_bucket_json_errors(bucket_files_json_errors):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
+    assert len(bucket_files_json_errors) > 0
     for file in bucket_files_json_errors:
         s3_data = json.loads(file.read_text())
         local_data = json.loads(get_local_fp(file).read_text())
