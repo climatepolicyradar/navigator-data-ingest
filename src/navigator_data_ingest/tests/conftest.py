@@ -6,7 +6,8 @@ import pytest
 from moto import mock_s3
 import json
 
-from navigator_data_ingest.base.types import UpdateConfig, Update, UpdateTypes
+from navigator_data_ingest.base.types import UpdateConfig
+from cpr_data_access.pipeline_general_models import UpdateTypes, Update
 
 
 class S3Client:
@@ -238,9 +239,27 @@ def test_updates(s3_document_id):
                 "s3_value": "https://domain/path/to/document.pdf",
             },
             {
-                "type": "publication_ts",
-                "db_value": "2020-12-25T00:00:00",
-                "s3_value": "2021-12-25T00:00:00",
+                "type": "metadata",
+                "db_value": {
+                    "hazards": [],
+                    "frameworks": [],
+                    "instruments": [
+                        "Capacity building|Governance",
+                        "Education, training and knowledge dissemination|Information",
+                    ],
+                    "keywords": [
+                        "Adaptation",
+                        "Institutions / Administrative Arrangements",
+                        "Research And Development",
+                        "Energy Supply",
+                        "Energy Demand",
+                        "REDD+ And LULUCF",
+                        "Transport",
+                    ],
+                    "sectors": ["Economy-wide", "Health", "Transport"],
+                    "topics": ["Adaptation", "Mitigation"],
+                },
+                "s3_value": {},
             },
         ]
     }

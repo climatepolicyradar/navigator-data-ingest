@@ -8,19 +8,20 @@ from typing import (
     Generator,
     Mapping,
     Optional,
-    Sequence,
-    Union,
-    List,
     Callable,
 )
 
+from cpr_data_access.parser_models import ParserInput
 from pydantic import BaseModel
 
-CONTENT_TYPE_PDF = "application/pdf"
-CONTENT_TYPE_DOCX = (
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+from cpr_data_access.pipeline_general_models import (
+    CONTENT_TYPE_HTML,
+    CONTENT_TYPE_PDF,
+    CONTENT_TYPE_DOCX,
+    UpdateTypes,
+    BackendDocument,
+    Update,
 )
-CONTENT_TYPE_HTML = "text/html"
 
 SINGLE_FILE_CONTENT_TYPES = {
     CONTENT_TYPE_PDF,
@@ -66,93 +67,12 @@ class Event(BaseModel):  # noqa: D101
         }
 
 
-Json = dict[str, Any]
-
-
-class Document(BaseModel):
-    """
-    A representation of all information expected to be provided for a document.
-
-    This class comprises direct information describing a document, along
-    with all metadata values that should be associated with that document.
-    """
-
-    name: str
-    description: str
-    import_id: str
-    family_import_id: str
-    slug: str
-    publication_ts: datetime
-    source_url: Optional[str]  # Original source URL
-    download_url: Optional[str]  # Cached document URL
-
-    type: str
-    source: str
-    category: str
-    geography: str
-    languages: Sequence[str]
-
-    metadata: Json
-
-    def to_json(self) -> Mapping[str, Any]:
-        """Output a JSON serialising friendly dict representing this model."""
-        json_dict = self.dict()
-        json_dict["publication_ts"] = self.publication_ts.isoformat()
-        return json_dict
-
-
-class UpdateTypes(str, Enum):
-    """Document types supported by the backend API."""
-
-    NAME = "name"
-    DESCRIPTION = "description"
-    # IMPORT_ID = "import_id"
-    # SLUG = "slug"
-    PUBLICATION_TS = "publication_ts"
-    SOURCE_URL = "source_url"
-    # TYPE = "type"
-    # SOURCE = "source"
-    # CATEGORY = "category"
-    # GEOGRAPHY = "geography"
-    # LANGUAGES = "languages"
-    # DOCUMENT_STATUS = "document_status"
-    # METADATA = "metadata"
-
-
 PipelineFieldMapping = {
     UpdateTypes.NAME: "document_name",
     UpdateTypes.DESCRIPTION: "document_description",
     UpdateTypes.SOURCE_URL: "document_source_url",
-    UpdateTypes.PUBLICATION_TS: "publication_ts",
+    UpdateTypes.METADATA: "document_metadata",
 }
-
-
-class DocumentParserInput(BaseModel):
-    """Input specification for input to the parser."""
-
-    document_id: str
-    document_name: str
-    document_description: str
-    document_source_url: Optional[str]
-    document_cdn_object: Optional[str] = None
-    document_content_type: Optional[str] = None
-    document_md5_sum: Optional[str] = None
-    document_metadata: Document
-    document_slug: str
-
-    def to_json(self) -> Mapping[str, Any]:
-        """Output a JSON serialising friendly dict representing this model"""
-        return {
-            "document_name": self.document_name,
-            "document_description": self.document_description,
-            "document_id": self.document_id,
-            "document_source_url": self.document_source_url,
-            "document_cdn_object": self.document_cdn_object,
-            "document_content_type": self.document_content_type,
-            "document_md5_sum": self.document_md5_sum,
-            "document_metadata": self.document_metadata.to_json(),
-            "document_slug": self.document_slug,
-        }
 
 
 class UploadResult(BaseModel):
@@ -166,7 +86,7 @@ class UploadResult(BaseModel):
 class HandleResult(BaseModel):
     """Result of handling an input file"""
 
-    parser_input: DocumentParserInput
+    parser_input: ParserInput
     error: Optional[str] = None
 
 
@@ -178,27 +98,12 @@ class UnsupportedContentTypeError(Exception):
         super().__init__(f"Content type '{content_type}' is not supported for caching")
 
 
-class Update(BaseModel):
-    """Class describing the results of comparing csv data against the db data to identify updates."""
-
-    s3_value: Optional[Union[str, datetime]]
-    db_value: Union[str, datetime]
-    type: UpdateTypes
-
-
 class UpdateResult(BaseModel):
     """Result of updating a document update via the ingest stage."""
 
     document_id: str
     update: Update
     error: Optional[str] = None
-
-
-class InputData(BaseModel):
-    """Expected input data containing both document updates and new documents for the ingest stage of the pipeline."""
-
-    new_documents: List[Document]
-    updated_documents: dict[str, List[Update]]
 
 
 @dataclass
@@ -217,7 +122,7 @@ class DocumentGenerator(ABC):
     """Base class for all document sources."""
 
     @abstractmethod
-    def process_new_documents(self) -> Generator[Document, None, None]:
+    def process_new_documents(self) -> Generator[BackendDocument, None, None]:
         """Generate new documents for processing from the configured source"""
 
         raise NotImplementedError("process_new_documents() not implemented")
@@ -234,9 +139,3 @@ class Action(BaseModel):
 
     update: Update
     action: Callable
-
-
-class ExecutionData(BaseModel):
-    """Data unique to a step functions execution that is required at later stages."""
-
-    input_dir_path: str

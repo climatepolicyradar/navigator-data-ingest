@@ -30,8 +30,12 @@ def test_pipeline_bucket_files(
 ):
     """Test that all the files we expect to exist in the bucket do exist after running the ingest stage."""
     p = Path(Path(__file__).parent / os.path.join("data", "pipeline_out")).glob("**/*")
-    local_files = [x for x in p if x.is_file()]
 
+    local_files = [
+        x
+        for x in p
+        if (x.is_file() and (x.name.endswith(".json") or x.name.endswith(".npy")))
+    ]
     bucket_files = bucket_files_json + bucket_files_npy + bucket_files_json_errors
 
     assert len(local_files) == len(bucket_files)
@@ -40,6 +44,7 @@ def test_pipeline_bucket_files(
 @pytest.mark.integration
 def test_pipeline_bucket_json(bucket_files_json):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
+    assert len(bucket_files_json) > 0
     for file in bucket_files_json:
         s3_data = json.loads(file.read_text())
         if timestamped_file(file):
@@ -51,7 +56,9 @@ def test_pipeline_bucket_json(bucket_files_json):
         else:
             local_data = json.loads(get_local_fp(file).read_text())
 
-        if 'input_dir_path' in s3_data.keys():  # skip execution_data file as the content changes each run (bucket name)
+        if (
+            "input_dir_path" in s3_data.keys()
+        ):  # skip execution_data file as the content changes each run (bucket name)
             continue
         assert s3_data == local_data
 
@@ -59,6 +66,7 @@ def test_pipeline_bucket_json(bucket_files_json):
 @pytest.mark.integration
 def test_pipeline_bucket_npy(bucket_files_npy):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
+    assert len(bucket_files_npy) > 0
     for file in bucket_files_npy:
         if timestamped_file(file):
             local_file = get_local_dir_files(

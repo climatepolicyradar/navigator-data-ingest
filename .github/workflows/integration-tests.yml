@@ -36,7 +36,7 @@ jobs:
           python-version: '3.10'
 
       - name: Installing Dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements_for_tests.txt
 
       - name: Building the Image
         run: make build_test

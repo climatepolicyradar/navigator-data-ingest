@@ -13,6 +13,7 @@
     "family_import_id": "TESTCCLW.family.1332.0",
     "slug": "korea_2012_act-on-the-allocation-and-trading-of-greenhouse-gas-emission-permits",
     "publication_ts": "2012-01-01T00:00:00",
+    "date": "01/01/2012",
     "source_url": "https://www.africau.edu/images/default/sample.pdf",
     "download_url": null,
     "type": "Act",
@@ -23,11 +24,11 @@
       "English"
     ],
     "metadata": {
+      "hazards": [],
       "frameworks": [],
       "instruments": [
         "Processes, plans and strategies|Governance"
       ],
-      "hazards": [],
       "keywords": [
         "Institutions / Administrative Arrangements",
         "Research And Development",

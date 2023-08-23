@@ -5,11 +5,11 @@ from typing import cast
 
 from cloudpathlib import CloudPath, S3Path
 
-from navigator_data_ingest.base.types import (
-    DocumentGenerator,
+from navigator_data_ingest.base.types import DocumentGenerator
+from cpr_data_access.pipeline_general_models import (
     Update,
-    InputData,
-    Document,
+    PipelineUpdates,
+    BackendDocument,
 )
 
 _LOGGER = logging.getLogger(__file__)
@@ -27,10 +27,10 @@ class LawPolicyGenerator(DocumentGenerator):
         """Initialize the generator."""
         _LOGGER.info("Initializing LawPolicyGenerator")
         json_data = read_s3_json_file(input_file)
-        self.input_data = InputData.parse_obj(json_data)
+        self.input_data = PipelineUpdates.parse_obj(json_data)
         self.output_location_path = output_location_path
 
-    def process_new_documents(self) -> Generator[Document, None, None]:
+    def process_new_documents(self) -> Generator[BackendDocument, None, None]:
         """Generate documents for processing from the configured source."""
         _LOGGER.info("Processing new documents")
         for document in self.input_data.new_documents:
@@ -63,7 +63,7 @@ def read_s3_json_file(input_file: S3Path) -> dict:
 
 def parser_input_already_exists(
     output_location: CloudPath,
-    document: Document,
+    document: BackendDocument,
 ) -> bool:
     """Check if the parser input file already exists."""
     output_file_location = cast(

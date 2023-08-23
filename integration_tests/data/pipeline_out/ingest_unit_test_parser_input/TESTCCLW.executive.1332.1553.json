@@ -13,6 +13,7 @@
     "family_import_id": "TESTCCLW.family.1332.0",
     "slug": "spain_2007_spanish-climate-change-and-clean-energy-strategy-horizon-2007-2012-2020",
     "publication_ts": "2007-01-01T00:00:00",
+    "date": "01/01/2007",
     "source_url": "https://www.lse.ac.uk/GranthamInstitute/wp-content/uploads/laws/1674%20English.pdf",
     "download_url": null,
     "type": "Strategy",
@@ -23,6 +24,7 @@
       "English"
     ],
     "metadata": {
+      "hazards": [],
       "frameworks": [
         "Mitigation"
       ],
@@ -31,7 +33,6 @@
         "Processes, plans and strategies|Governance",
         "Education, training and knowledge dissemination|Information"
       ],
-      "hazards": [],
       "keywords": [
         "Adaptation",
         "Institutions / Administrative Arrangements",

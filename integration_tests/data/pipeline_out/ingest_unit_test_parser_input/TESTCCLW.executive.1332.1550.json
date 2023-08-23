@@ -13,6 +13,7 @@
     "family_import_id": "TESTCCLW.family.1332.0",
     "slug": "japan_2020_cabinet-decisions-for-a-law-proposal-to-partially-amend-the-law-on-the-promotion-of-global-warming-countermeasures",
     "publication_ts": "2020-01-01T00:00:00",
+    "date": "01/01/2020",
     "source_url": "https://www.env.go.jp/press/109218.html",
     "download_url": null,
     "type": "Decision",
@@ -23,6 +24,7 @@
       "Japanese"
     ],
     "metadata": {
+      "hazards": [],
       "frameworks": [
         "Mitigation"
       ],
@@ -33,7 +35,6 @@
         "Subnational and citizen participation|Governance",
         "MRV|Governance"
       ],
-      "hazards": [],
       "keywords": [
         "Institutions / Administrative Arrangements",
         "Research And Development",

@@ -13,6 +13,7 @@
     "family_import_id": "TESTCCLW.family.1332.0",
     "slug": "japan_2021_revised-global-warming-countermeasures-promotion-law",
     "publication_ts": "2021-01-01T00:00:00",
+    "date": "01/01/2021",
     "source_url": "https://www.env.go.jp/press/ontaihou/116348.pdf",
     "download_url": null,
     "type": "Law",
@@ -23,6 +24,7 @@
       "Japanese"
     ],
     "metadata": {
+      "hazards": [],
       "frameworks": [
         "Mitigation"
       ],
@@ -33,7 +35,6 @@
         "Subnational and citizen participation|Governance",
         "MRV|Governance"
       ],
-      "hazards": [],
       "keywords": [
         "Institutions / Administrative Arrangements",
         "Research And Development",

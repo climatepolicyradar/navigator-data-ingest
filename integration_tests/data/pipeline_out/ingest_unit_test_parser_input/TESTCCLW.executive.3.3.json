@@ -13,6 +13,7 @@
     "family_import_id": "TESTCCLW.family.3.0",
     "slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017",
     "publication_ts": "2013-01-01T00:00:00",
+    "date": "01/01/2013",
     "source_url": "http://existing.com",
     "download_url": null,
     "type": "EU Decision",
@@ -23,12 +24,12 @@
       "English"
     ],
     "metadata": {
+      "hazards": [],
       "frameworks": [],
       "instruments": [
         "Capacity building|Governance",
         "Education, training and knowledge dissemination|Information"
       ],
-      "hazards": [],
       "keywords": [
         "Adaptation",
         "Institutions / Administrative Arrangements",

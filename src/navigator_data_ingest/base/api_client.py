@@ -2,12 +2,11 @@
 import hashlib
 import json
 import logging
-import os
-from functools import lru_cache
 from typing import cast
 
 import requests
 from cloudpathlib import CloudPath, S3Path
+from cpr_data_access.parser_models import ParserInput
 from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
@@ -17,7 +16,6 @@ from navigator_data_ingest.base.types import (
     SUPPORTED_CONTENT_TYPES,
     FILE_EXTENSION_MAPPING,
     UploadResult,
-    DocumentParserInput,
     UnsupportedContentTypeError,
 )
 
@@ -184,7 +182,7 @@ def save_errors(
 )
 def write_parser_input(
     output_location: CloudPath,
-    parser_input: DocumentParserInput,
+    parser_input: ParserInput,
 ) -> None:
     output_file_location = cast(
         S3Path,
