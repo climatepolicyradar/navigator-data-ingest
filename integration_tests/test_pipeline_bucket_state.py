@@ -33,6 +33,7 @@ def test_pipeline_bucket_files(
     local_files = [x for x in p if x.is_file()]
 
     bucket_files = bucket_files_json + bucket_files_npy + bucket_files_json_errors
+    assert local_files == bucket_files
 
     assert len(local_files) == len(bucket_files)
 
