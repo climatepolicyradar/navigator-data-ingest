@@ -109,3 +109,13 @@ Example:
 ```shell
      python -m integration_tests.remove_test_buckets docbucket123123123 pipbucket123123123 eu-west-1
 ```
+
+### Format the output jsons (optional)
+
+This is useful if you want to easily be able to read the jsons and compare them via a PR.
+
+I would recommend committing any changes, running the reformat program and carefully checking that there are no errors and that the data looks correct.
+
+```shell
+     python -m format_jsons
+```
