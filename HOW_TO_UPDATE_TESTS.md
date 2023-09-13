@@ -94,6 +94,8 @@ Assert that the output is correct and if so manually delete all the files in the
 
 ```shell
      cd integration_tests/data/pipeline_out
+     
+     rm -rf *
 
      aws s3 sync s3://${pipeline_bucket}/ .
 ```

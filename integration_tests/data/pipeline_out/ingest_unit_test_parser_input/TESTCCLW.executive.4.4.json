@@ -1,11 +1,12 @@
 {
+  "document_id": "TESTCCLW.executive.4.4",
   "document_name": "DECISION No 1386/2013/EU OF THE EUROPEAN PARLIAMENT AND OF THE COUNCIL of 20 November 2013 on a General Union Environment Action Programme to 2020 \u2018Living well, within the limits of our planet\u2019",
   "document_description": "description",
-  "document_id": "TESTCCLW.executive.4.4",
   "document_source_url": "http://existing.com",
   "document_cdn_object": null,
   "document_content_type": null,
   "document_md5_sum": null,
+  "document_slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017",
   "document_metadata": {
     "name": "DECISION No 1386/2013/EU OF THE EUROPEAN PARLIAMENT AND OF THE COUNCIL of 20 November 2013 on a General Union Environment Action Programme to 2020 \u2018Living well, within the limits of our planet\u2019",
     "description": "description",
@@ -50,5 +51,5 @@
       ]
     }
   },
-  "document_slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017"
+  "pipeline_metadata": {}
 }
