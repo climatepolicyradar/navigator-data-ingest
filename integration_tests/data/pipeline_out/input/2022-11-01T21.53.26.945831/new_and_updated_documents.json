@@ -762,8 +762,8 @@
       "slug": "european-union_2013_decision-no-13862013eu-of-the-european-parliament-and-of-the-council-of-20-november-2013-on-a-general-union-environment-action-programme-to-2020-living-well-within-the-limits-of-our-planet_8570_3017"
     }
   ],
-  "updated_documents": {
-    "TESTCCLW.executive.1.1": [
+    "updated_documents": {
+      "TESTCCLW.executive.1.1": [
       {
         "s3_value": "name",
         "db_value": "new name",
@@ -785,24 +785,14 @@
           "family_import_id": "TESTCCLW.family.1.0",
           "category": "Law",
           "geography": "EUR",
-          "languages": [
-            "English"
-          ],
+          "languages": ["English"],
           "metadata": {
             "hazards": [],
             "frameworks": [],
-            "instruments": [
-              "Capacity building|Governance"
-            ],
-            "keywords": [
-              "Adaptation"
-            ],
-            "sectors": [
-              "Economy-wide"
-            ],
-            "topics": [
-              "Adaptation"
-            ]
+            "instruments": ["Capacity building|Governance"],
+            "keywords": ["Adaptation"],
+            "sectors": ["Economy-wide"],
+            "topics": ["Adaptation"]
           },
           "slug": "dummy_slug"
         },
@@ -816,9 +806,7 @@
         "type": "description"
       },
       {
-        "s3_value": {
-          "publication_ts": "2021-12-25T00:00:00"
-        },
+        "s3_value": {"publication_ts": "2021-12-25T00:00:00"},
         "db_value": {
           "publication_ts": "2013-01-01T00:00:00",
           "name": "Dummy Name",
@@ -833,24 +821,14 @@
           "family_import_id": "TESTCCLW.family.2.0",
           "category": "Law",
           "geography": "EUR",
-          "languages": [
-            "English"
-          ],
+          "languages": ["English"],
           "metadata": {
             "hazards": [],
             "frameworks": [],
-            "instruments": [
-              "Capacity building|Governance"
-            ],
-            "keywords": [
-              "Adaptation"
-            ],
-            "sectors": [
-              "Economy-wide"
-            ],
-            "topics": [
-              "Adaptation"
-            ]
+            "instruments": ["Capacity building|Governance"],
+            "keywords": ["Adaptation"],
+            "sectors": ["Economy-wide"],
+            "topics": ["Adaptation"]
           },
           "slug": "dummy_slug"
         },
@@ -879,24 +857,14 @@
           "family_import_id": "TESTCCLW.family.3.0",
           "category": "Law",
           "geography": "EUR",
-          "languages": [
-            "English"
-          ],
+          "languages": ["English"],
           "metadata": {
             "hazards": [],
             "frameworks": [],
-            "instruments": [
-              "Capacity building|Governance"
-            ],
-            "keywords": [
-              "Adaptation"
-            ],
-            "sectors": [
-              "Economy-wide"
-            ],
-            "topics": [
-              "Adaptation"
-            ]
+            "instruments": ["Capacity building|Governance"],
+            "keywords": ["Adaptation"],
+            "sectors": ["Economy-wide"],
+            "topics": ["Adaptation"]
           },
           "slug": "dummy_slug"
         },
@@ -930,24 +898,14 @@
           "family_import_id": "TESTCCLW.family.4.0",
           "category": "Law",
           "geography": "EUR",
-          "languages": [
-            "English"
-          ],
+          "languages": ["English"],
           "metadata": {
             "hazards": [],
             "frameworks": [],
-            "instruments": [
-              "Capacity building|Governance"
-            ],
-            "keywords": [
-              "Adaptation"
-            ],
-            "sectors": [
-              "Economy-wide"
-            ],
-            "topics": [
-              "Adaptation"
-            ]
+            "instruments": ["Capacity building|Governance"],
+            "keywords": ["Adaptation"],
+            "sectors": ["Economy-wide"],
+            "topics": ["Adaptation"]
           },
           "slug": "dummy_slug"
         },
@@ -976,24 +934,14 @@
           "family_import_id": "TESTCCLW.family.5.0",
           "category": "Law",
           "geography": "EUR",
-          "languages": [
-            "English"
-          ],
+          "languages": ["English"],
           "metadata": {
             "hazards": [],
             "frameworks": [],
-            "instruments": [
-              "Capacity building|Governance"
-            ],
-            "keywords": [
-              "Adaptation"
-            ],
-            "sectors": [
-              "Economy-wide"
-            ],
-            "topics": [
-              "Adaptation"
-            ]
+            "instruments": ["Capacity building|Governance"],
+            "keywords": ["Adaptation"],
+            "sectors": ["Economy-wide"],
+            "topics": ["Adaptation"]
           },
           "slug": "dummy_slug"
         },

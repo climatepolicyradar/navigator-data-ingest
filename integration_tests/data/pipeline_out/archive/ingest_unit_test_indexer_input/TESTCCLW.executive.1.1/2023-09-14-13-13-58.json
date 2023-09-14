@@ -1,14 +1,12 @@
 {
   "document_name": "name",
   "document_description": "description",
-  "document_id": "TESTCCLW.executive.2.2",
+  "document_id": "TESTCCLW.executive.1.1",
   "document_source_url": "http://existing.com",
   "document_cdn_object": null,
   "document_content_type": "text/html",
   "document_md5_sum": null,
-  "document_metadata": {
-    "publication_ts": "2021-12-25T00:00:00"
-  },
+  "document_metadata": {},
   "document_slug": "fake_slug",
   "languages": [
     "en"
