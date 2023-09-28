@@ -42,7 +42,7 @@ jobs:
         run: make build_test
 
       - name: Configuring AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }}
           aws-region: ${{ secrets.UNIT_TESTS_AWS_REGION }}
