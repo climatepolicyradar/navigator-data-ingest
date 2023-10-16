@@ -39,7 +39,8 @@
         "Adaptation"
       ]
     },
-    "slug": "dummy_slug"
+    "slug": "dummy_slug",
+    "family_slug": "slug_TESTCCLW.family.1.0"
   },
   "document_slug": "fake_slug"
 }
