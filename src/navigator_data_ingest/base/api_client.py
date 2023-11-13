@@ -189,7 +189,7 @@ def write_parser_input(
         output_location / f"{parser_input.document_id}.json",
     )
     with output_file_location.open("w") as output_file:
-        output_file.write(json.dumps(parser_input.to_json(), indent=2))
+        output_file.write(parser_input.model_dump_json(indent=2))
 
 
 @retry(
