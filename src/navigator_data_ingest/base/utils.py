@@ -27,7 +27,7 @@ class LawPolicyGenerator(DocumentGenerator):
         """Initialize the generator."""
         _LOGGER.info("Initializing LawPolicyGenerator")
         json_data = read_s3_json_file(input_file)
-        self.input_data = PipelineUpdates.parse_obj(json_data)
+        self.input_data = PipelineUpdates.model_validate(json_data)
         self.output_location_path = output_location_path
 
     def process_new_documents(self) -> Generator[BackendDocument, None, None]:

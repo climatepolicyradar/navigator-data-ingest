@@ -4,9 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import (
-    Any,
     Generator,
-    Mapping,
     Optional,
     Callable,
 )
@@ -57,14 +55,6 @@ class Event(BaseModel):  # noqa: D101
     name: str
     description: str
     created_ts: datetime
-
-    def to_json(self) -> Mapping[str, Any]:
-        """Output a JSON serialising friendly dict representing this model"""
-        return {
-            "name": self.name,
-            "description": self.description,
-            "created_ts": self.created_ts.isoformat(),
-        }
 
 
 PipelineFieldMapping = {

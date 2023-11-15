@@ -2,9 +2,7 @@ import sys
 
 import boto3
 
-from integration_tests.s3_utils import (
-    build_bucket,
-)
+from integration_tests.s3_utils import build_bucket
 
 
 def build(

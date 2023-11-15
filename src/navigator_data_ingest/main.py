@@ -1,4 +1,3 @@
-import json
 import logging
 import logging.config
 import os
@@ -148,8 +147,8 @@ def main(
     )
 
     input_dir_path = S3Path(
-        ExecutionData.parse_obj(
-            json.loads(execution_data_path.read_text())
+        ExecutionData.model_validate_json(
+            execution_data_path.read_text()
         ).input_dir_path
     )
 
