@@ -7,7 +7,6 @@ from datetime import datetime
 from typing import Generator, List, Union, Tuple
 
 from cloudpathlib import S3Path
-from slugify import slugify
 
 from navigator_data_ingest.base.types import (
     UpdateConfig,
@@ -272,7 +271,7 @@ def parse(
     return [error for error in errors if error is not None]
 
 
-def update_slug(
+def update_field_in_all_occurences(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
@@ -283,7 +282,7 @@ def update_slug(
 
     document_id, document_update = update
     _LOGGER.info(
-        "Updating slug field in all document occurences in s3.",
+        "Updating document field in all document occurences in s3.",
         extra={
             "props": {
                 "document_id": document_id,
@@ -304,24 +303,14 @@ def update_slug(
             prefix_path, document_id, suffix_filter="json"
         )
         for document_file in document_files:
-            if isinstance(document_update.db_value, str) and isinstance(
-                document_update.s3_value, str
-            ):
-                errors.append(
-                    update_file_field(
-                        document_path=document_file,
-                        field=str(document_update.type.value),
-                        new_value=slugify(document_update.db_value),
-                        existing_value=slugify(document_update.s3_value),
-                    )
+            errors.append(
+                update_file_field(
+                    document_path=document_file,
+                    field=str(document_update.type.value),
+                    new_value=document_update.db_value,
+                    existing_value=document_update.s3_value,
                 )
-            else:
-                errors.append(
-                    "Error updating slug due to the type of the new value."
-                    f"document_id: {document_id},"
-                    f"db_value type: {type(document_update.db_value)}, "
-                    f"s3_value type: {type(document_update.s3_value)}"
-                )
+            )
 
     return [error for error in errors if error is not None]
 
@@ -329,8 +318,8 @@ def update_slug(
 def update_file_field(
     document_path: S3Path,
     field: str,
-    new_value: Union[str, datetime, dict],
-    existing_value: Union[str, datetime, dict],
+    new_value: Union[str, datetime, dict, None],
+    existing_value: Union[str, datetime, dict, None],
 ) -> Union[str, None]:
     """Update the value of a field in a json object within s3 with the new value."""
     if document_path.exists():
@@ -442,5 +431,5 @@ update_type_actions = {
     UpdateTypes.NAME: update_dont_parse,
     UpdateTypes.DESCRIPTION: update_dont_parse,
     UpdateTypes.METADATA: update_dont_parse,
-    UpdateTypes.SLUG: update_slug,
+    UpdateTypes.SLUG: update_field_in_all_occurences,
 }
