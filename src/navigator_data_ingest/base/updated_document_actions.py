@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Generator, List, Union, Tuple
 
 from cloudpathlib import S3Path
+from slugify import slugify
 
 from navigator_data_ingest.base.types import (
     UpdateConfig,
@@ -271,6 +272,60 @@ def parse(
     return [error for error in errors if error is not None]
 
 
+def update_slug(
+    update: Tuple[str, Update],
+    update_config: UpdateConfig,
+) -> List[Union[str, None]]:
+    """Update the document slug in all occurences of the document in s3."""
+    # TODO Do we need to archive on slug updates? The reason for this was expensive
+    # translation and text extraction costs not slug updates?
+    # TODO This can be made more generic.
+
+    document_id, document_update = update
+    _LOGGER.info(
+        "Updating slug field in all document occurences in s3.",
+        extra={
+            "props": {
+                "document_id": document_id,
+            }
+        },
+    )
+    errors = []
+    for prefix in [
+        update_config.parser_input,
+        update_config.embeddings_input,
+        update_config.indexer_input,
+    ]:
+        prefix_path = S3Path(
+            os.path.join("s3://", update_config.pipeline_bucket, prefix)
+        )
+
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        )
+        for document_file in document_files:
+            if isinstance(document_update.db_value, str) and isinstance(
+                document_update.s3_value, str
+            ):
+                errors.append(
+                    update_file_field(
+                        document_path=document_file,
+                        field=str(document_update.type.value),
+                        new_value=slugify(document_update.db_value),
+                        existing_value=slugify(document_update.s3_value),
+                    )
+                )
+            else:
+                errors.append(
+                    "Error updating slug due to the type of the new value."
+                    f"document_id: {document_id},"
+                    f"db_value type: {type(document_update.db_value)}, "
+                    f"s3_value type: {type(document_update.s3_value)}"
+                )
+
+    return [error for error in errors if error is not None]
+
+
 def update_file_field(
     document_path: S3Path,
     field: str,
@@ -387,4 +442,5 @@ update_type_actions = {
     UpdateTypes.NAME: update_dont_parse,
     UpdateTypes.DESCRIPTION: update_dont_parse,
     UpdateTypes.METADATA: update_dont_parse,
+    UpdateTypes.SLUG: update_slug,
 }
