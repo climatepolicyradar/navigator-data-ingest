@@ -39,7 +39,7 @@ jobs:
         run: pip install -r requirements_for_tests.txt
 
       - name: Building the Image
-        run: make build_test
+        run: make build
 
       - name: Configuring AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -65,7 +65,7 @@ jobs:
 
       - name: Running the Ingest Stage
         run: |
-          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --updates-file-name ${{ env.UPDATES_FILE_NAME }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }} --embeddings-input-prefix ${{ env.EMBEDDINGS_INPUT_PREFIX }} --indexer-input-prefix ${{ env.INDEXER_INPUT_PREFIX }} --execution-id ${{ env.EXECUTION_DATA_ID }} --execution-data-prefix ${{ env.EXECUTION_DATA_PREFIX }}
+          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --updates-file-name ${{ env.UPDATES_FILE_NAME }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }} --embeddings-input-prefix ${{ env.EMBEDDINGS_INPUT_PREFIX }} --indexer-input-prefix ${{ env.INDEXER_INPUT_PREFIX }} --execution-id ${{ env.EXECUTION_DATA_ID }} --execution-data-prefix ${{ env.EXECUTION_DATA_PREFIX }}
 
       - name: Running Integration Tests on the Ingest Stage Output 🚀
         run: |
