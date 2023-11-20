@@ -70,7 +70,7 @@ jobs:
 
       - name: Running Integration Tests on the Ingest Stage Output 🚀
         run: |
-          python -m pytest -vvv integration_tests/ -m integration
+          poetry run python -m pytest -vvv integration_tests/ -m integration
         env:
             INGEST_PIPELINE_BUCKET: ${{ env.INGEST_PIPELINE_BUCKET }}
             INGEST_OUTPUT_PREFIX: ${{ env.INGEST_OUTPUT_PREFIX }}
@@ -79,6 +79,9 @@ jobs:
             DOCUMENT_NAME_KEY: ${{ env.DOCUMENT_NAME_KEY }}
             PARSER_INPUT_EXPECTED_DATA_FILE_PATH: ${{ env.PARSER_INPUT_EXPECTED_DATA_FILE_PATH }}
             TEST_DATA_FILE_PATH: ${{ env.TEST_DATA_FILE_PATH }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }}
+            AWS_DEFAULT_REGION: ${{ secrets.UNIT_TESTS_AWS_REGION }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }}
 
       - name: Destroying Infrastructure
         if: always()
