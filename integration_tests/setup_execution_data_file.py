@@ -6,13 +6,19 @@ from pathlib import Path
 from cloudpathlib import S3Path
 
 
-def create_execution_data_file(bucket_name: str, execution_data_key: str, new_and_updated_documents_file_name: str) -> None:
+def create_execution_data_file(
+    bucket_name: str, execution_data_key: str, new_and_updated_documents_file_name: str
+) -> None:
     """Create the test execution data file dynamically from environment variables in the test."""
     data = {
-        "input_dir_path": str(S3Path(f"s3://{bucket_name}/{new_and_updated_documents_file_name}").parent),
+        "input_dir_path": str(
+            S3Path(f"s3://{bucket_name}/{new_and_updated_documents_file_name}").parent
+        ),
     }
 
-    local_output_path = os.path.join(os.getcwd(), f'integration_tests/data/pipeline_in/{execution_data_key}')
+    local_output_path = os.path.join(
+        os.getcwd(), f"integration_tests/data/pipeline_in/{execution_data_key}"
+    )
 
     if Path(local_output_path).exists():
         os.remove(local_output_path)

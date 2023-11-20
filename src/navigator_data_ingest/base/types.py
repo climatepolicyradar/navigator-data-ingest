@@ -62,6 +62,7 @@ PipelineFieldMapping = {
     UpdateTypes.DESCRIPTION: "document_description",
     UpdateTypes.SOURCE_URL: "document_source_url",
     UpdateTypes.METADATA: "document_metadata",
+    UpdateTypes.SLUG: "document_slug",
 }
 
 

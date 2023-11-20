@@ -161,63 +161,66 @@ def update_dont_parse(
             prefix_path, document_id, suffix_filter="json"
         )
         for document_file in document_files:
-            errors.append(
-                update_file_field(
-                    document_path=document_file,
-                    field=str(document_update.type.value),
-                    new_value=document_update.db_value,
-                    existing_value=document_update.s3_value,
-                )
+            error = update_file_field(
+                document_path=document_file,
+                field=str(document_update.type.value),
+                new_value=document_update.db_value,
+                existing_value=document_update.s3_value,
             )
+            if error:
+                errors.append(error)
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    errors.extend(
-        [
-            # Archive npy file
-            rename(
-                existing_path=S3Path(
-                    os.path.join(
-                        "s3://",
-                        update_config.pipeline_bucket,
-                        update_config.indexer_input,
-                        f"{document_id}.npy",
-                    )
-                ),
-                rename_path=S3Path(
-                    os.path.join(
-                        "s3://",
-                        update_config.pipeline_bucket,
-                        update_config.archive_prefix,
-                        update_config.indexer_input,
-                        document_id,
-                        f"{timestamp}.npy",
-                    )
-                ),
-            ),
-            # Archive json file
-            rename(
-                existing_path=S3Path(
-                    os.path.join(
-                        "s3://",
-                        update_config.pipeline_bucket,
-                        update_config.indexer_input,
-                        f"{document_id}.json",
-                    )
-                ),
-                rename_path=S3Path(
-                    os.path.join(
-                        "s3://",
-                        update_config.pipeline_bucket,
-                        update_config.archive_prefix,
-                        update_config.indexer_input,
-                        document_id,
-                        f"{timestamp}.json",
-                    )
-                ),
-            ),
-        ]
+
+    # Archive npy file
+    archive_npy_error = rename(
+        existing_path=S3Path(
+            os.path.join(
+                "s3://",
+                update_config.pipeline_bucket,
+                update_config.indexer_input,
+                f"{document_id}.npy",
+            )
+        ),
+        rename_path=S3Path(
+            os.path.join(
+                "s3://",
+                update_config.pipeline_bucket,
+                update_config.archive_prefix,
+                update_config.indexer_input,
+                document_id,
+                f"{timestamp}.npy",
+            )
+        ),
     )
-    return [error for error in errors if error is not None]
+    if archive_npy_error:
+        errors.append(archive_npy_error)
+
+    # Archive json file
+    archive_json_error = rename(
+        existing_path=S3Path(
+            os.path.join(
+                "s3://",
+                update_config.pipeline_bucket,
+                update_config.indexer_input,
+                f"{document_id}.json",
+            )
+        ),
+        rename_path=S3Path(
+            os.path.join(
+                "s3://",
+                update_config.pipeline_bucket,
+                update_config.archive_prefix,
+                update_config.indexer_input,
+                document_id,
+                f"{timestamp}.json",
+            )
+        ),
+    )
+    if archive_json_error:
+        errors.append(archive_json_error)
+
+    return errors
 
 
 def parse(
@@ -256,26 +259,77 @@ def parse(
             prefix_path, document_id, suffix_filter="json"
         ) + get_document_files(prefix_path, document_id, suffix_filter="npy")
         for document_file in document_files:
-            errors.append(
-                rename(
-                    existing_path=document_file,
-                    rename_path=S3Path(
-                        f"s3://{update_config.pipeline_bucket}"
-                        f"/{update_config.archive_prefix}"
-                        f"/{prefix}/{document_id}"
-                        f"/{timestamp}{document_file.suffix} "
-                    ),
-                )
+            error = rename(
+                existing_path=document_file,
+                rename_path=S3Path(
+                    f"s3://{update_config.pipeline_bucket}"
+                    f"/{update_config.archive_prefix}"
+                    f"/{prefix}/{document_id}"
+                    f"/{timestamp}{document_file.suffix} "
+                ),
             )
+            if error:
+                errors.append(error)
 
-    return [error for error in errors if error is not None]
+    return errors
+
+
+def update_field_in_all_occurences(
+    update: Tuple[str, Update],
+    update_config: UpdateConfig,
+) -> List[Union[str, None]]:
+    """Update the document slug in all occurences of the document in s3."""
+    # TODO Do we need to archive on slug updates? The reason for this was expensive
+    # translation and text extraction costs not slug updates?
+    # TODO This can be made more generic.
+
+    document_id, document_update = update
+    _LOGGER.info(
+        "Updating document field in all document occurences in s3.",
+        extra={
+            "props": {
+                "document_id": document_id,
+            }
+        },
+    )
+    errors = []
+    for prefix_path in [
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.parser_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.embeddings_input
+            )
+        ),
+        S3Path(
+            os.path.join(
+                "s3://", update_config.pipeline_bucket, update_config.indexer_input
+            )
+        ),
+    ]:
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        )
+        for document_file in document_files:
+            error = update_file_field(
+                document_path=document_file,
+                field=str(document_update.type.value),
+                new_value=document_update.db_value,
+                existing_value=document_update.s3_value,
+            )
+            if error:
+                errors.append(error)
+    return errors
 
 
 def update_file_field(
     document_path: S3Path,
     field: str,
-    new_value: Union[str, datetime, dict],
-    existing_value: Union[str, datetime, dict],
+    new_value: Union[str, datetime, dict, None],
+    existing_value: Union[str, datetime, dict, None],
 ) -> Union[str, None]:
     """Update the value of a field in a json object within s3 with the new value."""
     if document_path.exists():
@@ -387,4 +441,5 @@ update_type_actions = {
     UpdateTypes.NAME: update_dont_parse,
     UpdateTypes.DESCRIPTION: update_dont_parse,
     UpdateTypes.METADATA: update_dont_parse,
+    UpdateTypes.SLUG: update_field_in_all_occurences,
 }
