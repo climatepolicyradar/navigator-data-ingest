@@ -5,34 +5,24 @@ import boto3
 
 PIPELINE_BUCKET = os.environ.get("INGEST_PIPELINE_BUCKET")
 S3_CLIENT = boto3.client("s3")
+PAGINATOR = S3_CLIENT.get_paginator("list_objects")
 
 
 def get_bucket_files_with_suffix(bucket: str, suffix: str) -> list[S3Path]:
     """Retrieve all the files in an s3 bucket with a given suffix."""
-    response = S3_CLIENT.list_objects_v2(Bucket=bucket)
+    page_iterator = PAGINATOR.paginate(Bucket=bucket)
 
-    if "Contents" in response:
-        files_with_suffix = [
-            obj["Key"] for obj in response["Contents"] if obj["Key"].endswith(suffix)
-        ]
+    for page in page_iterator:
+        if "Contents" in page:
+            files_with_suffix = [
+                obj["Key"] for obj in page["Contents"] if obj["Key"].endswith(suffix)
+            ]
 
-        # If there are more than 1000 objects continue listing
-        while response["IsTruncated"]:
-            response = S3_CLIENT.list_objects_v2(
-                Bucket=bucket, ContinuationToken=response["NextContinuationToken"]
-            )
-            files_with_suffix.extend(
-                [
-                    obj["Key"]
-                    for obj in response["Contents"]
-                    if obj["Key"].endswith(suffix)
-                ]
-            )
-
-        # Convert to s3 paths and return
-        return [
-            S3Path(os.path.join("s3://", bucket, file)) for file in files_with_suffix
-        ]
+            # Convert to s3 paths and return
+            return [
+                S3Path(os.path.join("s3://", bucket, file))
+                for file in files_with_suffix
+            ]
     return []
 
 
