@@ -10,7 +10,7 @@ def build(
     pipeline_bucket_name: str,
     region: str,
 ) -> None:
-    """Setup integration_tests data and infrastructure for the integration integration_tests."""
+    """Setup integration_tests data and infrastructure for the integration tests."""
     s3_conn = boto3.client("s3", region_name=region)
     location = {"LocationConstraint": region}
 

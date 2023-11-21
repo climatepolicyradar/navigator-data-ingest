@@ -23,7 +23,7 @@ Effectively follow the first 3 steps of the integration-tests.yml github actions
 ### Build the docker image locally
 
 ```shell
-     make build_test
+     make build
 ```
 
 ### MAKE SURE YOU HAVE THE CORRECT AWS CREDENTIALS SET UP
@@ -85,7 +85,7 @@ If you are trying to figure out what the variables are look in the env var secti
 Example:
 
 ```shell
-    docker run -e AWS_ACCESS_KEY_ID=XXX -e AWS_SECRET_ACCESS_KEY=XXX -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest-test --pipeline-bucket pipbucket123123123 --document-bucket docbucket123123123 --updates-file-name new_and_updated_documents.json --output-prefix ingest_unit_test_parser_input --embeddings-input-prefix ingest_unit_test_embeddings_input --indexer-input-prefix ingest_unit_test_indexer_input --execution-id 123456 --execution-data-prefix execution_data
+    docker run -e AWS_ACCESS_KEY_ID=XXX -e AWS_SECRET_ACCESS_KEY=XXX -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest --pipeline-bucket pipbucket123123123 --document-bucket docbucket123123123 --updates-file-name new_and_updated_documents.json --output-prefix ingest_unit_test_parser_input --embeddings-input-prefix ingest_unit_test_embeddings_input --indexer-input-prefix ingest_unit_test_indexer_input --execution-id 123456 --execution-data-prefix execution_data
 ```
 
 ### Sync Down Output

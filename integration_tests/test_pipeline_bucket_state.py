@@ -21,7 +21,7 @@ def get_local_fp(file: S3Path) -> Path:
 
 def timestamped_file(file: S3Path) -> bool:
     """Check if a file is timestamped."""
-    return file.name.startswith("20")
+    return str(file.name).startswith("20")
 
 
 @pytest.mark.integration

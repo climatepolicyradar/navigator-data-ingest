@@ -16,7 +16,7 @@ COPY src/navigator_data_ingest/main.py ./src/navigator_data_ingest/main.py
 
 # Install python dependencies using poetry
 RUN poetry config virtualenvs.create false
-RUN poetry install --without=dev
+RUN poetry install
 
 # Copy files to image
 COPY src ./src
