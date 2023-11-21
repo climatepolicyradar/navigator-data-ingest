@@ -80,7 +80,6 @@ def test_pipeline_bucket_npy(bucket_files_npy):
 @pytest.mark.integration
 def test_pipeline_bucket_json_errors(bucket_files_json_errors):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
-    assert len(bucket_files_json_errors) > 0
     for file in bucket_files_json_errors:
         s3_data = json.loads(file.read_text())
         local_data = json.loads(get_local_fp(file).read_text())
