@@ -5,6 +5,7 @@ from typing import Generator, Iterable
 
 import requests
 from slugify import slugify
+import pydantic
 
 from navigator_data_ingest.base.api_client import upload_document
 from navigator_data_ingest.base.types import (
@@ -108,17 +109,41 @@ def _handle_document(
     """
     Upload document source files & update details via API endpoint.
 
+    Function validates the source url in particular as in the ParserInput object we
+    require that this is a valid AnyHttpUrl. All the other fields are direct
+    translations from the BackendDocument object.
+
     :param Document document: A document to upload.
     """
     _LOGGER.info(f"Handling document: {document}")
 
     session = requests.Session()
+
+    try:
+        document_source_url = (
+            pydantic.AnyHttpUrl(document.source_url) if document.source_url else None
+        )
+
+    except pydantic.ValidationError:
+        _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed.")
+        return HandleResult(
+            error=traceback.format_exc(),
+            parser_input=ParserInput(
+                document_id=document.import_id,
+                document_slug=document.slug,
+                document_name=document.name,
+                document_description=document.description,
+                document_source_url=None,
+                document_metadata=document,
+            ),
+        )
+
     parser_input = ParserInput(
         document_id=document.import_id,
         document_slug=document.slug,
         document_name=document.name,
         document_description=document.description,
-        document_source_url=document.source_url,
+        document_source_url=document_source_url,
         document_metadata=document,
     )
 
