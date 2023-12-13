@@ -109,6 +109,10 @@ def _handle_document(
     """
     Upload document source files & update details via API endpoint.
 
+    Function validates the source url in particular as in the ParserInput object we
+    require that this is a valid AnyHttpUrl. All the other fields are direct
+    translations from the BackendDocument object.
+
     :param Document document: A document to upload.
     """
     _LOGGER.info(f"Handling document: {document}")
