@@ -73,8 +73,8 @@ def _update_document(
 ) -> List[UpdateResult]:
     """Perform the document update."""
     document_id, updates = doc_updates
-    _LOGGER.info("Updating document.", extra={"props": {"document_id": document_id}})
 
+    _LOGGER.info("Updating document.", extra={"props": {"document_id": document_id}})
     actions = [
         Action(action=update_type_actions[UpdateTypes(update.type)], update=update)
         for update in updates
@@ -442,4 +442,5 @@ update_type_actions = {
     UpdateTypes.DESCRIPTION: update_dont_parse,
     UpdateTypes.METADATA: update_dont_parse,
     UpdateTypes.SLUG: update_field_in_all_occurences,
+    UpdateTypes.REPARSE: parse,
 }
