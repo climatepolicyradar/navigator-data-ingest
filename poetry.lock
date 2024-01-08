@@ -547,11 +547,15 @@ pandas = "^1.5.3"
 pydantic = "^2.4.0"
 tqdm = "^4.64.1"
 
+[package.extras]
+spacy = ["spacy (>=3.5.1,<4.0.0)"]
+vespa = ["pyvespa (>=0.37.1,<0.38.0)", "pyyaml (>=6.0.1,<7.0.0)", "sentence-transformers (>=2.2.2,<3.0.0)", "torch (==2.0.0)"]
+
 [package.source]
 type = "git"
 url = "https://github.com/climatepolicyradar/data-access.git"
-reference = "0.4.1"
-resolved_reference = "ec55a97b72efa034bbc3e6fe1bbb19a71e8fefe5"
+reference = "0.4.6"
+resolved_reference = "f9c8b5c39981faee0c41f501698daafd65974bf3"
 
 [[package]]
 name = "cryptography"
@@ -3082,4 +3086,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "7fab5b93026b03b76e8e1d2d509559e7e9adfa49932fae7255a4cd59f372e555"
+content-hash = "1ce9afc12cdc39c21cba182560c1784d96a890d4233d6e9ad62edd0cf95dc3be"
