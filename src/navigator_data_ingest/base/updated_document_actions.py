@@ -279,14 +279,15 @@ def reparse(
     update_config: UpdateConfig,
 ) -> List[Union[str, None]]:
     """
-    Archive instances of the document in the embeddings_input and indexer_input prefixes within the s3 pipeline cache.
+    Archive instances of the document in the pre-parser and pre-embeddings stages.
 
-    This is done to trigger the parsing and embeddings generation stages of the pipeline on the document but not the re-download from source..
+    This is done to trigger the parsing and embeddings generation stages of the
+    pipeline on the document but not the re-download from source.
     """
     document_id, document_update = update
     _LOGGER.info(
-        "Archiving pre-parser and pre-embeddings instatiations of the document so as to parse during the next "
-        "run.",
+        "Archiving pre-parser and pre-embeddings instatiations of the document so as to "
+        "parse during the next run.",
         extra={
             "props": {
                 "document_id": document_id,
