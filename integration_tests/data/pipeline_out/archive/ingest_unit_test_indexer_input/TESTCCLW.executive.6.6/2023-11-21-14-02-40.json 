@@ -1,7 +1,7 @@
 {
   "document_name": "name",
   "document_description": "description",
-  "document_id": "TESTCCLW.executive.4.4",
+  "document_id": "TESTCCLW.executive.6.6",
   "document_source_url": "http://existing.com/",
   "document_cdn_object": null,
   "document_content_type": "text/html",
@@ -12,21 +12,6 @@
     "en"
   ],
   "translated": false,
-  "html_data": {
-    "detected_title": "One Stop Shop Service",
-    "detected_date": null,
-    "has_valid_text": true,
-    "text_blocks": [
-      {
-        "text": [
-          "Why use a One Stop Shop"
-        ],
-        "text_block_id": "b0",
-        "language": "en",
-        "type": "Text",
-        "type_confidence": 1.0
-      }
-    ]
-  },
+  "html_data": null,
   "pdf_data": null
 }
