@@ -1,0 +1,17 @@
+{
+  "document_name": "name",
+  "document_description": "description",
+  "document_id": "TESTCCLW.executive.6.6",
+  "document_source_url": "http://existing.com/",
+  "document_cdn_object": null,
+  "document_content_type": "text/html",
+  "document_md5_sum": null,
+  "document_metadata": {},
+  "document_slug": "fake_slug",
+  "languages": [
+    "en"
+  ],
+  "translated": false,
+  "html_data": null,
+  "pdf_data": null
+}

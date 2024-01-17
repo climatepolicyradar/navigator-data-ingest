@@ -274,6 +274,56 @@ def parse(
     return errors
 
 
+def reparse(
+    update: Tuple[str, Update],
+    update_config: UpdateConfig,
+) -> List[Union[str, None]]:
+    """
+    Archive instances of the document in the embeddings_input and indexer_input prefixes within the s3 pipeline cache.
+
+    This is done to trigger the parsing and embeddings generation stages of the pipeline on the document but not the re-download from source..
+    """
+    document_id, document_update = update
+    _LOGGER.info(
+        "Archiving pre-parser and pre-embeddings instatiations of the document so as to parse during the next "
+        "run.",
+        extra={
+            "props": {
+                "document_id": document_id,
+            }
+        },
+    )
+    errors = []
+
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    for prefix in [
+        update_config.embeddings_input,
+        update_config.indexer_input,
+    ]:
+        prefix_path = S3Path(
+            os.path.join("s3://", update_config.pipeline_bucket, prefix)
+        )
+
+        # Might be translated and non-translated json objects
+        document_files = get_document_files(
+            prefix_path, document_id, suffix_filter="json"
+        ) + get_document_files(prefix_path, document_id, suffix_filter="npy")
+        for document_file in document_files:
+            error = rename(
+                existing_path=document_file,
+                rename_path=S3Path(
+                    f"s3://{update_config.pipeline_bucket}"
+                    f"/{update_config.archive_prefix}"
+                    f"/{prefix}/{document_id}"
+                    f"/{timestamp}{document_file.suffix} "
+                ),
+            )
+            if error:
+                errors.append(error)
+
+    return errors
+
+
 def update_field_in_all_occurences(
     update: Tuple[str, Update],
     update_config: UpdateConfig,
@@ -442,5 +492,5 @@ update_type_actions = {
     UpdateTypes.DESCRIPTION: update_dont_parse,
     UpdateTypes.METADATA: update_dont_parse,
     UpdateTypes.SLUG: update_field_in_all_occurences,
-    UpdateTypes.REPARSE: parse,
+    UpdateTypes.REPARSE: reparse,
 }
