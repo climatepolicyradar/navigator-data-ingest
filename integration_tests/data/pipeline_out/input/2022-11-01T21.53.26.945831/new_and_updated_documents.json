@@ -1022,13 +1022,6 @@
         },
         "type": "metadata"
       }
-    ],
-    "TESTCCLW.executive.6.6": [
-      {
-        "s3_value": null,
-        "db_value": null,
-        "type": "reparse"
-      }
     ]
   }
 }
