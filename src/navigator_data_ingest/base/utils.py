@@ -4,8 +4,9 @@ from typing import Generator, List, Tuple
 from typing import cast
 
 from cloudpathlib import CloudPath, S3Path
+from requests import Response
 
-from navigator_data_ingest.base.types import DocumentGenerator
+from navigator_data_ingest.base.types import DocumentGenerator, CONTENT_TYPE_MAPPING
 from cpr_data_access.pipeline_general_models import (
     Update,
     PipelineUpdates,
@@ -76,3 +77,20 @@ def parser_input_already_exists(
         )
         return True
     return False
+
+
+def determine_content_type(response: Response, source_url: str) -> str:
+    """Use the response headers and file extension to determine content type
+
+    Args:
+        response (Response): the request object from the file download
+        source_url (str): The defined source url
+
+    Returns:
+        str: chosen content type
+    """
+
+    content_type_header = response.headers["Content-Type"].split(";")[0]
+    file_extension_start_index = source_url.rindex(".")
+    file_extension = source_url[file_extension_start_index:]
+    return CONTENT_TYPE_MAPPING.get(file_extension, content_type_header)
