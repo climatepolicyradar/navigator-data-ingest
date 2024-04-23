@@ -11,6 +11,7 @@ from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
+from navigator_data_ingest.base.utils import determine_content_type
 from navigator_data_ingest.base.types import (
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
@@ -53,7 +54,8 @@ def upload_document(
 
     try:
         download_response = _download_from_source(session, source_url)
-        content_type = download_response.headers["Content-Type"].split(";")[0]
+        content_type = determine_content_type(download_response, source_url)
+
         # Update the result object with the detected content type
         upload_result.content_type = content_type
 

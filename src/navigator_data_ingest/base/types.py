@@ -47,6 +47,8 @@ FILE_EXTENSION_MAPPING = {
     CONTENT_TYPE_HTML: ".html",
     CONTENT_TYPE_DOCX: ".docx",
 }
+# Reversed mapping to get content types from file extensions
+CONTENT_TYPE_MAPPING = {v: k for k, v in FILE_EXTENSION_MAPPING.items()}
 
 
 class Event(BaseModel):  # noqa: D101
