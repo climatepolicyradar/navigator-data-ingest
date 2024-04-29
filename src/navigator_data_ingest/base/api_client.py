@@ -121,8 +121,11 @@ def upload_document(
             f"Uploads for document {import_id} at '{source_url}' could not be completed because "
             f"the pdf document is invalid: {e.with_traceback(e.__traceback__)}"
         )
-    except Exception:
-        _LOGGER.exception(f"Downloading source document {import_id} failed")
+    except Exception as e:
+        _LOGGER.exception(
+            f"Downloading source document {import_id} failed: "
+            f"{e.with_traceback(e.__traceback__)}"
+        )
     finally:
         # Always return an upload result, even if it's incomplete
         # TODO: perhaps use the existence of an incomplete output in the future

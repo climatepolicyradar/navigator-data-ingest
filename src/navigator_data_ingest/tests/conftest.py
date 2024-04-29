@@ -272,3 +272,39 @@ def test_updates(s3_document_id):
         )
         for update in updates[s3_document_id]
     ]
+
+
+@pytest.fixture
+def mock_cdn_config():
+    """CDN bucket config to be used for non-aws based tests"""
+    return {
+        "bucket": "offline-unit-tests-cdn",
+        "region": "eu-west-1",
+    }
+
+
+@pytest.fixture
+def test_s3_client__cdn(mock_cdn_config):
+    """Empty cdn and pipeline buckets to be used for non-aws based testing"""
+
+    with mock_s3():
+        s3_client = S3Client(mock_cdn_config["region"])
+
+        s3_client.client.create_bucket(
+            Bucket=mock_cdn_config["bucket"],
+            CreateBucketConfiguration={
+                "LocationConstraint": mock_cdn_config["region"]
+            },
+        )
+
+        yield s3_client
+
+
+@pytest.fixture
+def pdf_bytes():
+    """Bytes from a valid pdf"""
+    fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")    
+    pdf_data = os.path.join(fixture_dir, "sample.pdf")
+    with open(pdf_data, "rb") as b:
+        contents = b.read()
+    return contents

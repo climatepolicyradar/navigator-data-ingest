@@ -25,6 +25,7 @@ tenacity = "^8.1.0"
 json-logging = "^1.3.0"
 cpr-data-access = {git = "https://github.com/climatepolicyradar/data-access.git", tag = "0.4.6"}
 pypdf = "^4.2.0"
+requests-mock = "^1.12.1"
 
 [tool.poetry.group.dev-dependencies.dependencies]
 black = "^22.1.0"
