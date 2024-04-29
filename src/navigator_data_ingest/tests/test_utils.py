@@ -5,6 +5,7 @@ from navigator_data_ingest.base.types import CONTENT_TYPE_HTML, CONTENT_TYPE_PDF
 from navigator_data_ingest.base.utils import determine_content_type
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     ("content_type", "source_url", "want"),
     (
