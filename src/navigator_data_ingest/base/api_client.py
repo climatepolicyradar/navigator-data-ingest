@@ -117,6 +117,7 @@ def upload_document(
             f"the content type '{e.content_type}' is not currently supported."
         )
     except PyPdfError as e:
+        upload_result.content_type = None
         _LOGGER.warn(
             f"Uploads for document {import_id} at '{source_url}' could not be completed because "
             f"the pdf document is invalid: {e.with_traceback(e.__traceback__)}"
