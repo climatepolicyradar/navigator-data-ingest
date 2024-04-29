@@ -1,5 +1,6 @@
 """A simple API client for creating documents & associations."""
 import hashlib
+import io
 import json
 import logging
 from typing import cast
@@ -7,12 +8,15 @@ from typing import cast
 import requests
 from cloudpathlib import CloudPath, S3Path
 from cpr_data_access.parser_models import ParserInput
+from pypdf import PdfReader
+from pypdf.errors import PyPdfError
 from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
 from navigator_data_ingest.base.utils import determine_content_type
 from navigator_data_ingest.base.types import (
+    CONTENT_TYPE_PDF,
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
     FILE_EXTENSION_MAPPING,
@@ -66,8 +70,13 @@ def upload_document(
         if content_type not in SUPPORTED_CONTENT_TYPES:
             raise UnsupportedContentTypeError(content_type)
 
-        # Calculate the m5sum & update the result object with the calculated value
+        # Ensure valid file types can be read accordingly
         file_content = download_response.content
+        if content_type == CONTENT_TYPE_PDF:
+            # Invalid pdf should raise a PyPdfError error
+            PdfReader(io.BytesIO(file_content))
+
+        # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
         upload_result.md5_sum = file_hash
 
@@ -107,8 +116,17 @@ def upload_document(
             f"Uploads for document {import_id} at '{source_url}' could not be completed because "
             f"the content type '{e.content_type}' is not currently supported."
         )
-    except Exception:
-        _LOGGER.exception(f"Downloading source document {import_id} failed")
+    except PyPdfError as e:
+        upload_result.content_type = None
+        _LOGGER.warn(
+            f"Uploads for document {import_id} at '{source_url}' could not be completed because "
+            f"the pdf document is invalid: {e.with_traceback(e.__traceback__)}"
+        )
+    except Exception as e:
+        _LOGGER.exception(
+            f"Downloading source document {import_id} failed: "
+            f"{e.with_traceback(e.__traceback__)}"
+        )
     finally:
         # Always return an upload result, even if it's incomplete
         # TODO: perhaps use the existence of an incomplete output in the future
