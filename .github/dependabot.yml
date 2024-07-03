@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    labels:
+      - pip-deps
+    ignore:
+      - dependency-name: cpr_sdk
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    labels: 
+      - github-actions-deps
+    ignore:
+      - dependency-name: cpr_sdk
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: daily
+    allow: 
+      - dependency-name: cpr_sdk
+    labels:
+      - cpr_sdk
+
