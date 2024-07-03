@@ -7,6 +7,7 @@ from typing import cast
 import click
 import json_logging
 from cloudpathlib import S3Path
+from cpr_sdk.pipeline_general_models import ExecutionData
 
 from navigator_data_ingest.base.api_client import (
     write_error_file,
@@ -14,7 +15,6 @@ from navigator_data_ingest.base.api_client import (
 )
 from navigator_data_ingest.base.new_document_actions import handle_new_documents
 from navigator_data_ingest.base.types import UpdateConfig
-from cpr_data_access.pipeline_general_models import ExecutionData
 from navigator_data_ingest.base.updated_document_actions import handle_document_updates
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 

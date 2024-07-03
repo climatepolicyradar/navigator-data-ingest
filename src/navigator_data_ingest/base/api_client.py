@@ -7,22 +7,22 @@ from typing import cast
 
 import requests
 from cloudpathlib import CloudPath, S3Path
-from cpr_data_access.parser_models import ParserInput
+from cpr_sdk.parser_models import ParserInput
 from pypdf import PdfReader
 from pypdf.errors import PyPdfError
 from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
-from navigator_data_ingest.base.utils import determine_content_type
 from navigator_data_ingest.base.types import (
     CONTENT_TYPE_PDF,
+    FILE_EXTENSION_MAPPING,
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
-    FILE_EXTENSION_MAPPING,
-    UploadResult,
     UnsupportedContentTypeError,
+    UploadResult,
 )
+from navigator_data_ingest.base.utils import determine_content_type
 
 _LOGGER = logging.getLogger(__file__)
 
