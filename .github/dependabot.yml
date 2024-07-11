@@ -24,4 +24,5 @@ updates:
       - dependency-name: cpr_sdk
     labels:
       - cpr_sdk
+    target-branch: main
 
