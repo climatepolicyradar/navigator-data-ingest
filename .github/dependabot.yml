@@ -4,16 +4,12 @@ updates:
     directory: /
     schedule:
       interval: monthly
-    labels:
-      - pip-deps
     ignore:
       - dependency-name: cpr_sdk
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
-    labels: 
-      - github-actions-deps
     ignore:
       - dependency-name: cpr_sdk
   - package-ecosystem: pip
@@ -22,7 +18,5 @@ updates:
       interval: daily
     allow: 
       - dependency-name: cpr_sdk
-    labels:
-      - cpr_sdk
     target-branch: main
 
