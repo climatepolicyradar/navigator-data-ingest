@@ -1,25 +1,24 @@
 """Base definitions for data ingest"""
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import (
+    Callable,
     Generator,
     Optional,
-    Callable,
 )
 
-from cpr_data_access.parser_models import ParserInput
-from pydantic import BaseModel
-
-from cpr_data_access.pipeline_general_models import (
+from cpr_sdk.parser_models import ParserInput
+from cpr_sdk.pipeline_general_models import (
+    CONTENT_TYPE_DOCX,
     CONTENT_TYPE_HTML,
     CONTENT_TYPE_PDF,
-    CONTENT_TYPE_DOCX,
-    UpdateTypes,
     BackendDocument,
     Update,
+    UpdateTypes,
 )
+from pydantic import BaseModel
 
 SINGLE_FILE_CONTENT_TYPES = {
     CONTENT_TYPE_PDF,

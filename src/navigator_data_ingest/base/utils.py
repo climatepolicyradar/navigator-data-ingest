@@ -1,17 +1,16 @@
 import json
 import logging
-from typing import Generator, List, Tuple
-from typing import cast
+from typing import Generator, List, Tuple, cast
 
 from cloudpathlib import CloudPath, S3Path
+from cpr_sdk.pipeline_general_models import (
+    BackendDocument,
+    PipelineUpdates,
+    Update,
+)
 from requests import Response
 
-from navigator_data_ingest.base.types import DocumentGenerator, CONTENT_TYPE_MAPPING
-from cpr_data_access.pipeline_general_models import (
-    Update,
-    PipelineUpdates,
-    BackendDocument,
-)
+from navigator_data_ingest.base.types import CONTENT_TYPE_MAPPING, DocumentGenerator
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -80,7 +79,8 @@ def parser_input_already_exists(
 
 
 def determine_content_type(response: Response, source_url: str) -> str:
-    """Use the response headers and file extension to determine content type
+    """
+    Use the response headers and file extension to determine content type
 
     Args:
         response (Response): the request object from the file download

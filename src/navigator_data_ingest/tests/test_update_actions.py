@@ -1,15 +1,16 @@
-from cloudpathlib import S3Path
 import json
+
 import pytest
+from cloudpathlib import S3Path
+from cpr_sdk.pipeline_general_models import UpdateTypes
 
 from navigator_data_ingest.base.types import Action, PipelineFieldMapping
-from cpr_data_access.pipeline_general_models import UpdateTypes
 from navigator_data_ingest.base.updated_document_actions import (
-    update_dont_parse,
     order_actions,
     parse,
-    update_file_field,
     rename,
+    update_dont_parse,
+    update_file_field,
     update_type_actions,
 )
 

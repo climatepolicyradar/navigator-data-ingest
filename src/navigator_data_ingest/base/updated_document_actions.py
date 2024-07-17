@@ -2,19 +2,19 @@ import json
 import logging
 import os
 import traceback
-from concurrent.futures import as_completed, Executor
+from concurrent.futures import Executor, as_completed
 from datetime import datetime
-from typing import Generator, List, Union, Tuple
+from typing import Generator, List, Tuple, Union
 
 from cloudpathlib import S3Path
+from cpr_sdk.pipeline_general_models import Update, UpdateTypes
 
 from navigator_data_ingest.base.types import (
-    UpdateConfig,
-    UpdateResult,
     Action,
     PipelineFieldMapping,
+    UpdateConfig,
+    UpdateResult,
 )
-from cpr_data_access.pipeline_general_models import Update, UpdateTypes
 
 _LOGGER = logging.getLogger(__file__)
 

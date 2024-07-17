@@ -1,13 +1,14 @@
-import re
+import json
 import os
+import re
+
 import boto3
 import botocore.client
 import pytest
+from cpr_sdk.pipeline_general_models import Update, UpdateTypes
 from moto import mock_s3
-import json
 
 from navigator_data_ingest.base.types import UpdateConfig
-from cpr_data_access.pipeline_general_models import UpdateTypes, Update
 
 
 class S3Client:
@@ -292,9 +293,7 @@ def test_s3_client__cdn(mock_cdn_config):
 
         s3_client.client.create_bucket(
             Bucket=mock_cdn_config["bucket"],
-            CreateBucketConfiguration={
-                "LocationConstraint": mock_cdn_config["region"]
-            },
+            CreateBucketConfiguration={"LocationConstraint": mock_cdn_config["region"]},
         )
 
         yield s3_client
@@ -303,7 +302,7 @@ def test_s3_client__cdn(mock_cdn_config):
 @pytest.fixture
 def pdf_bytes():
     """Bytes from a valid pdf"""
-    fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")    
+    fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")
     pdf_data = os.path.join(fixture_dir, "sample.pdf")
     with open(pdf_data, "rb") as b:
         contents = b.read()

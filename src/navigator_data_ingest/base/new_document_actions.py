@@ -1,19 +1,19 @@
 import logging
 import traceback
-from concurrent.futures import as_completed, Executor
+from concurrent.futures import Executor, as_completed
 from typing import Generator, Iterable
 
-import requests
-from slugify import slugify
 import pydantic
+import requests
+from cpr_sdk.parser_models import ParserInput
+from cpr_sdk.pipeline_general_models import BackendDocument
+from slugify import slugify
 
 from navigator_data_ingest.base.api_client import upload_document
 from navigator_data_ingest.base.types import (
-    UploadResult,
     HandleResult,
+    UploadResult,
 )
-from cpr_data_access.pipeline_general_models import BackendDocument
-from cpr_data_access.parser_models import ParserInput
 
 _LOGGER = logging.getLogger(__file__)
 
