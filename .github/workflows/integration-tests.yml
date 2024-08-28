@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Setting up Github Actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setting up Python
         uses: actions/setup-python@v2
@@ -46,8 +46,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }}
-          aws-region: ${{ secrets.UNIT_TESTS_AWS_REGION }}
           aws-secret-access-key: ${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.UNIT_TESTS_AWS_REGION }}
 
       - name: Set Dynamic Bucket Names
         run: |
@@ -61,7 +61,7 @@ jobs:
       - name: Building s3 buckets and uploading test data
         run: |
           poetry run python -m integration_tests.setup_test_buckets ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
-          poetry run python -m integration_tests.setup_execution_data_file ${{ env.INGEST_PIPELINE_BUCKET }}   ${{ env.EXECUTION_DATA_PREFIX }}/${{ env.EXECUTION_DATA_FILE_NAME }}   ${{ env.TEST_DATA_UPLOAD_PATH }}   
+          poetry run python -m integration_tests.setup_execution_data_file ${{ env.INGEST_PIPELINE_BUCKET }}   ${{ env.EXECUTION_DATA_PREFIX }}/${{ env.EXECUTION_DATA_FILE_NAME }}   ${{ env.TEST_DATA_UPLOAD_PATH }}
           aws s3 sync integration_tests/data/pipeline_in s3://${{ env.INGEST_PIPELINE_BUCKET }}
 
       - name: Running the Ingest Stage
