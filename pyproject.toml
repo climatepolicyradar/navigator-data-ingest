@@ -27,7 +27,7 @@ pypdf = "^4.2.0"
 cpr-sdk = "^1.1.6"
 
 [tool.poetry.group.dev-dependencies.dependencies]
-black = "^22.1.0"
+black = "^24.8.0"
 flake8 = "^7.1.1"
 importlib-resources = "^6.4.4"
 pre-commit = "^2.17.0"
