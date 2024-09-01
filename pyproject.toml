@@ -16,7 +16,7 @@ navigator-data-ingest = 'navigator_data_ingest.main:main'
 python = "^3.9"
 click = "^8.1.2"
 cloudpathlib = { version = "^0.10.0", extras = ["s3"] }
-pydantic = "^2.4.0"
+pydantic = "^2.8.2"
 python-slugify = "^6.1.2"
 python-dateutil = "^2.9.0"
 python-dotenv = "^0.19.2"
