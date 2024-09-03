@@ -1,11 +1,11 @@
-FROM python:3.9
+FROM python:3.10
 
 RUN mkdir /navigator-data-ingest
 WORKDIR /navigator-data-ingest
 
 # Install pip and poetry
 RUN pip install --no-cache --upgrade pip
-RUN pip install --no-cache "poetry==1.3.2"
+RUN pip install --no-cache "poetry==1.8.2"
 
 # Copy poetry files to image
 COPY poetry.lock ./poetry.lock
