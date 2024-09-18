@@ -6,7 +6,7 @@ import boto3
 import botocore.client
 import pytest
 from cpr_sdk.pipeline_general_models import Update, UpdateTypes
-from moto import mock_s3
+from moto import mock_aws
 
 from navigator_data_ingest.base.types import UpdateConfig
 
@@ -161,7 +161,7 @@ def s3_bucket_and_region() -> dict:
 
 @pytest.fixture
 def test_s3_client(s3_bucket_and_region, test_s3_objects):
-    with mock_s3():
+    with mock_aws():
         s3_client = S3Client(s3_bucket_and_region["region"])
 
         s3_client.client.create_bucket(
@@ -185,7 +185,7 @@ def test_s3_client(s3_bucket_and_region, test_s3_objects):
 def test_s3_client_filled_archive(
     test_update_config, s3_bucket_and_region, s3_document_id
 ):
-    with mock_s3():
+    with mock_aws():
         s3_client = S3Client(s3_bucket_and_region["region"])
 
         s3_client.client.create_bucket(
@@ -288,7 +288,7 @@ def mock_cdn_config():
 def test_s3_client__cdn(mock_cdn_config):
     """Empty cdn and pipeline buckets to be used for non-aws based testing"""
 
-    with mock_s3():
+    with mock_aws():
         s3_client = S3Client(mock_cdn_config["region"])
 
         s3_client.client.create_bucket(
