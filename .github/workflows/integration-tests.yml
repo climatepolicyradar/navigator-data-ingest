@@ -18,9 +18,7 @@ env:
   DOCUMENT_NAME_KEY: document_id
   PARSER_INPUT_EXPECTED_DATA_FILE_PATH: integration_tests/data/parser_input_dir_post_run.json
   ARCHIVE_EXPECTED_DATA_FILE_PATH: integration_tests/data/docs_test_subset_archive_parser_input_expected.json
-  EXECUTION_DATA_PREFIX: execution_data
-  EXECUTION_DATA_FILE_NAME: 123456.json
-  EXECUTION_DATA_ID: 123456
+  DB_STATE_FILE_KEY: input/2022-11-01T21.53.26.945831/db_state.json
 
 jobs:
   test:
@@ -61,12 +59,11 @@ jobs:
       - name: Building s3 buckets and uploading test data
         run: |
           poetry run python -m integration_tests.setup_test_buckets ${{ env.INGEST_DOCUMENT_BUCKET }} ${{ env.INGEST_PIPELINE_BUCKET }} ${{ secrets.UNIT_TESTS_AWS_REGION }}
-          poetry run python -m integration_tests.setup_execution_data_file ${{ env.INGEST_PIPELINE_BUCKET }}   ${{ env.EXECUTION_DATA_PREFIX }}/${{ env.EXECUTION_DATA_FILE_NAME }}   ${{ env.TEST_DATA_UPLOAD_PATH }}
           aws s3 sync integration_tests/data/pipeline_in s3://${{ env.INGEST_PIPELINE_BUCKET }}
 
       - name: Running the Ingest Stage
         run: |
-          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --updates-file-name ${{ env.UPDATES_FILE_NAME }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }} --embeddings-input-prefix ${{ env.EMBEDDINGS_INPUT_PREFIX }} --indexer-input-prefix ${{ env.INDEXER_INPUT_PREFIX }} --execution-id ${{ env.EXECUTION_DATA_ID }} --execution-data-prefix ${{ env.EXECUTION_DATA_PREFIX }}
+          docker run -e AWS_ACCESS_KEY_ID=${{ secrets.UNIT_TESTS_AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.UNIT_TESTS_AWS_SECRET_ACCESS_KEY }} -e API_HOST="" -e MACHINE_USER_EMAIL="" -e MACHINE_USER_PASSWORD="" navigator-data-ingest --pipeline-bucket ${{ env.INGEST_PIPELINE_BUCKET }} --document-bucket ${{ env.INGEST_DOCUMENT_BUCKET }} --updates-file-name ${{ env.UPDATES_FILE_NAME }} --output-prefix ${{ env.INGEST_OUTPUT_PREFIX }} --embeddings-input-prefix ${{ env.EMBEDDINGS_INPUT_PREFIX }} --indexer-input-prefix ${{ env.INDEXER_INPUT_PREFIX }} --db-state-file-key ${{ env.DB_STATE_FILE_KEY }}
 
       - name: Running Integration Tests on the Ingest Stage Output 🚀
         run: |
