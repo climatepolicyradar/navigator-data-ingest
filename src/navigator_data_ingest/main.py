@@ -7,7 +7,6 @@ from typing import cast
 import click
 import json_logging
 from cloudpathlib import S3Path
-from cpr_sdk.pipeline_general_models import ExecutionData
 
 from navigator_data_ingest.base.api_client import (
     write_error_file,
@@ -100,14 +99,9 @@ _LOGGER = logging.getLogger(__name__)
     help="Number of workers downloading/uploading cached documents",
 )
 @click.option(
-    "--execution-id",
+    "--db-state-file-key",
     required=True,
-    help="Unique identifier for the execution",
-)
-@click.option(
-    "--execution-data-prefix",
-    required=True,
-    help="The s3 prefix for the execution data file",
+    help="The s3 key for the file containing the db state.",
 )
 def main(
     pipeline_bucket: str,
@@ -118,8 +112,7 @@ def main(
     indexer_input_prefix: str,
     archive_prefix: str,
     worker_count: int,
-    execution_id: str,
-    execution_data_prefix: str,
+    db_state_file_key: str,
 ):
     """
     Load documents from source JSON array file, updating details via API.
@@ -134,23 +127,13 @@ def main(
     param indexer_input_prefix: S3 prefix containing the indexer input files.
     param archive_prefix: S3 prefix to which to archive documents.
     param worker_count: Number of workers downloading/uploading cached documents.
-    param execution_id: Unique identifier for the execution.
-    param execution_data_prefix: Prefix to apply to output files that contains the
-    execution data files.
+    param db_state_file_key: The s3 path for the file containing the db state
     """
 
-    # Read the execution data file to get the unique execution timestamp s3 path
-    # (input/${timestamp}/)
-    execution_data_path = (
-        S3Path(os.path.join("s3://", pipeline_bucket, execution_data_prefix))
-        / f"{execution_id}.json"
-    )
-
-    input_dir_path = S3Path(
-        ExecutionData.model_validate_json(
-            execution_data_path.read_text()
-        ).input_dir_path
-    )
+    # Get the key of folder containing the db state file
+    input_dir_path = (
+        S3Path(os.path.join("s3://", pipeline_bucket, db_state_file_key))
+    ).parent
 
     # Get the key of the updates file contain information on the new and updated
     # documents (input/${timestamp}/updates.json)
