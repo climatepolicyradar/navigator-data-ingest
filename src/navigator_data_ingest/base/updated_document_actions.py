@@ -489,6 +489,7 @@ def rename(existing_path: S3Path, rename_path: S3Path) -> Union[str, None]:
 
 update_type_actions = {
     UpdateTypes.SOURCE_URL: parse,
+    UpdateTypes.REPROCESS: parse,
     UpdateTypes.NAME: update_dont_parse,
     UpdateTypes.DESCRIPTION: update_dont_parse,
     UpdateTypes.METADATA: update_dont_parse,
