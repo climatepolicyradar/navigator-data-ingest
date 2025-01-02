@@ -14,9 +14,9 @@ navigator-data-ingest = 'navigator_data_ingest.main:main'
 
 [tool.poetry.dependencies]
 python = "^3.10"
-click = "^8.1.2"
+click = "^8.1.8"
 cloudpathlib = { version = "^0.20.0", extras = ["s3"] }
-pydantic = "^2.10.3"
+pydantic = "^2.10.4"
 python-slugify = "^8.0.4"
 python-dateutil = "^2.9.0"
 python-dotenv = "^1.0.1"
@@ -35,7 +35,7 @@ pydocstyle = { version = "^6.1.1", extras = ["pydocstyle[toml]"] }
 pytest = "^8.3.4"
 pytest-asyncio = "^0.25.0"
 requests-mock = "^1.12.1"
-moto = {extras = ["all", "ec2", "s3"], version = "^5.0.23"}
+moto = {extras = ["all", "ec2", "s3"], version = "^5.0.25"}
 
 [tool.poetry.group.integration-test]
 optional = true
