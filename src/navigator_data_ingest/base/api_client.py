@@ -8,8 +8,6 @@ from typing import cast
 import requests
 from cloudpathlib import CloudPath, S3Path
 from cpr_sdk.parser_models import ParserInput
-from pypdf import PdfReader
-from pypdf.errors import PyPdfError
 from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
@@ -72,9 +70,6 @@ def upload_document(
 
         # Ensure valid file types can be read accordingly
         file_content = download_response.content
-        if content_type == CONTENT_TYPE_PDF:
-            # Invalid pdf should raise a PyPdfError error
-            PdfReader(io.BytesIO(file_content))
 
         # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
@@ -115,12 +110,6 @@ def upload_document(
         _LOGGER.warn(
             f"Uploads for document {import_id} at '{source_url}' could not be completed because "
             f"the content type '{e.content_type}' is not currently supported."
-        )
-    except PyPdfError as e:
-        upload_result.content_type = None
-        _LOGGER.warn(
-            f"Uploads for document {import_id} at '{source_url}' could not be completed because "
-            f"the pdf document is invalid: {e.with_traceback(e.__traceback__)}"
         )
     except Exception as e:
         _LOGGER.exception(
