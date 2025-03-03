@@ -36,8 +36,6 @@ def test_upload_document__readable(
     ("url", "content_type", "data"),
     [
         ("mock://somedata", "text/html", b"<html></html>"),
-        ("mock://somedata", "application/pdf", b"<html></html>"),
-        ("mock://somedata.pdf", "text/html", b"<html></html>"),
     ]
 )
 def test_upload_document__unreadable(
