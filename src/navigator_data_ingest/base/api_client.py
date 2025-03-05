@@ -24,7 +24,7 @@ _LOGGER = logging.getLogger(__file__)
 
 META_KEY = "metadata"
 
-REQUESTS_HEADERS = {
+REQUEST_HEADERS = {
     "User-Agent": "Climate Policy Radar Data Ingestion Service",
 }
 
@@ -133,7 +133,7 @@ def _download_from_source(
 ) -> requests.Response:
     # Try the orginal source url
     download_response = session.get(
-        source_url, allow_redirects=True, timeout=5, headers=REQUESTS_HEADERS
+        source_url, allow_redirects=True, timeout=5, headers=REQUEST_HEADERS
     )
 
     # TODO this is a hack and we should handle source urls upstream in the backend
@@ -143,7 +143,7 @@ def _download_from_source(
             source_url.replace("%", ""),
             allow_redirects=True,
             timeout=5,
-            headers=REQUESTS_HEADERS,
+            headers=REQUEST_HEADERS,
         )
 
     if download_response.status_code == 404:
@@ -152,7 +152,7 @@ def _download_from_source(
             source_url.replace("%", "%25"),
             allow_redirects=True,
             timeout=5,
-            headers=REQUESTS_HEADERS,
+            headers=REQUEST_HEADERS,
         )
 
     if download_response.status_code >= 300:
