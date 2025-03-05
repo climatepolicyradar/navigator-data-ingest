@@ -1,6 +1,5 @@
 """A simple API client for creating documents & associations."""
 import hashlib
-import io
 import json
 import logging
 from typing import cast
@@ -13,7 +12,6 @@ from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
 from navigator_data_ingest.base.types import (
-    CONTENT_TYPE_PDF,
     FILE_EXTENSION_MAPPING,
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
@@ -25,6 +23,10 @@ from navigator_data_ingest.base.utils import determine_content_type
 _LOGGER = logging.getLogger(__file__)
 
 META_KEY = "metadata"
+
+REQUEST_HEADERS = {
+    "User-Agent": "Climate Policy Radar Data Ingestion Service",
+}
 
 
 def upload_document(
@@ -130,19 +132,27 @@ def _download_from_source(
     session: requests.Session, source_url: str
 ) -> requests.Response:
     # Try the orginal source url
-    download_response = session.get(source_url, allow_redirects=True, timeout=5)
+    download_response = session.get(
+        source_url, allow_redirects=True, timeout=5, headers=REQUEST_HEADERS
+    )
 
     # TODO this is a hack and we should handle source urls upstream in the backend
     if download_response.status_code == 404:
         # mutation 1 - remove %
         download_response = session.get(
-            source_url.replace("%", ""), allow_redirects=True, timeout=5
+            source_url.replace("%", ""),
+            allow_redirects=True,
+            timeout=5,
+            headers=REQUEST_HEADERS,
         )
 
     if download_response.status_code == 404:
         # mutation 2 - replace % with the encoded version, i.e. %25
         download_response = session.get(
-            source_url.replace("%", "%25"), allow_redirects=True, timeout=5
+            source_url.replace("%", "%25"),
+            allow_redirects=True,
+            timeout=5,
+            headers=REQUEST_HEADERS,
         )
 
     if download_response.status_code >= 300:
