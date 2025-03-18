@@ -47,6 +47,7 @@ def upload_document(
 
     :param requests.Session session: The session used for making the request.
     :return DocumentUploadResult: the remote URL and the md5_sum of its contents
+    :raises UnsupportedContentTypeError: if the content is of type multi-file or not within the list of supported
     """
     # download the document
     _LOGGER.info(f"Downloading document from '{source_url}' for {import_id}")
@@ -60,25 +61,19 @@ def upload_document(
         download_response = _download_from_source(session, source_url)
         content_type = determine_content_type(download_response, source_url)
 
-        # Update the result object with the detected content type
         upload_result.content_type = content_type
 
-        # Decide what to do next based on content type
-        if content_type in MULTI_FILE_CONTENT_TYPES:
+        if (
+            content_type in MULTI_FILE_CONTENT_TYPES
+            or content_type not in SUPPORTED_CONTENT_TYPES
+        ):
             raise UnsupportedContentTypeError(content_type)
 
-        if content_type not in SUPPORTED_CONTENT_TYPES:
-            raise UnsupportedContentTypeError(content_type)
-
-        # Ensure valid file types can be read accordingly
         file_content = download_response.content
 
         # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
         upload_result.md5_sum = file_hash
-
-        # s3 can only handle paths of up to 1024 bytes. To ensure we don't exceed that,
-        # we trim the filename if it's too long
         file_suffix = FILE_EXTENSION_MAPPING.get(content_type, "")
 
         file_name = _create_file_name_for_upload(
@@ -119,6 +114,8 @@ def _create_file_name_for_upload(
     while len(file_name_max_fs_len_no_suffix.encode("utf-8")) > 200:
         file_name_max_fs_len_no_suffix = file_name_max_fs_len_no_suffix[:-5]
 
+    # s3 can only handle paths of up to 1024 bytes. To ensure we don't exceed that,
+    # we trim the filename if it's too long
     file_name_max_len = (
         1024
         - len(s3_prefix)
