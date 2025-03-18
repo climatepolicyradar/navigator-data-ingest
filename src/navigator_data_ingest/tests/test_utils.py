@@ -15,7 +15,7 @@ from navigator_data_ingest.base.utils import determine_content_type
         ["application/pdf", "https://aweb.site/file.pdf", CONTENT_TYPE_PDF],
         ["", "https://aweb.site/file.pdf", CONTENT_TYPE_PDF],
         ["", "https://aweb.site/file", ""],
-    )
+    ),
 )
 def test_determine_content_type(content_type, source_url, want):
     test_response = Response()

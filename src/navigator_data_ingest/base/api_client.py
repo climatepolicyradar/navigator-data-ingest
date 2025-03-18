@@ -77,28 +77,12 @@ def upload_document(
         file_hash = hashlib.md5(file_content).hexdigest()
         upload_result.md5_sum = file_hash
 
-        # ext4 used in Amazon Linux /tmp directory has a max filename length of
-        # 255 bytes, so trim to ensure we don't exceed that. Choose 240 initially to
-        # allow for suffix.
-        file_name_max_fs_len_no_suffix = file_name_without_suffix[:200]
-        while len(file_name_max_fs_len_no_suffix.encode("utf-8")) > 200:
-            file_name_max_fs_len_no_suffix = file_name_max_fs_len_no_suffix[:-5]
-
         # s3 can only handle paths of up to 1024 bytes. To ensure we don't exceed that,
         # we trim the filename if it's too long
         file_suffix = FILE_EXTENSION_MAPPING.get(content_type, "")
-        filename_max_len = (
-            1024
-            - len(s3_prefix)
-            - len(file_suffix)
-            - len(file_hash)
-            - len("_.")  # length of additional characters for joining path components
-        )
-        file_name_no_suffix_trimmed = file_name_max_fs_len_no_suffix[:filename_max_len]
-        # Safe not to loop over the encoding of file_name because everything we're
-        # adding is 1byte == 1char
-        file_name = (
-            f"{s3_prefix}/{file_name_no_suffix_trimmed}_{file_hash}{file_suffix}"
+
+        file_name = _create_file_name_for_upload(
+            file_hash, file_name_without_suffix, file_suffix, s3_prefix
         )
 
         _LOGGER.info(
@@ -122,6 +106,32 @@ def upload_document(
         # Always return an upload result, even if it's incomplete
         # TODO: perhaps use the existence of an incomplete output in the future
         return upload_result
+
+
+def _create_file_name_for_upload(
+    file_hash: str, file_name_without_suffix: str, file_suffix: str, s3_prefix: str
+) -> str:
+    """Constructs a trimmed and enriched file name for uploading to S3"""
+    # ext4 used in Amazon Linux /tmp directory has a max filename length of
+    # 255 bytes, so trim to ensure we don't exceed that. Choose 240 initially to
+    # allow for suffix.
+    file_name_max_fs_len_no_suffix = file_name_without_suffix[:200]
+    while len(file_name_max_fs_len_no_suffix.encode("utf-8")) > 200:
+        file_name_max_fs_len_no_suffix = file_name_max_fs_len_no_suffix[:-5]
+
+    file_name_max_len = (
+        1024
+        - len(s3_prefix)
+        - len(file_suffix)
+        - len(file_hash)
+        - len("_.")  # length of additional characters for joining path components
+    )
+    file_name_no_suffix_trimmed = file_name_max_fs_len_no_suffix[:file_name_max_len]
+    # Safe not to loop over the encoding of file_name because everything we're
+    # adding is 1byte == 1char
+    file_name = f"{s3_prefix}/{file_name_no_suffix_trimmed}_{file_hash}{file_suffix}"
+
+    return file_name
 
 
 @retry(
