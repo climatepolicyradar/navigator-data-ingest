@@ -78,7 +78,6 @@ def upload_document(
         ):
             raise UnsupportedContentTypeError(content_type)
 
-
         # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
         upload_result.md5_sum = file_hash

@@ -5,10 +5,11 @@ from uuid import uuid4
 
 import subprocess
 
+
 def convert_doc_to_pdf(file_content: str) -> str:
     """
     Transforms a docx / doc file into pdf, and returns the bytes file content
-    
+
     It uses a temporary directory to store the docx and pdf files.
 
     :param file_content: the loaded file content of the docx file
@@ -23,7 +24,7 @@ def convert_doc_to_pdf(file_content: str) -> str:
 
     with open(input_file_path, "wb") as input_file:
         input_file.write(file_content)
-    
+
     cmd = [
         "soffice",
         "--headless",
@@ -40,6 +41,6 @@ def convert_doc_to_pdf(file_content: str) -> str:
 
     with open(output_file_path, "rb") as output_file:
         pdf_file_content = output_file.read()
-    
+
     shutil.rmtree(worker_dir)
     return pdf_file_content
