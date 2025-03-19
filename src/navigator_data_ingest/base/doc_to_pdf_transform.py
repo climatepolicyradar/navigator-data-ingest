@@ -5,9 +5,9 @@ from uuid import uuid4
 
 import subprocess
 
-def transform_doc_to_pdf(file_content: str) -> str:
+def convert_doc_to_pdf(file_content: str) -> str:
     """
-    Transforms a docx / doc file into pdf
+    Transforms a docx / doc file into pdf, and returns the bytes file content
     
     It uses a temporary directory to store the docx and pdf files.
 

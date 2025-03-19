@@ -11,10 +11,13 @@ from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
+from navigator_data_ingest.base.doc_to_pdf_transform import convert_doc_to_pdf
 from navigator_data_ingest.base.types import (
     FILE_EXTENSION_MAPPING,
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
+    CONTENT_TYPE_HTML,
+    CONTENT_TYPE_PDF,
     UnsupportedContentTypeError,
     UploadResult,
 )
@@ -60,6 +63,12 @@ def upload_document(
     try:
         download_response = _download_from_source(session, source_url)
         content_type = determine_content_type(download_response, source_url)
+        file_content = download_response.content
+
+        # If the content type is HTML, convert it to PDF
+        if content_type == CONTENT_TYPE_HTML:
+            content_type = CONTENT_TYPE_PDF
+            file_content = convert_doc_to_pdf(file_content)
 
         upload_result.content_type = content_type
 
@@ -69,7 +78,6 @@ def upload_document(
         ):
             raise UnsupportedContentTypeError(content_type)
 
-        file_content = download_response.content
 
         # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
