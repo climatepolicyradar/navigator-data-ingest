@@ -1,18 +1,22 @@
 from pathlib import Path
+import shutil
 from tempfile import mkdtemp
+from uuid import uuid4
 
 import subprocess
 
-def transform_docx_to_pdf(file_content: str) -> str:
+def transform_doc_to_pdf(file_content: str) -> str:
     """
-    Transforms a docx file into pdf
+    Transforms a docx / doc file into pdf
     
     It uses a temporary directory to store the docx and pdf files.
 
     :param file_content: the loaded file content of the docx file
     :return: the file content of the pdf file
     """
-    worker_dir = mkdtemp(prefix="worker_")
+    suffix = str(uuid4())
+    # to make this thread safe, create a unique directory for each worker
+    worker_dir = mkdtemp(prefix="worker_", suffix=suffix)
 
     input_file_path = f"{worker_dir}/doc.docx"
     output_file_path = f"{worker_dir}/doc.pdf"
@@ -37,4 +41,5 @@ def transform_docx_to_pdf(file_content: str) -> str:
     with open(output_file_path, "rb") as output_file:
         pdf_file_content = output_file.read()
     
+    shutil.rmtree(worker_dir)
     return pdf_file_content
