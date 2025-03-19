@@ -6,7 +6,7 @@ from uuid import uuid4
 import subprocess
 
 
-def convert_doc_to_pdf(file_content: str) -> str:
+def convert_doc_to_pdf(file_content: bytes) -> bytes:
     """
     Transforms a docx / doc file into pdf, and returns the bytes file content
 
