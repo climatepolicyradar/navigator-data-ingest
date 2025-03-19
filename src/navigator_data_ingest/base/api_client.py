@@ -65,7 +65,7 @@ def upload_document(
         content_type = determine_content_type(download_response, source_url)
         file_content = download_response.content
 
-        # If the content type is HTML, convert it to PDF
+        # If the content type is DOCX, convert it to PDF
         if content_type == CONTENT_TYPE_DOCX:
             content_type = CONTENT_TYPE_PDF
             file_content = convert_doc_to_pdf(file_content)
