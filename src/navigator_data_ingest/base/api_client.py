@@ -11,7 +11,7 @@ from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
-from navigator_data_ingest.base.doc_to_pdf_transform import convert_doc_to_pdf
+from navigator_data_ingest.base.doc_to_pdf_conversion import convert_doc_to_pdf
 from navigator_data_ingest.base.types import (
     FILE_EXTENSION_MAPPING,
     MULTI_FILE_CONTENT_TYPES,
