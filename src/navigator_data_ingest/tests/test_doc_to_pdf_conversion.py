@@ -1,5 +1,4 @@
 import re
-import pytest
 import fitz
 
 from Levenshtein import distance
@@ -14,7 +13,6 @@ def all_text(doc: fitz.Document) -> str:
     return text
 
 
-@pytest.mark.skip(reason="This test requires libreoffice in the environment")
 def test_convert_doc_to_pdf():
     with open(
         "src/navigator_data_ingest/tests/fixtures/sample-for-word-to-pdf-conversion.doc",
