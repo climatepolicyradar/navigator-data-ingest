@@ -1,5 +1,10 @@
 FROM python:3.10
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libreoffice \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir /navigator-data-ingest
 WORKDIR /navigator-data-ingest
 

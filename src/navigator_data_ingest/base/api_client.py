@@ -11,10 +11,13 @@ from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
+from navigator_data_ingest.base.doc_to_pdf_conversion import convert_doc_to_pdf
 from navigator_data_ingest.base.types import (
     FILE_EXTENSION_MAPPING,
     MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
+    CONTENT_TYPE_DOCX,
+    CONTENT_TYPE_PDF,
     UnsupportedContentTypeError,
     UploadResult,
 )
@@ -47,6 +50,7 @@ def upload_document(
 
     :param requests.Session session: The session used for making the request.
     :return DocumentUploadResult: the remote URL and the md5_sum of its contents
+    :raises UnsupportedContentTypeError: if the content is of type multi-file or not within the list of supported
     """
     # download the document
     _LOGGER.info(f"Downloading document from '{source_url}' for {import_id}")
@@ -59,46 +63,28 @@ def upload_document(
     try:
         download_response = _download_from_source(session, source_url)
         content_type = determine_content_type(download_response, source_url)
+        file_content = download_response.content
 
-        # Update the result object with the detected content type
+        # If the content type is DOCX, convert it to PDF
+        if content_type == CONTENT_TYPE_DOCX:
+            content_type = CONTENT_TYPE_PDF
+            file_content = convert_doc_to_pdf(file_content)
+
         upload_result.content_type = content_type
 
-        # Decide what to do next based on content type
-        if content_type in MULTI_FILE_CONTENT_TYPES:
+        if (
+            content_type in MULTI_FILE_CONTENT_TYPES
+            or content_type not in SUPPORTED_CONTENT_TYPES
+        ):
             raise UnsupportedContentTypeError(content_type)
-
-        if content_type not in SUPPORTED_CONTENT_TYPES:
-            raise UnsupportedContentTypeError(content_type)
-
-        # Ensure valid file types can be read accordingly
-        file_content = download_response.content
 
         # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
         upload_result.md5_sum = file_hash
-
-        # ext4 used in Amazon Linux /tmp directory has a max filename length of
-        # 255 bytes, so trim to ensure we don't exceed that. Choose 240 initially to
-        # allow for suffix.
-        file_name_max_fs_len_no_suffix = file_name_without_suffix[:200]
-        while len(file_name_max_fs_len_no_suffix.encode("utf-8")) > 200:
-            file_name_max_fs_len_no_suffix = file_name_max_fs_len_no_suffix[:-5]
-
-        # s3 can only handle paths of up to 1024 bytes. To ensure we don't exceed that,
-        # we trim the filename if it's too long
         file_suffix = FILE_EXTENSION_MAPPING.get(content_type, "")
-        filename_max_len = (
-            1024
-            - len(s3_prefix)
-            - len(file_suffix)
-            - len(file_hash)
-            - len("_.")  # length of additional characters for joining path components
-        )
-        file_name_no_suffix_trimmed = file_name_max_fs_len_no_suffix[:filename_max_len]
-        # Safe not to loop over the encoding of file_name because everything we're
-        # adding is 1byte == 1char
-        file_name = (
-            f"{s3_prefix}/{file_name_no_suffix_trimmed}_{file_hash}{file_suffix}"
+
+        file_name = _create_file_name_for_upload(
+            file_hash, file_name_without_suffix, file_suffix, s3_prefix
         )
 
         _LOGGER.info(
@@ -122,6 +108,34 @@ def upload_document(
         # Always return an upload result, even if it's incomplete
         # TODO: perhaps use the existence of an incomplete output in the future
         return upload_result
+
+
+def _create_file_name_for_upload(
+    file_hash: str, file_name_without_suffix: str, file_suffix: str, s3_prefix: str
+) -> str:
+    """Constructs a trimmed and enriched file name for uploading to S3"""
+    # ext4 used in Amazon Linux /tmp directory has a max filename length of
+    # 255 bytes, so trim to ensure we don't exceed that. Choose 240 initially to
+    # allow for suffix.
+    file_name_max_fs_len_no_suffix = file_name_without_suffix[:200]
+    while len(file_name_max_fs_len_no_suffix.encode("utf-8")) > 200:
+        file_name_max_fs_len_no_suffix = file_name_max_fs_len_no_suffix[:-5]
+
+    # s3 can only handle paths of up to 1024 bytes. To ensure we don't exceed that,
+    # we trim the filename if it's too long
+    file_name_max_len = (
+        1024
+        - len(s3_prefix)
+        - len(file_suffix)
+        - len(file_hash)
+        - len("_.")  # length of additional characters for joining path components
+    )
+    file_name_no_suffix_trimmed = file_name_max_fs_len_no_suffix[:file_name_max_len]
+    # Safe not to loop over the encoding of file_name because everything we're
+    # adding is 1byte == 1char
+    file_name = f"{s3_prefix}/{file_name_no_suffix_trimmed}_{file_hash}{file_suffix}"
+
+    return file_name
 
 
 @retry(
