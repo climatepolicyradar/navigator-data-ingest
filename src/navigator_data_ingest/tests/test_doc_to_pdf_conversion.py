@@ -17,7 +17,8 @@ def all_text(doc: fitz.Document) -> str:
 @pytest.mark.skip(reason="This test requires libreoffice in the environment")
 def test_convert_doc_to_pdf():
     with open(
-        "src/navigator_data_ingest/tests/fixtures/sampe-01-for-conversion.doc", "rb"
+        "src/navigator_data_ingest/tests/fixtures/sample-for-word-to-pdf-conversion.doc",
+        "rb",
     ) as file:
         doc_content = file.read()
 
@@ -25,7 +26,7 @@ def test_convert_doc_to_pdf():
 
     converted_pdf = fitz.open(stream=pdf_content, filetype="pdf")
     expected_pdf = fitz.open(
-        "src/navigator_data_ingest/tests/fixtures/sampe-01-for-conversion.pdf"
+        "src/navigator_data_ingest/tests/fixtures/sample-for-word-to-pdf-conversion.pdf"
     )
 
     # libreoffice messes with the pages -- the converted pdf is actually longer (67 pages vs 54)
