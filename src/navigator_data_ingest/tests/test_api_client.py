@@ -5,17 +5,40 @@ from navigator_data_ingest.base.api_client import upload_document
 
 
 @pytest.mark.unit
+@pytest.mark.parametrize(
+    ("url", "input_content_type", "output_content_type", "output_extension"),
+    [
+        ("mock://somedata.pdf", "application/pdf", "application/pdf", ".pdf"),
+        (
+            "mock://somedata.docx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/pdf",
+            ".pdf",
+        ),
+        ("mock://somedata.doc", "application/msword", "application/pdf", ".pdf"),
+    ],
+)
 def test_upload_document__readable(
     test_s3_client__cdn,
     mock_cdn_config,
     requests_mock,
     pdf_bytes,
+    doc_bytes,
+    url,
+    input_content_type,
+    output_content_type,
+    output_extension,
 ):
-    url = "mock://somedata.pdf"
-    content_type = "application/pdf"
-
     session = requests.Session()
-    requests_mock.get(url, content=pdf_bytes, headers={"content-type": content_type})
+
+    # Use the appropriate fixture based on content type
+    # TODO: we could also specify docx_bytes, but this doesn't really matter for this
+    # test as the conversion will work regardless of doc or docx
+    content = pdf_bytes if input_content_type == "application/pdf" else doc_bytes
+
+    requests_mock.get(
+        url, content=content, headers={"content-type": input_content_type}
+    )
 
     result = upload_document(
         session=session,
@@ -26,9 +49,10 @@ def test_upload_document__readable(
         import_id="TEST.0.1",
     )
 
-    assert result.content_type == content_type
+    assert result.content_type == output_content_type
+    assert result.cdn_object is not None
     assert result.cdn_object.startswith("TEST/1970/test_slug")
-    assert result.cdn_object.endswith(".pdf")
+    assert result.cdn_object.endswith(output_extension)
 
 
 @pytest.mark.unit
