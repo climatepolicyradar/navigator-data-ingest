@@ -84,4 +84,4 @@ def test_upload_document__unreadable(
 
     assert result.md5_sum is None
     assert result.cdn_object is None
-    assert result.content_type is None
+    assert result.content_type == "text/html"
