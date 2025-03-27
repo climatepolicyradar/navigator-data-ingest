@@ -91,6 +91,10 @@ def determine_content_type(response: Response, source_url: str) -> str:
     """
 
     content_type_header = response.headers["Content-Type"].split(";")[0]
-    file_extension_start_index = source_url.rindex(".")
-    file_extension = source_url[file_extension_start_index:]
-    return CONTENT_TYPE_MAPPING.get(file_extension, content_type_header)
+    try:
+        file_extension_start_index = source_url.rindex(".")
+        file_extension = source_url[file_extension_start_index:]
+        return CONTENT_TYPE_MAPPING.get(file_extension, content_type_header)
+    except ValueError:
+        # Some URLs don't have a file extension, so use the content type header
+        return content_type_header

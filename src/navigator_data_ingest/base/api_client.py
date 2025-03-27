@@ -18,6 +18,7 @@ from navigator_data_ingest.base.types import (
     SUPPORTED_CONTENT_TYPES,
     CONTENT_TYPE_DOCX,
     CONTENT_TYPE_PDF,
+    CONTENT_TYPE_DOC,
     UnsupportedContentTypeError,
     UploadResult,
 )
@@ -65,8 +66,8 @@ def upload_document(
         content_type = determine_content_type(download_response, source_url)
         file_content = download_response.content
 
-        # If the content type is DOCX, convert it to PDF
-        if content_type == CONTENT_TYPE_DOCX:
+        # If the content type is DOCX or DOC, convert it to PDF
+        if content_type in {CONTENT_TYPE_DOCX, CONTENT_TYPE_DOC}:
             content_type = CONTENT_TYPE_PDF
             file_content = convert_doc_to_pdf(file_content)
 

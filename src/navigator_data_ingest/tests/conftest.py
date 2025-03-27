@@ -307,3 +307,13 @@ def pdf_bytes():
     with open(pdf_data, "rb") as b:
         contents = b.read()
     return contents
+
+
+@pytest.fixture
+def doc_bytes():
+    """Bytes from a valid doc"""
+    fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")
+    doc_data = os.path.join(fixture_dir, "sample-for-word-to-pdf-conversion.doc")
+    with open(doc_data, "rb") as b:
+        contents = b.read()
+    return contents

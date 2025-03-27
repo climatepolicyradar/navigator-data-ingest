@@ -11,14 +11,18 @@ from typing import (
 
 from cpr_sdk.parser_models import ParserInput
 from cpr_sdk.pipeline_general_models import (
-    CONTENT_TYPE_DOCX,
-    CONTENT_TYPE_HTML,
-    CONTENT_TYPE_PDF,
     BackendDocument,
     Update,
     UpdateTypes,
 )
 from pydantic import BaseModel
+
+CONTENT_TYPE_HTML = "text/html"
+CONTENT_TYPE_DOCX = (
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
+CONTENT_TYPE_PDF = "application/pdf"
+CONTENT_TYPE_DOC = "application/msword"
 
 SINGLE_FILE_CONTENT_TYPES = {
     CONTENT_TYPE_PDF,
@@ -45,6 +49,7 @@ FILE_EXTENSION_MAPPING = {
     CONTENT_TYPE_PDF: ".pdf",
     CONTENT_TYPE_HTML: ".html",
     CONTENT_TYPE_DOCX: ".docx",
+    CONTENT_TYPE_DOC: ".doc",
 }
 # Reversed mapping to get content types from file extensions
 CONTENT_TYPE_MAPPING = {v: k for k, v in FILE_EXTENSION_MAPPING.items()}
