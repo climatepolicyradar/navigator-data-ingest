@@ -30,6 +30,9 @@ META_KEY = "metadata"
 
 REQUEST_HEADERS = {
     "User-Agent": "Climate Policy Radar Data Ingestion Service",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Connection": "keep-alive",
 }
 
 
@@ -144,11 +147,11 @@ def _create_file_name_for_upload(
     wait=wait_random_exponential(multiplier=1, min=1, max=10),
 )
 def _download_from_source(
-    session: requests.Session, source_url: str
+    session: requests.Session, source_url: str, timeout: int = 30
 ) -> requests.Response:
     # Try the orginal source url
     download_response = session.get(
-        source_url, allow_redirects=True, timeout=5, headers=REQUEST_HEADERS
+        source_url, allow_redirects=True, timeout=timeout, headers=REQUEST_HEADERS
     )
 
     # TODO this is a hack and we should handle source urls upstream in the backend
@@ -157,7 +160,7 @@ def _download_from_source(
         download_response = session.get(
             source_url.replace("%", ""),
             allow_redirects=True,
-            timeout=5,
+            timeout=timeout,
             headers=REQUEST_HEADERS,
         )
 
@@ -166,7 +169,7 @@ def _download_from_source(
         download_response = session.get(
             source_url.replace("%", "%25"),
             allow_redirects=True,
-            timeout=5,
+            timeout=timeout,
             headers=REQUEST_HEADERS,
         )
 
