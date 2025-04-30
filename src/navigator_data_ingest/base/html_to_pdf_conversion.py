@@ -1,5 +1,7 @@
 from playwright.sync_api import sync_playwright
 
+PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS = 60
+
 
 def capture_pdf_from_url(url: str) -> bytes:
     """
@@ -15,8 +17,10 @@ def capture_pdf_from_url(url: str) -> bytes:
 
         page = browser.new_page()
 
-        page.goto(url, timeout=1000 * 60 * 60)  # ms
-        page.wait_for_load_state("networkidle", timeout=0)
+        page.goto(url, timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS)  # ms
+        page.wait_for_load_state(
+            "networkidle", timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS
+        )
         pdf_bytes = page.pdf(
             format="A4",
             margin={"bottom": "10mm", "top": "10mm", "right": "10mm", "left": "10mm"},
