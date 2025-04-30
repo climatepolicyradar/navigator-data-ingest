@@ -24,6 +24,7 @@ RUN poetry config virtualenvs.create false
 RUN poetry install
 
 # Install playwright
+RUN poetry run playwright install-deps
 RUN poetry run playwright install
 
 # Copy files to image
