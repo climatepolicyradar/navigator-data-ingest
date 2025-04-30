@@ -23,6 +23,9 @@ COPY src/navigator_data_ingest/main.py ./src/navigator_data_ingest/main.py
 RUN poetry config virtualenvs.create false
 RUN poetry install
 
+# Install playwright
+RUN poetry run playwright install
+
 # Copy files to image
 COPY src ./src
 COPY integration_tests ./integration_tests
