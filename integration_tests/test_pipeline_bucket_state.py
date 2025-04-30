@@ -60,6 +60,21 @@ def test_pipeline_bucket_json(bucket_files_json):
             "input_dir_path" in s3_data.keys()
         ):  # skip execution_data file as the content changes each run (bucket name)
             continue
+
+        # Remove md5sum and document_cdn_object from the data as these are not
+        # deterministic across runs if the source data has changed.
+        s3_md5sum = s3_data["md5sum"]
+        s3_data["md5sum"] = None
+        s3_data["document_cdn_object"] = s3_data["document_cdn_object"].replace(
+            s3_md5sum, "MD5SUM"
+        )
+
+        local_md5sum = local_data["md5sum"]
+        local_data["md5sum"] = None
+        local_data["document_cdn_object"] = local_data["document_cdn_object"].replace(
+            local_md5sum, "MD5SUM"
+        )
+
         assert s3_data == local_data
 
 
