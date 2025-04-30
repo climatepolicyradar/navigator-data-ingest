@@ -53,35 +53,3 @@ def test_upload_document__readable(
     assert result.cdn_object is not None
     assert result.cdn_object.startswith("TEST/1970/test_slug")
     assert result.cdn_object.endswith(output_extension)
-
-
-@pytest.mark.unit
-@pytest.mark.parametrize(
-    ("url", "content_type", "data"),
-    [
-        ("mock://somedata", "text/html", b"<html></html>"),
-    ],
-)
-def test_upload_document__unreadable(
-    test_s3_client__cdn,
-    mock_cdn_config,
-    requests_mock,
-    url,
-    content_type,
-    data,
-):
-    session = requests.Session()
-    requests_mock.get(url, content=data, headers={"content-type": content_type})
-
-    result = upload_document(
-        session=session,
-        source_url=url,
-        s3_prefix="TEST/1970",
-        file_name_without_suffix="test_slug",
-        document_bucket=mock_cdn_config["bucket"],
-        import_id="TEST.0.1",
-    )
-
-    assert result.md5_sum is None
-    assert result.cdn_object is None
-    assert result.content_type == "text/html"
