@@ -16,6 +16,12 @@ from navigator_data_ingest.base.api_client import upload_document
             ".pdf",
         ),
         ("mock://somedata.doc", "application/msword", "application/pdf", ".pdf"),
+        (
+            "https://the-internet.herokuapp.com/dynamic_content",
+            "text/html",
+            "application/pdf",
+            ".pdf",
+        ),
     ],
 )
 def test_upload_document__readable(
@@ -24,17 +30,25 @@ def test_upload_document__readable(
     requests_mock,
     pdf_bytes,
     doc_bytes,
+    html_bytes,
     url,
     input_content_type,
     output_content_type,
     output_extension,
+    monkeypatch,
 ):
     session = requests.Session()
 
-    # Use the appropriate fixture based on content type
-    # TODO: we could also specify docx_bytes, but this doesn't really matter for this
-    # test as the conversion will work regardless of doc or docx
-    content = pdf_bytes if input_content_type == "application/pdf" else doc_bytes
+    content_type_response_mapping = {
+        "application/pdf": pdf_bytes,
+        # TODO: we could also specify docx_bytes, but this doesn't really matter for this
+        # test as the conversion will work regardless of doc or docx
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": doc_bytes,
+        "application/msword": doc_bytes,
+        "text/html": html_bytes,
+    }
+
+    content = content_type_response_mapping[input_content_type]
 
     requests_mock.get(
         url, content=content, headers={"content-type": input_content_type}
