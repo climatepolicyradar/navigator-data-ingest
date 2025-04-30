@@ -12,13 +12,14 @@ from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
 from navigator_data_ingest.base.doc_to_pdf_conversion import convert_doc_to_pdf
+from navigator_data_ingest.base.html_to_pdf_conversion import capture_pdf_from_url
 from navigator_data_ingest.base.types import (
     FILE_EXTENSION_MAPPING,
-    MULTI_FILE_CONTENT_TYPES,
     SUPPORTED_CONTENT_TYPES,
     CONTENT_TYPE_DOCX,
     CONTENT_TYPE_PDF,
     CONTENT_TYPE_DOC,
+    CONTENT_TYPE_HTML,
     UnsupportedContentTypeError,
     UploadResult,
 )
@@ -69,17 +70,23 @@ def upload_document(
         content_type = determine_content_type(download_response, source_url)
         file_content = download_response.content
 
+        # If the content type is HTML, capture the PDF from the URL
+        if content_type == CONTENT_TYPE_HTML:
+            _LOGGER.info(
+                f"Capturing PDF from URL with HTML content type: '{source_url}'"
+            )
+            content_type = CONTENT_TYPE_PDF
+            file_content = capture_pdf_from_url(source_url)
+
         # If the content type is DOCX or DOC, convert it to PDF
         if content_type in {CONTENT_TYPE_DOCX, CONTENT_TYPE_DOC}:
+            _LOGGER.info(f"Converting DOCX or DOC to PDF: '{source_url}'")
             content_type = CONTENT_TYPE_PDF
             file_content = convert_doc_to_pdf(file_content)
 
         upload_result.content_type = content_type
 
-        if (
-            content_type in MULTI_FILE_CONTENT_TYPES
-            or content_type not in SUPPORTED_CONTENT_TYPES
-        ):
+        if content_type not in SUPPORTED_CONTENT_TYPES:
             raise UnsupportedContentTypeError(content_type)
 
         # Calculate the m5sum & update the result object with the calculated value
