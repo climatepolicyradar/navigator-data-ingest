@@ -109,9 +109,7 @@ def test_pipeline_bucket_json(bucket_files_json):
             differences.append(f"File {path} (item #{i+1}): {diff_keys}")
 
     # Format detailed error message if differences exist
-    assert (
-        not differences
-    ), f"Found differences in {len(differences)} files: {[differences]}"
+    assert not differences, f"Found differences in {len(differences)} files"
 
 
 @pytest.mark.integration
