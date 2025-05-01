@@ -99,13 +99,14 @@ def test_pipeline_bucket_json(bucket_files_json):
             for key in all_keys:
                 if s3[key] != local[key]:
                     diff_keys.append(
-                        f"Value mismatch for key '{key}':\n  S3: {s3[key]}\n  Local: {local[key]}"
+                        {
+                            "key": key,
+                            "s3": s3[key],
+                            "local": local[key],
+                        }
                     )
 
-            differences.append(
-                f"File {path} (item #{i+1}):\n"
-                + "\n".join(f"- {diff}" for diff in diff_keys)
-            )
+            differences.append(f"File {path} (item #{i+1}): {diff_keys}")
 
     # Format detailed error message if differences exist
     assert (
