@@ -14,9 +14,10 @@ from tenacity.wait import wait_random_exponential
 from navigator_data_ingest.base.doc_to_pdf_conversion import convert_doc_to_pdf
 from navigator_data_ingest.base.html_to_pdf_conversion import capture_pdf_from_url
 from navigator_data_ingest.base.types import (
-    CONTENT_TYPE_DOCX,
     CONTENT_TYPE_DOC,
+    CONTENT_TYPE_DOCX,
     CONTENT_TYPE_HTML,
+    CONTENT_TYPE_PDF,
     UnsupportedContentTypeError,
     UploadResult,
 )
@@ -78,6 +79,10 @@ def upload_document(
             # If the content type is DOCX or DOC, convert it to PDF
             _LOGGER.info(f"Converting DOCX or DOC to PDF: '{source_url}'")
             file_content = convert_doc_to_pdf(file_content)
+
+        elif content_type == CONTENT_TYPE_PDF:
+            # If the content type is PDF, we can use the original file content
+            pass
 
         else:
             raise UnsupportedContentTypeError(content_type)
