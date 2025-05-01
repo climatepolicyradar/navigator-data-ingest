@@ -45,6 +45,10 @@ def test_pipeline_bucket_files(
 def test_pipeline_bucket_json(bucket_files_json):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
     assert len(bucket_files_json) > 0
+    all_s3_objects = []
+    all_local_objects = []
+    file_paths = []
+
     for file in bucket_files_json:
         s3_data = json.loads(file.read_text())
         if timestamped_file(file):
@@ -79,7 +83,32 @@ def test_pipeline_bucket_json(bucket_files_json):
             else None
         )
 
-        assert s3_data == local_data
+        all_s3_objects.append(s3_data)
+        all_local_objects.append(local_data)
+        file_paths.append(str(file))
+
+    differences = []
+    for i, (s3, local, path) in enumerate(
+        zip(all_s3_objects, all_local_objects, file_paths)
+    ):
+        if s3 != local:
+            diff_keys = []
+            all_keys = set(s3.keys()) | set(local.keys())
+            for key in all_keys:
+                if s3[key] != local[key]:
+                    diff_keys.append(
+                        f"Value mismatch for key '{key}':\n  S3: {s3[key]}\n  Local: {local[key]}"
+                    )
+
+            differences.append(
+                f"File {path} (item #{i+1}):\n"
+                + "\n".join(f"- {diff}" for diff in diff_keys)
+            )
+
+    # Format detailed error message if differences exist
+    assert (
+        not differences
+    ), f"Found differences in {len(differences)} files:\n\n" + "\n\n".join(differences)
 
 
 @pytest.mark.integration
