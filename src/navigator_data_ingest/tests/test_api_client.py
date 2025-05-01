@@ -12,14 +12,14 @@ from navigator_data_ingest.base.api_client import upload_document
         (
             "mock://somedata.docx",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             ".pdf",
         ),
-        ("mock://somedata.doc", "application/msword", "application/pdf", ".pdf"),
+        ("mock://somedata.doc", "application/msword", "application/msword", ".pdf"),
         (
             "https://the-internet.herokuapp.com/dynamic_content",
             "text/html",
-            "application/pdf",
+            "text/html",
             ".pdf",
         ),
     ],

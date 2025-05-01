@@ -14,11 +14,10 @@ from tenacity.wait import wait_random_exponential
 from navigator_data_ingest.base.doc_to_pdf_conversion import convert_doc_to_pdf
 from navigator_data_ingest.base.html_to_pdf_conversion import capture_pdf_from_url
 from navigator_data_ingest.base.types import (
-    FILE_EXTENSION_MAPPING,
-    SUPPORTED_CONTENT_TYPES,
     CONTENT_TYPE_DOCX,
     CONTENT_TYPE_DOC,
     CONTENT_TYPE_HTML,
+    SUPPORTED_CONTENT_TYPES,
     UnsupportedContentTypeError,
     UploadResult,
 )
@@ -89,7 +88,7 @@ def upload_document(
         # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
         upload_result.md5_sum = file_hash
-        file_suffix = FILE_EXTENSION_MAPPING.get(content_type, "")
+        file_suffix = ".pdf"
 
         file_name = _create_file_name_for_upload(
             file_hash, file_name_without_suffix, file_suffix, s3_prefix
