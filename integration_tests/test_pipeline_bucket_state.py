@@ -64,7 +64,7 @@ def test_pipeline_bucket_json(bucket_files_json):
         # Remove md5sum and document_cdn_object from the data as these are not
         # deterministic across runs if the source data has changed.
         s3_md5sum = s3_data["document_md5_sum"]
-        s3_data["document_md5_sum"] = None
+        s3_data["document_md5_sum"] = "MD5SUM"
         s3_data["document_cdn_object"] = (
             s3_data["document_cdn_object"].replace(s3_md5sum, "MD5SUM")
             if s3_data["document_cdn_object"]
@@ -72,7 +72,7 @@ def test_pipeline_bucket_json(bucket_files_json):
         )
 
         local_md5sum = local_data["document_md5_sum"]
-        local_data["document_md5_sum"] = None
+        local_data["document_md5_sum"] = "MD5SUM"
         local_data["document_cdn_object"] = (
             local_data["document_cdn_object"].replace(local_md5sum, "MD5SUM")
             if local_data["document_cdn_object"]
