@@ -17,7 +17,6 @@ from navigator_data_ingest.base.types import (
     CONTENT_TYPE_DOCX,
     CONTENT_TYPE_DOC,
     CONTENT_TYPE_HTML,
-    SUPPORTED_CONTENT_TYPES,
     UnsupportedContentTypeError,
     UploadResult,
 )
@@ -68,22 +67,22 @@ def upload_document(
         content_type = determine_content_type(download_response, source_url)
         file_content = download_response.content
 
-        # If the content type is HTML, capture the PDF from the URL
         if content_type == CONTENT_TYPE_HTML:
+            # If the content type is HTML, capture the PDF from the URL
             _LOGGER.info(
                 f"Capturing PDF from URL with HTML content type: '{source_url}'"
             )
             file_content = capture_pdf_from_url(source_url)
 
-        # If the content type is DOCX or DOC, convert it to PDF
-        if content_type in {CONTENT_TYPE_DOCX, CONTENT_TYPE_DOC}:
+        elif content_type in {CONTENT_TYPE_DOCX, CONTENT_TYPE_DOC}:
+            # If the content type is DOCX or DOC, convert it to PDF
             _LOGGER.info(f"Converting DOCX or DOC to PDF: '{source_url}'")
             file_content = convert_doc_to_pdf(file_content)
 
-        upload_result.content_type = content_type
-
-        if content_type not in SUPPORTED_CONTENT_TYPES:
+        else:
             raise UnsupportedContentTypeError(content_type)
+
+        upload_result.content_type = content_type
 
         # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
