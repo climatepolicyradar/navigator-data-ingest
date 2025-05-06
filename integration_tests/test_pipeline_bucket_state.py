@@ -45,6 +45,10 @@ def test_pipeline_bucket_files(
 def test_pipeline_bucket_json(bucket_files_json):
     """Test that the pipeline bucket is in the expected state after the ingest stage run."""
     assert len(bucket_files_json) > 0
+    all_s3_objects = []
+    all_local_objects = []
+    file_paths = []
+
     for file in bucket_files_json:
         s3_data = json.loads(file.read_text())
         if timestamped_file(file):
@@ -60,7 +64,52 @@ def test_pipeline_bucket_json(bucket_files_json):
             "input_dir_path" in s3_data.keys()
         ):  # skip execution_data file as the content changes each run (bucket name)
             continue
-        assert s3_data == local_data
+
+        # Remove md5sum and document_cdn_object from the data as these are not
+        # deterministic across runs if the source data has changed.
+        s3_md5sum = s3_data.get("document_md5_sum")
+        if s3_md5sum:
+            s3_data["document_md5_sum"] = "MD5SUM"
+        s3_data["document_cdn_object"] = (
+            s3_data["document_cdn_object"].replace(s3_md5sum, "MD5SUM")
+            if s3_data.get("document_cdn_object")
+            else None
+        )
+
+        local_md5sum = local_data.get("document_md5_sum")
+        if local_md5sum:
+            local_data["document_md5_sum"] = "MD5SUM"
+        local_data["document_cdn_object"] = (
+            local_data["document_cdn_object"].replace(local_md5sum, "MD5SUM")
+            if local_data.get("document_cdn_object")
+            else None
+        )
+
+        all_s3_objects.append(s3_data)
+        all_local_objects.append(local_data)
+        file_paths.append(str(file))
+
+    differences = []
+    for i, (s3, local, path) in enumerate(
+        zip(all_s3_objects, all_local_objects, file_paths)
+    ):
+        if s3 != local:
+            diff_keys = []
+            all_keys = set(s3.keys()) | set(local.keys())
+            for key in all_keys:
+                if s3[key] != local[key]:
+                    diff_keys.append(
+                        {
+                            "key": key,
+                            "s3": s3[key],
+                            "local": local[key],
+                        }
+                    )
+
+            differences.append(f"File {path} (item #{i+1}): {diff_keys}")
+
+    # Format detailed error message if differences exist
+    assert not differences, f"Found differences in {len(differences)} files"
 
 
 @pytest.mark.integration

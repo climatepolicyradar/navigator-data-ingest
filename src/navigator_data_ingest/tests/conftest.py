@@ -317,3 +317,9 @@ def doc_bytes():
     with open(doc_data, "rb") as b:
         contents = b.read()
     return contents
+
+
+@pytest.fixture
+def html_bytes() -> bytes:
+    """HTML response"""
+    return b"<html><body><h1>Hello tester!</h1></body></html>"
