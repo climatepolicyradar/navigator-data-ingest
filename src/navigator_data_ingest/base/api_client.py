@@ -67,6 +67,7 @@ def upload_document(
         download_response = _download_from_source(session, source_url)
         content_type = determine_content_type(download_response, source_url)
         file_content = download_response.content
+        upload_result.content_type = content_type
 
         if content_type == CONTENT_TYPE_HTML:
             # If the content type is HTML, capture the PDF from the URL
@@ -86,8 +87,6 @@ def upload_document(
 
         else:
             raise UnsupportedContentTypeError(content_type)
-
-        upload_result.content_type = content_type
 
         # Calculate the m5sum & update the result object with the calculated value
         file_hash = hashlib.md5(file_content).hexdigest()
