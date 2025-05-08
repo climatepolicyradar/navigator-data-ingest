@@ -3,7 +3,7 @@ import fitz
 
 from Levenshtein import distance
 
-from navigator_data_ingest.base.doc_to_pdf_conversion import convert_doc_to_pdf
+from navigator_data_ingest.base.pdf_conversion import convert_doc_to_pdf
 
 
 def all_text(doc: fitz.Document) -> str:
