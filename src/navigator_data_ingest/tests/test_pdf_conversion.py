@@ -64,6 +64,6 @@ def test_add_last_page_watermark():
 
     watermarked_pdf = fitz.open(stream=watermarked_pdf_content, filetype="pdf")
     assert watermarked_pdf.page_count == original_pdf.page_count + 1
-    assert watermarked_pdf[-1].get_text().strip().replace(
-        "\n", " "
-    ) == watermark_text.strip().replace("\n", " ")
+    assert watermarked_pdf[-1].get_text().strip().replace("\n", " ").replace(
+        "  ", " "
+    ) == watermark_text.strip().replace("\n", " ").replace("  ", " ")

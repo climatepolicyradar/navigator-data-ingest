@@ -90,7 +90,9 @@ def generate_watermark_text(
     date_str = date.strftime("%d %B %Y")
 
     return f"""Original publicly accessible source: {url}.
+
 This PDF was created by Climate Policy Radar (climatepolicyradar.org) on {date_str}.
+
 For non-commercial use only. Reach out to us at support@climatepolicyradar.org if you have any enquiries."""
 
 
