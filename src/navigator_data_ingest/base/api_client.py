@@ -3,6 +3,7 @@ import hashlib
 import json
 import logging
 from typing import cast
+from datetime import datetime
 
 import requests
 from cloudpathlib import CloudPath, S3Path
@@ -11,8 +12,12 @@ from tenacity import retry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random_exponential
 
-from navigator_data_ingest.base.doc_to_pdf_conversion import convert_doc_to_pdf
-from navigator_data_ingest.base.html_to_pdf_conversion import capture_pdf_from_url
+from navigator_data_ingest.base.pdf_conversion import (
+    convert_doc_to_pdf,
+    capture_pdf_from_url,
+    add_last_page_watermark,
+    generate_watermark_text,
+)
 from navigator_data_ingest.base.types import (
     CONTENT_TYPE_DOC,
     CONTENT_TYPE_DOCX,
@@ -69,17 +74,26 @@ def upload_document(
         file_content = download_response.content
         upload_result.content_type = content_type
 
+        watermark_text = generate_watermark_text(source_url, datetime.now())
+
         if content_type == CONTENT_TYPE_HTML:
             # If the content type is HTML, capture the PDF from the URL
             _LOGGER.info(
                 f"Capturing PDF from URL with HTML content type: '{source_url}'"
             )
             file_content = capture_pdf_from_url(source_url)
-
+            file_content = add_last_page_watermark(
+                file_content,
+                watermark_text,
+            )
         elif content_type in {CONTENT_TYPE_DOCX, CONTENT_TYPE_DOC}:
             # If the content type is DOCX or DOC, convert it to PDF
             _LOGGER.info(f"Converting DOCX or DOC to PDF: '{source_url}'")
             file_content = convert_doc_to_pdf(file_content)
+            file_content = add_last_page_watermark(
+                file_content,
+                watermark_text,
+            )
 
         elif content_type == CONTENT_TYPE_PDF:
             # If the content type is PDF, we can use the original file content
