@@ -3,8 +3,11 @@ import shutil
 from tempfile import mkdtemp
 from uuid import uuid4
 import subprocess
+from io import BytesIO
+from datetime import datetime
 
 from playwright.sync_api import sync_playwright
+import fitz
 
 PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS = 60
 
@@ -75,3 +78,55 @@ def capture_pdf_from_url(url: str) -> bytes:
         browser.close()
 
         return pdf_bytes
+
+
+def generate_watermark_text(
+    url: str,
+    date: datetime,
+) -> str:
+    """Generate a watermark text for a PDF."""
+
+    # Format date as "01 January 2023"
+    date_str = date.strftime("%d %B %Y")
+
+    return f"""Original publicly accessible source: {url}.
+This PDF was created by Climate Policy Radar (climatepolicyradar.org) on {date_str}.
+For non-commercial use only. Reach out to us at support@climatepolicyradar.org if you have any enquiries."""
+
+
+def add_last_page_watermark(
+    pdf_bytes: bytes,
+    watermark_text: str,
+) -> bytes:
+    """
+    Add a new page at the end of a PDF with watermark text.
+
+    Used for PDFs we've converted from other formats.
+    """
+
+    pdf_stream = BytesIO(pdf_bytes)
+    doc: fitz.Document = fitz.open(stream=pdf_stream, filetype="pdf")
+
+    # Create a new page with the same dimensions as the last page
+    page = doc.new_page(pno=-1, width=doc[-1].rect.width, height=doc[-1].rect.height)
+
+    # Calculate text rectangle with margins
+    margin = 72  # 1 inch margin in points
+    text_rect = fitz.Rect(
+        margin, margin, page.rect.width - margin, page.rect.height - margin
+    )
+
+    # Insert text with word-wrapping
+    page.insert_textbox(
+        text_rect,
+        watermark_text,
+        fontname="helv",
+        fontsize=12,
+        align=0,
+    )
+
+    output_stream = BytesIO()
+    doc.save(output_stream)
+    doc.close()
+
+    return output_stream.getvalue()
