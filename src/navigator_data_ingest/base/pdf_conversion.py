@@ -52,13 +52,16 @@ def convert_doc_to_pdf(file_content: bytes) -> bytes:
     return pdf_file_content
 
 
-def capture_pdf_from_url(url: str) -> bytes:
+def capture_pdf_from_url(url: str) -> tuple[bytes, str | None]:
     """
     Capture a PDF from a URL using Playwright.
 
     Args:
         url: The URL of the page to capture.
         output_path: The path to save the PDF file.
+
+    Returns:
+        A tuple containing the PDF bytes and the content type.
     """
 
     with sync_playwright() as p:
@@ -66,18 +69,35 @@ def capture_pdf_from_url(url: str) -> bytes:
 
         page = browser.new_page()
 
-        page.goto(url, timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS)  # ms
-        page.wait_for_load_state(
-            "networkidle", timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS
-        )
-        pdf_bytes = page.pdf(
-            format="A4",
-            margin={"bottom": "10mm", "top": "10mm", "right": "10mm", "left": "10mm"},
-        )
+        response = page.goto(
+            url, timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS
+        )  # ms
+        if response is not None:
+            content_type = response.headers.get("content-type")
+            if content_type is not None:
+                content_type = content_type.split(";")[0].lower()
+
+            if content_type == "application/pdf":
+                pdf_bytes = response.body()
+            else:
+                page.wait_for_load_state(
+                    "networkidle", timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS
+                )
+                pdf_bytes = page.pdf(
+                    format="A4",
+                    margin={
+                        "bottom": "10mm",
+                        "top": "10mm",
+                        "right": "10mm",
+                        "left": "10mm",
+                    },
+                )
+        else:
+            raise RuntimeError(f"Failed to capture PDF from URL: {url}")
 
         browser.close()
 
-        return pdf_bytes
+        return pdf_bytes, content_type
 
 
 def generate_watermark_text(
