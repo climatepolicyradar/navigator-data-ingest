@@ -14,7 +14,7 @@ from tenacity.wait import wait_random_exponential
 
 from navigator_data_ingest.base.pdf_conversion import (
     convert_doc_to_pdf,
-    capture_pdf_from_url,
+    capture_pdf_and_get_content_type_from_url,
     add_last_page_watermark,
     generate_watermark_text,
 )
@@ -89,7 +89,9 @@ def upload_document(
             _LOGGER.info(
                 f"Capturing PDF from URL with HTML content type: '{source_url}'"
             )
-            file_content, content_type = capture_pdf_from_url(source_url)
+            file_content, content_type = capture_pdf_and_get_content_type_from_url(
+                source_url
+            )
             file_content = add_last_page_watermark(
                 file_content,
                 watermark_text,
