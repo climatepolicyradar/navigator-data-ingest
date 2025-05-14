@@ -22,6 +22,12 @@ from navigator_data_ingest.base.api_client import upload_document
             "text/html",
             ".pdf",
         ),
+        (
+            "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2009/lei/l12187.htm",
+            "text/html",
+            "text/html",
+            ".pdf",
+        ),
     ],
 )
 def test_upload_document__readable(
