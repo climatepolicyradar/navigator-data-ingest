@@ -6,6 +6,8 @@ import subprocess
 from io import BytesIO
 from datetime import datetime
 
+from cpr_sdk.parser_models import CONTENT_TYPE_PDF
+
 from playwright.sync_api import sync_playwright
 import fitz
 
@@ -52,32 +54,56 @@ def convert_doc_to_pdf(file_content: bytes) -> bytes:
     return pdf_file_content
 
 
-def capture_pdf_from_url(url: str) -> bytes:
+def capture_pdf_and_get_content_type_from_url(url: str) -> tuple[bytes, str | None]:
     """
-    Capture a PDF from a URL using Playwright.
+    Capture a PDF from a URL using Playwright, also fetching its content type.
 
     Args:
         url: The URL of the page to capture.
         output_path: The path to save the PDF file.
+
+    Returns:
+        A tuple containing the PDF bytes and the content type.
     """
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
-
-        page = browser.new_page()
-
-        page.goto(url, timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS)  # ms
-        page.wait_for_load_state(
-            "networkidle", timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
-        pdf_bytes = page.pdf(
-            format="A4",
-            margin={"bottom": "10mm", "top": "10mm", "right": "10mm", "left": "10mm"},
-        )
+        page = context.new_page()
+
+        response = page.goto(
+            url, timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS
+        )  # ms
+
+        if response is None:
+            browser.close()
+            raise RuntimeError(f"Failed to load URL: {url}")
+
+        content_type: str | None = response.headers.get("content-type")
+        if content_type is not None:
+            content_type = content_type.split(";")[0].lower()
+
+        if content_type == CONTENT_TYPE_PDF:
+            pdf_bytes = response.body()
+        else:
+            page.wait_for_load_state(
+                "networkidle", timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS
+            )
+            pdf_bytes = page.pdf(
+                format="A4",
+                margin={
+                    "bottom": "10mm",
+                    "top": "10mm",
+                    "right": "10mm",
+                    "left": "10mm",
+                },
+            )
 
         browser.close()
 
-        return pdf_bytes
+        return pdf_bytes, content_type
 
 
 def generate_watermark_text(

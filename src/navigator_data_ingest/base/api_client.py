@@ -14,7 +14,7 @@ from tenacity.wait import wait_random_exponential
 
 from navigator_data_ingest.base.pdf_conversion import (
     convert_doc_to_pdf,
-    capture_pdf_from_url,
+    capture_pdf_and_get_content_type_from_url,
     add_last_page_watermark,
     generate_watermark_text,
 )
@@ -69,23 +69,34 @@ def upload_document(
     )
 
     try:
-        download_response = _download_from_source(session, source_url)
-        content_type = determine_content_type(download_response, source_url)
-        file_content = download_response.content
-        upload_result.content_type = content_type
+        content_type = None
+        file_content = bytes()
+        try:
+            download_response = _download_from_source(session, source_url)
+            content_type = determine_content_type(download_response, source_url)
+            file_content = download_response.content
+        except Exception as e:
+            _LOGGER.exception(
+                f"Failed to download document from '{source_url}' with exception: {e}"
+            )
 
         watermark_text = generate_watermark_text(source_url, datetime.now())
+        upload_result.content_type = content_type
 
         if content_type == CONTENT_TYPE_HTML:
-            # If the content type is HTML, capture the PDF from the URL
+            # If the content type is HTML or we don't know it from a requests.get,
+            # capture the PDF from the URL
             _LOGGER.info(
                 f"Capturing PDF from URL with HTML content type: '{source_url}'"
             )
-            file_content = capture_pdf_from_url(source_url)
+            file_content, content_type = capture_pdf_and_get_content_type_from_url(
+                source_url
+            )
             file_content = add_last_page_watermark(
                 file_content,
                 watermark_text,
             )
+            upload_result.content_type = content_type
         elif content_type in {CONTENT_TYPE_DOCX, CONTENT_TYPE_DOC}:
             # If the content type is DOCX or DOC, convert it to PDF
             _LOGGER.info(f"Converting DOCX or DOC to PDF: '{source_url}'")
