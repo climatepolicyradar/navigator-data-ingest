@@ -56,7 +56,7 @@ def convert_doc_to_pdf(file_content: bytes) -> bytes:
 
 def capture_pdf_and_get_content_type_from_url(url: str) -> tuple[bytes, str | None]:
     """
-    Capture a PDF from a URL using Playwright.
+    Capture a PDF from a URL using Playwright, also fetching its content type.
 
     Args:
         url: The URL of the page to capture.
