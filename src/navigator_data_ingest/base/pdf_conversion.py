@@ -66,8 +66,10 @@ def capture_pdf_from_url(url: str) -> tuple[bytes, str | None]:
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
-
-        page = browser.new_page()
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+        page = context.new_page()
 
         response = page.goto(
             url, timeout=1000 * PLAYWRIGHT_REQUEST_TIMEOUT_SECONDS
