@@ -6,7 +6,7 @@ import subprocess
 from io import BytesIO
 from datetime import datetime
 
-from cpr_sdk.parser_models import CONTENT_TYPE_PDF
+from cpr_sdk.pipeline_general_models import CONTENT_TYPE_PDF
 
 from playwright.sync_api import sync_playwright
 import fitz
