@@ -1,5 +1,8 @@
 # Navigator Data Ingest 
 
+# This job has been migrated into the [navigator-data-pipeline/jobs/data-ingest/](https://github.com/climatepolicyradar/navigator-data-pipeline/tree/main/jobs/data-ingest/aws_batch_jobs/data-ingest) repository
+
+
 ## Introduction 
 
 This application forms the Data Ingest portion of the data processing pipeline.
