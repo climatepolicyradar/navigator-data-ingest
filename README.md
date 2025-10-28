@@ -42,14 +42,20 @@ Number of workers downloading/uploading cached documents
     --worker-count
 
 
-## Unit Tests
+## Tests
 
-The unit tests use a mock s3 client to simulate the s3 interactions. All the update functions are then tested for functionality. 
+To run tests locally you will need to ensure you have libreoffice installed, you can do this and install the other dependencies with:
 
+```
+make setup
+```
 
-## Integration Tests 
+You can then run tests with:
+```
+poetry run pytest ./src -m 'not integration'
+```
 
-The test procedure follows the deploy-test-destroy pattern.
-
-This involves creating a test environment, running the tests, and then destroying the test environment.
-
+Or with docker:
+```
+make test
+```
