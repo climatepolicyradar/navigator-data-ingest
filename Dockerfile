@@ -1,4 +1,4 @@
-FROM python:3.10.17
+FROM python:3.10.11
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
