@@ -82,20 +82,35 @@ def parse_runner_result(result):
     return error_msg
 
 
-def test_integration(s3_mock_factory):
-    """Test CLI integration with mocked AWS credentials and S3 buckets."""
-    runner = CliRunner()
-    
-    # Create pipeline bucket with test files
-    pipeline_bucket = s3_mock_factory.create_bucket("test-pipeline-bucket", {
+def load_test_data():
+    """Load test data from integration test fixtures."""
+    import pathlib
+    test_data_path = pathlib.Path(__file__).parent.parent.parent.parent / "integration_tests" / "data" / "pipeline_in" / "input" / "2022-11-01T21.53.26.945831" / "new_and_updated_documents.json"
+    with open(test_data_path) as f:
+        return json.load(f)
+
+
+@pytest.mark.parametrize("pipeline_files", [
+    # Empty pipeline - no documents to process
+    {
         "input/2022-11-01T21.53.26.945831/new_and_updated_documents.json": {
             "new_documents": [],
             "updated_documents": {}
         },
         "input/2022-11-01T21.53.26.945831/db_state.json": {}
-    })
+    },
+    # Real test data with actual documents
+    {
+        "input/2022-11-01T21.53.26.945831/new_and_updated_documents.json": load_test_data(),
+        "input/2022-11-01T21.53.26.945831/db_state.json": {}
+    },
+])
+def test_integration(s3_mock_factory, pipeline_files):
+    """Test CLI integration with mocked AWS credentials and S3 buckets."""
+    runner = CliRunner()
     
-    # Create empty document bucket
+    # Create mock buckets
+    pipeline_bucket = s3_mock_factory.create_bucket("test-pipeline-bucket", pipeline_files)
     document_bucket = s3_mock_factory.create_bucket("test-document-bucket")
     
     result = runner.invoke(main, [
