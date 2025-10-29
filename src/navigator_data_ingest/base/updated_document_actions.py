@@ -265,7 +265,7 @@ def parse(
                     f"s3://{update_config.pipeline_bucket}"
                     f"/{update_config.archive_prefix}"
                     f"/{prefix}/{document_id}"
-                    f"/{timestamp}{document_file.suffix} "
+                    f"/{timestamp}{document_file.suffix}"
                 ),
             )
             if error:
@@ -316,7 +316,7 @@ def reparse(
                     f"s3://{update_config.pipeline_bucket}"
                     f"/{update_config.archive_prefix}"
                     f"/{prefix}/{document_id}"
-                    f"/{timestamp}{document_file.suffix} "
+                    f"/{timestamp}{document_file.suffix}"
                 ),
             )
             if error:

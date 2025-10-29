@@ -341,7 +341,8 @@ def test_integration__with_files(
     # in porting this its been made more specific
     pipeline_files = s3_mock_factory.list_bucket_file_names(pipeline_bucket)
     bucket_files_npy = sorted([i for i in pipeline_files if i.endswith(".npy")])
-    assert len(bucket_files_npy) == 2
+    assert len(bucket_files_npy) == 5
+
     assert bucket_files_npy[0].startswith(
         "archive/indexer_input/TESTCCLW.executive.1.1/"
     )
