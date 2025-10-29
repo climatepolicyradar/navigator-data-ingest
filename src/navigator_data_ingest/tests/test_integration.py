@@ -237,7 +237,7 @@ def test_integration__with_files(
     
     # Legacy test cases
     # Ported from the original "online" tests that ran against third parties
-
+    
     # test_pipeline_bucket_json_errors
     # Legacy test saught to ensure no error file was written to the bucket
     pipeline_files = s3_mock_factory.list_bucket_file_names(pipeline_bucket)
@@ -297,3 +297,7 @@ def test_integration__with_files(
     assert bucket_files_npy[0].startswith("archive/indexer_input/TESTCCLW.executive.1.1/")
     assert bucket_files_npy[1].startswith("archive/indexer_input/TESTCCLW.executive.2.2/")
 
+    # Extra test on top of the legacy tests confirming some documents actually downloaded
+    document_files = s3_mock_factory.list_bucket_file_names(document_bucket)
+    assert len(document_files) > 0
+        
