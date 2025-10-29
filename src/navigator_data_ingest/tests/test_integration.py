@@ -13,7 +13,7 @@ from moto import mock_aws
 
 from navigator_data_ingest.main import main
 
-FIXTURE_DATA_DIR = Path("integration_tests") / "data"
+FIXTURE_DATA_DIR = Path(__file__).parent / "fixtures"
 
 class S3BucketFactory:
     """Factory for creating moto-stubbed S3 buckets."""
@@ -90,8 +90,7 @@ def thread_executor(monkeypatch):
 
 @pytest.fixture
 def mock_pdf_downloads(requests_mock):
-    fixtures_dir = Path(__file__).parent / "fixtures"
-    pdf_bytes = (fixtures_dir / "sample.pdf").read_bytes()
+    pdf_bytes = (FIXTURE_DATA_DIR / "sample.pdf").read_bytes()
     pdf_url = "https://climatepolicyradar.org/file.pdf"
     requests_mock.get(
         pdf_url,
@@ -151,7 +150,7 @@ def parse_runner_result(result):
 def load_test_data_from_dir(directory) -> dict[str, Any]:
     """Load test data from integration test fixtures."""
     fixture_dir = FIXTURE_DATA_DIR / directory
-    
+    assert fixture_dir.exists()
     result = {}
     
     # Recursively walk through all files in the fixture directory
