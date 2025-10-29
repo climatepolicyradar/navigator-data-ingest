@@ -29,6 +29,5 @@ RUN poetry run playwright install-deps
 
 # Copy files to image
 COPY src ./src
-COPY integration_tests ./integration_tests
 
 ENTRYPOINT [ "navigator-data-ingest" ]
