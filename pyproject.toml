@@ -79,3 +79,5 @@ per-file-ignores = "__init__.py:F401"
 [tool.black]
 line-length = 88
 target-version = ['py39']
+
+[tool.pyright]
