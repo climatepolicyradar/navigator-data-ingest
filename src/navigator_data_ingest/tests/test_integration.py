@@ -6,10 +6,10 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Any
 from pathlib import Path
 
+import boto3
 from click.testing import CliRunner
 import pytest
 from moto import mock_aws
-import boto3
 
 from navigator_data_ingest.main import main
 
@@ -88,6 +88,42 @@ def thread_executor(monkeypatch):
     yield
 
 
+@pytest.fixture
+def mock_pdf_downloads(requests_mock):
+    fixtures_dir = Path(__file__).parent / "fixtures"
+    pdf_bytes = (fixtures_dir / "sample.pdf").read_bytes()
+    pdf_url = "https://climatepolicyradar.org/file.pdf"
+    requests_mock.get(
+        pdf_url,
+        content=pdf_bytes,
+        headers={"Content-Type": "application/pdf"},
+    )
+
+    return pdf_url
+
+
+@pytest.fixture
+def mock_html_downloads(requests_mock):
+    html_url = "https://climatepolicyradar.org/page.html"
+    requests_mock.get(
+        html_url,
+        text=textwrap.dedent(
+            f"""
+            <html>
+            <head><title>Mocked content</title></head>
+            <body>
+                <h1>Mocked content for {html_url}</h1>
+                <p>This content is provided by the integration test fixture.</p>
+            </body>
+            </html>
+            """
+        ),
+        headers={"Content-Type": "text/html; charset=utf-8"},
+    )
+
+    return html_url
+
+
 def parse_runner_result(result):
     exc_info = str(result.exc_info)
     if result.exception:
@@ -155,6 +191,7 @@ def test_integration__no_op(s3_mock_factory):
     pipeline_bucket = s3_mock_factory.create_bucket("test-pipeline-bucket", pipeline_files)
     document_bucket = s3_mock_factory.create_bucket("test-document-bucket")
     
+    # Run
     runner = CliRunner()
     result = runner.invoke(main, [
         '--pipeline-bucket', pipeline_bucket,
@@ -173,14 +210,19 @@ def test_integration__no_op(s3_mock_factory):
     assert original_files == after_files
 
 
-def test_integration__with_files(s3_mock_factory):
+def test_integration__with_files(
+    s3_mock_factory,
+    mock_pdf_downloads,
+    mock_html_downloads,
+):
     """Run with many new & update document actions."""
 
     # Create mock buckets
     pipeline_files = load_test_data_from_dir("pipeline_in")
     pipeline_bucket = s3_mock_factory.create_bucket("test-pipeline-bucket", pipeline_files)
     document_bucket = s3_mock_factory.create_bucket("test-document-bucket")
-    
+
+    # Run
     runner = CliRunner()
     result = runner.invoke(main, [
         '--pipeline-bucket', pipeline_bucket,
