@@ -72,14 +72,7 @@ def s3_mock_factory() -> Generator[S3BucketFactory, None, None]:
 
     with mock_aws():
         # Configure cloudpathlib to use moto
-        from cloudpathlib import S3Path
-
         s3_client = boto3.client("s3", region_name="eu-west-1")
-
-        # Set the client for cloudpathlib
-        S3Path._cloud_meta.client = (  # pyright: ignore[reportGeneralTypeIssues]
-            s3_client
-        )
 
         yield S3BucketFactory(s3_client)
 
