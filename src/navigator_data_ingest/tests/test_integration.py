@@ -8,6 +8,7 @@ from typing import Dict, Any, Generator
 from pathlib import Path
 
 import boto3
+from cloudpathlib import S3Client
 from click.testing import CliRunner
 import pytest
 from moto import mock_aws
@@ -71,8 +72,14 @@ def s3_mock_factory() -> Generator[S3BucketFactory, None, None]:
     os.environ["AWS_SESSION_TOKEN"] = "test"
 
     with mock_aws():
-        # Configure cloudpathlib to use moto
+        # Create mocked S3 client
         s3_client = boto3.client("s3", region_name="eu-west-1")
+
+        # Configure cloudpathlib to use the mocked client
+        s3_cloudpath_client = S3Client(
+            boto3_session=boto3.Session(region_name="eu-west-1")
+        )
+        s3_cloudpath_client.set_as_default_client()
 
         yield S3BucketFactory(s3_client)
 
