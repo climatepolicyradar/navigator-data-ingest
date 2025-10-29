@@ -17,39 +17,47 @@ from navigator_data_ingest.base.types import UpdateConfig
 from navigator_data_ingest.base.updated_document_actions import handle_document_updates
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 
-# Clear existing log handlers so we always log in structured JSON
-root_logger = logging.getLogger()
-if root_logger.handlers:
-    for handler in root_logger.handlers:
-        root_logger.removeHandler(handler)
 
-for _, logger in logging.root.manager.loggerDict.items():
-    if isinstance(logger, logging.Logger):
-        logger.propagate = True
-        if logger.handlers:
-            for handler in logger.handlers:
-                logger.removeHandler(handler)
+def _setup_logging():
+    """
+    Configure logging for the application.
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+    This must be called inside main() rather than at module level to avoid
+    issues with ProcessPoolExecutor trying to pickle logging handlers that
+    reference file descriptors like sys.stdout.
+    """
+    # Clear existing log handlers so we always log in structured JSON
+    root_logger = logging.getLogger()
+    if root_logger.handlers:
+        for handler in root_logger.handlers:
+            root_logger.removeHandler(handler)
 
-DEFAULT_LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "default": {
-            "class": "logging.StreamHandler",
-            "stream": "ext://sys.stdout",  # Default is stderr
+    for _, logger in logging.root.manager.loggerDict.items():
+        if isinstance(logger, logging.Logger):
+            logger.propagate = True
+            if logger.handlers:
+                for handler in logger.handlers:
+                    logger.removeHandler(handler)
+
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+    DEFAULT_LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "default": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stdout",  # Default is stderr
+            },
         },
-    },
-    "loggers": {},
-    "root": {
-        "handlers": ["default"],
-        "level": LOG_LEVEL,
-    },
-}
-logging.config.dictConfig(DEFAULT_LOGGING)
-json_logging.init_non_web(enable_json=True)
-_LOGGER = logging.getLogger(__name__)
+        "loggers": {},
+        "root": {
+            "handlers": ["default"],
+            "level": LOG_LEVEL,
+        },
+    }
+    logging.config.dictConfig(DEFAULT_LOGGING)
+    json_logging.init_non_web(enable_json=True)
 
 
 @click.command()
@@ -129,6 +137,9 @@ def main(
     param worker_count: Number of workers downloading/uploading cached documents.
     param db_state_file_key: The s3 path for the file containing the db state
     """
+    # Setup logging after main() is invoked to avoid pickling issues with ProcessPoolExecutor
+    _setup_logging()
+    _LOGGER = logging.getLogger(__name__)
 
     # Get the key of folder containing the db state file
     input_dir_path = (
