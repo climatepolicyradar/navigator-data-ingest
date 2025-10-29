@@ -52,7 +52,7 @@ make setup
 
 You can then run tests with:
 ```
-poetry run pytest ./src -m 'not integration'
+poetry run pytest ./src
 ```
 
 Or with docker:
