@@ -1,17 +1,14 @@
 """Base definitions for data ingest"""
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import (
     Callable,
-    Generator,
     Optional,
 )
 
 from cpr_sdk.parser_models import ParserInput
 from cpr_sdk.pipeline_general_models import (
-    BackendDocument,
     Update,
     UpdateTypes,
 )
@@ -113,22 +110,6 @@ class UpdateConfig:
     embeddings_input: str
     indexer_input: str
     archive_prefix: str
-
-
-class DocumentGenerator(ABC):
-    """Base class for all document sources."""
-
-    @abstractmethod
-    def process_new_documents(self) -> Generator[BackendDocument, None, None]:
-        """Generate new documents for processing from the configured source"""
-
-        raise NotImplementedError("process_new_documents() not implemented")
-
-    @abstractmethod
-    def process_updated_documents(self) -> Generator[Update, None, None]:
-        """Generate documents with updates for processing from the configured source"""
-
-        raise NotImplementedError("process_updated_documents() not implemented")
 
 
 class Action(BaseModel):
