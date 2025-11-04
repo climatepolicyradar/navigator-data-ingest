@@ -2,9 +2,8 @@ import json
 import logging
 import os
 import traceback
-from concurrent.futures import Executor, as_completed
 from datetime import datetime
-from typing import Generator, List, Tuple, Union
+from typing import List, Tuple, Union
 
 from cloudpathlib import S3Path
 from cpr_sdk.pipeline_general_models import Update, UpdateTypes
@@ -31,43 +30,7 @@ def get_document_files(
     ]
 
 
-def handle_document_updates(
-    executor: Executor,
-    source: Generator[Tuple[str, List[Update]], None, None],
-    update_config: UpdateConfig,
-) -> Generator[List[UpdateResult], None, None]:
-    """
-    Handle documents updates.
-
-    For each document: Iterate through the document updates and perform the relevant
-    action based upon the update type.
-    """
-    tasks = {
-        executor.submit(
-            _update_document,
-            update,
-            update_config,
-        ): update
-        for update in source
-    }
-
-    for future in as_completed(tasks):
-        # check result, handle errors & shut down
-        update = tasks[future]
-        try:
-            handle_result = future.result()
-        except Exception:
-            _LOGGER.exception(
-                "Updating document generated an unexpected exception.",
-                extra={"props": {"document_id": str(update[0])}},
-            )
-        else:
-            yield handle_result
-
-    _LOGGER.info("Done updating documents.")
-
-
-def _update_document(
+def update_document(
     doc_updates: Tuple[str, List[Update]],
     update_config: UpdateConfig,
 ) -> List[UpdateResult]:
