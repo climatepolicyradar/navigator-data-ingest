@@ -2,6 +2,7 @@ import logging
 import logging.config
 import os
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import as_completed
 from typing import cast
 
 import click
@@ -14,7 +15,7 @@ from navigator_data_ingest.base.api_client import (
 )
 from navigator_data_ingest.base.new_document_actions import handle_new_documents
 from navigator_data_ingest.base.types import UpdateConfig
-from navigator_data_ingest.base.updated_document_actions import handle_document_updates
+from navigator_data_ingest.base.updated_document_actions import update_document
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 
 
@@ -187,17 +188,28 @@ def main(
             archive_prefix=archive_prefix,
         )
 
-        for handle_result in handle_document_updates(
-            executor,
-            document_generator.process_updated_documents(),
-            update_config,
-        ):
-            for result in handle_result:
-                if str(result.error) != "[]":
-                    errors.append(
-                        f"ERROR updating '{result.document_id}': {result.error}"
-                    )
+        # Updates
+        tasks = {
+            executor.submit(
+                update_document,
+                update,
+                update_config,
+            ): update
+            for update in document_generator.process_updated_documents()
+        }
 
+        update_results = []
+        for future in as_completed(tasks):
+            document_id, _ = tasks[future]
+            try:
+                update_results.append(future.result())
+            except Exception as e:
+                msg = f"Update document, {document_id} failed: {e}."
+                errors.append(msg)
+                _LOGGER.exception(msg, extra={"props": {"document_id": document_id}})
+        _LOGGER.info("Done updating documents.")
+
+        # News
         for handle_result in handle_new_documents(
             executor,
             document_generator.process_new_documents(),
