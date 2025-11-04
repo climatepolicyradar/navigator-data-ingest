@@ -10,12 +10,12 @@ from cpr_sdk.pipeline_general_models import (
 )
 from requests import Response
 
-from navigator_data_ingest.base.types import CONTENT_TYPE_MAPPING, DocumentGenerator
+from navigator_data_ingest.base.types import CONTENT_TYPE_MAPPING
 
 _LOGGER = logging.getLogger(__file__)
 
 
-class LawPolicyGenerator(DocumentGenerator):
+class LawPolicyGenerator:
     """
     A generator of:
 
