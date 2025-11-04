@@ -1,7 +1,5 @@
 import logging
 import traceback
-from concurrent.futures import Executor, as_completed
-from typing import Generator, Iterable
 
 import pydantic
 import requests
@@ -16,48 +14,6 @@ from navigator_data_ingest.base.types import (
 )
 
 _LOGGER = logging.getLogger(__file__)
-
-
-def handle_new_documents(
-    executor: Executor,
-    source: Iterable[BackendDocument],
-    document_bucket: str,
-) -> Generator[HandleResult, None, None]:
-    """
-    Handle all documents.
-
-    For each document:
-      - Upload doc.source_url to cloud storage & set doc.url.
-      - Set doc.content_type to appropriate value.
-
-    TODO: appropriately handle complex multi-file documents
-
-    The remote filename follows the template on
-    https://www.notion.so/climatepolicyradar/Document-names-on-S3-6f3cd748c96141d3b714a95b42842aeb
-    """
-    tasks = {
-        executor.submit(
-            _handle_document,
-            document,
-            document_bucket,
-        ): document
-        for document in source
-    }
-
-    for future in as_completed(tasks):
-        # check result, handle errors & shut down
-        document = tasks[future]
-        try:
-            handle_result = future.result()
-        except Exception:
-            _LOGGER.exception(
-                f"Handling document '{document.import_id}' generated an "
-                "unexpected exception"
-            )
-        else:
-            yield handle_result
-
-    _LOGGER.info("Done uploading documents")
 
 
 def _upload_document(
@@ -102,7 +58,7 @@ def _upload_document(
     )
 
 
-def _handle_document(
+def new_document(
     document: BackendDocument,
     document_bucket: str,
 ) -> HandleResult:

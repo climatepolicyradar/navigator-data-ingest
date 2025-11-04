@@ -8,12 +8,13 @@ from typing import cast
 import click
 import json_logging
 from cloudpathlib import S3Path
+from cpr_sdk.pipeline_general_models import BackendDocument
 
 from navigator_data_ingest.base.api_client import (
     write_error_file,
     write_parser_input,
 )
-from navigator_data_ingest.base.new_document_actions import handle_new_documents
+from navigator_data_ingest.base.new_document_actions import new_document
 from navigator_data_ingest.base.types import UpdateConfig
 from navigator_data_ingest.base.updated_document_actions import update_document
 from navigator_data_ingest.base.utils import LawPolicyGenerator
@@ -210,20 +211,33 @@ def main(
         _LOGGER.info("Done updating documents.")
 
         # News
-        for handle_result in handle_new_documents(
-            executor,
-            document_generator.process_new_documents(),
-            document_bucket,
-        ):
-            if handle_result.error is not None:
-                errors.append(
-                    f"ERROR ingesting '{handle_result.parser_input.document_id}': "
-                    f"{handle_result.error}"
+        tasks = {
+            executor.submit(
+                new_document,
+                document,
+                document_bucket,
+            ): document
+            for document in document_generator.process_new_documents()
+        }
+
+        new_results = []
+        for future in as_completed(tasks):
+            document: BackendDocument = tasks[future]
+            try:
+                result = future.result()
+                new_results.append(result)
+                _LOGGER.info(
+                    f"Writing parser input for '{result.parser_input.document_id}"
                 )
-            _LOGGER.info(
-                f"Writing parser input for '{handle_result.parser_input.document_id}"
-            )
-            write_parser_input(output_location_path, handle_result.parser_input)
+                write_parser_input(output_location_path, result.parser_input)
+            except Exception as e:
+                msg = f"New document {document.import_id}, failed: {e}"
+                errors.append(msg)
+                _LOGGER.exception(
+                    msg, extra={"props": {"document_id": document.import_id}}
+                )
+
+        _LOGGER.info("Done uploading documents")
 
     if len(errors) > 0:
         error_output_location_path = input_file_path.parent / str(
