@@ -95,6 +95,14 @@ def thread_executor(monkeypatch):
 
 
 @pytest.fixture
+def mock_failing_pdf_downloads(requests_mock):
+    pdf_url = "https://climatepolicyradar.org/file.pdf"
+    requests_mock.get(pdf_url, status_code=404, text="Not Found")
+
+    return pdf_url
+
+
+@pytest.fixture
 def mock_pdf_downloads(requests_mock):
     pdf_bytes = (FIXTURE_DATA_DIR / "sample.pdf").read_bytes()
     pdf_url = "https://climatepolicyradar.org/file.pdf"
@@ -221,9 +229,16 @@ def test_integration__no_op(s3_mock_factory):
     assert result.exit_code == 0, parse_runner_result(result)
 
     # Confirm no-op
-    original_files = set(pipeline_files.keys())
-    after_files = set(s3_mock_factory.list_bucket_file_names(pipeline_bucket))
-    assert original_files == after_files
+    # Before
+    original_files = pipeline_files.keys()
+    assert len(original_files) == 2
+
+    # After (should only include an extra but empty results file)
+    after_files = s3_mock_factory.list_bucket_file_names(pipeline_bucket)
+    assert len(after_files) == 3
+    results_path = "input/2022-11-01T21.53.26.945831/reports/ingest/batch_1.json"
+    results = s3_mock_factory.get_file(pipeline_bucket, results_path)
+    assert len(json.loads(results)) == 0
 
 
 def test_integration__with_files(
@@ -277,7 +292,7 @@ def test_integration__with_files(
 
     # test_pipeline_bucket_files
     # Legacy test was a file count, the port is more specific
-    assert len(s3_mock_factory.list_bucket_file_names(pipeline_bucket, "input/")) == 2
+    assert len(s3_mock_factory.list_bucket_file_names(pipeline_bucket, "input/")) == 3
     assert (
         len(s3_mock_factory.list_bucket_file_names(pipeline_bucket, "archive/")) == 15
     )
@@ -350,6 +365,78 @@ def test_integration__with_files(
         "archive/indexer_input/TESTCCLW.executive.2.2/"
     )
 
-    # Extra test on top of the legacy tests confirming some documents actually downloaded
+    # Extra tests on top of the legacy tests
+    # Confirming documents actually downloaded
     document_files = s3_mock_factory.list_bucket_file_names(document_bucket)
-    assert len(document_files) > 0
+    assert len(document_files) == 16
+
+    # Review the results file
+    path = "input/2022-11-01T21.53.26.945831/reports/ingest/batch_1.json"
+    results = json.loads(s3_mock_factory.get_file(pipeline_bucket, path))
+
+    errors = [i for i in filter(lambda i: i.get("error"), results)]
+    assert not errors
+
+    new_document_ids = [
+        i["document_id"] for i in filter(lambda i: i.get("kind") == "new", results)
+    ]
+    assert len(new_document_ids) == 18
+    updated_document_ids = [
+        i["document_id"] for i in filter(lambda i: i.get("kind") == "updated", results)
+    ]
+    assert len(updated_document_ids) == 6
+
+
+def test_integration__with_errors(
+    s3_mock_factory,
+    mock_failing_pdf_downloads,
+    mock_html_downloads,
+):
+    path = (
+        "src/navigator_data_ingest/tests/fixtures/small/new_and_updated_documents.json"
+    )
+    with open(path) as f:
+        small_new_and_updated_documents = f.read()
+
+    # Create mock buckets
+    pipeline_files = load_test_data_from_dir("pipeline_in")
+    pipeline_files[
+        "input/2022-11-01T21.53.26.945831/new_and_updated_documents.json"
+    ] = small_new_and_updated_documents
+    pipeline_bucket = s3_mock_factory.create_bucket(
+        "test-pipeline-bucket", pipeline_files
+    )
+    document_bucket = s3_mock_factory.create_bucket("test-document-bucket")
+
+    # Run
+    runner = CliRunner()
+    result = runner.invoke(
+        main,
+        [
+            "--pipeline-bucket",
+            pipeline_bucket,
+            "--document-bucket",
+            document_bucket,
+            "--updates-file-name",
+            "new_and_updated_documents.json",
+            "--output-prefix",
+            "parser_input",
+            "--embeddings-input-prefix",
+            "embeddings_input",
+            "--indexer-input-prefix",
+            "indexer_input",
+            "--db-state-file-key",
+            "input/2022-11-01T21.53.26.945831/db_state.json",
+        ],
+    )
+    assert result.exit_code == 0, parse_runner_result(result)
+
+    # After (PDFs failed so no documents)
+    document_files = s3_mock_factory.list_bucket_file_names(document_bucket)
+    assert len(document_files) == 0
+
+    path = "input/2022-11-01T21.53.26.945831/reports/ingest/batch_1.json"
+    results = json.loads(s3_mock_factory.get_file(pipeline_bucket, path))
+
+    errors = [i for i in filter(lambda i: i.get("error"), results)]
+    assert errors
