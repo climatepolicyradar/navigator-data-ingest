@@ -279,6 +279,22 @@ def test_integration__with_files(
 
     assert result.exit_code == 0, parse_runner_result(result)
 
+    # Review the results file
+    path = "input/2022-11-01T21.53.26.945831/reports/ingest/batch_1.json"
+    results = json.loads(s3_mock_factory.get_file(pipeline_bucket, path))
+
+    errors = [i for i in filter(lambda i: i.get("error"), results)]
+    assert not errors
+
+    new_document_ids = [
+        i["document_id"] for i in filter(lambda i: i.get("kind") == "new", results)
+    ]
+    assert len(new_document_ids) == 18
+    updated_document_ids = [
+        i["document_id"] for i in filter(lambda i: i.get("kind") == "updated", results)
+    ]
+    assert len(updated_document_ids) == 6
+
     # Legacy test cases
     # Ported from the original "online" tests that ran against third parties
 
@@ -370,22 +386,6 @@ def test_integration__with_files(
     document_files = s3_mock_factory.list_bucket_file_names(document_bucket)
     assert len(document_files) == 16
 
-    # Review the results file
-    path = "input/2022-11-01T21.53.26.945831/reports/ingest/batch_1.json"
-    results = json.loads(s3_mock_factory.get_file(pipeline_bucket, path))
-
-    errors = [i for i in filter(lambda i: i.get("error"), results)]
-    assert not errors
-
-    new_document_ids = [
-        i["document_id"] for i in filter(lambda i: i.get("kind") == "new", results)
-    ]
-    assert len(new_document_ids) == 18
-    updated_document_ids = [
-        i["document_id"] for i in filter(lambda i: i.get("kind") == "updated", results)
-    ]
-    assert len(updated_document_ids) == 6
-
 
 def test_integration__with_errors(
     s3_mock_factory,
@@ -396,13 +396,12 @@ def test_integration__with_errors(
         "src/navigator_data_ingest/tests/fixtures/small/new_and_updated_documents.json"
     )
     with open(path) as f:
-        small_new_and_updated_documents = f.read()
+        small_new_and_updated_documents = json.loads(f.read())
+    pipeline_files = {
+        "input/2022-11-01T21.53.26.945831/new_and_updated_documents.json": small_new_and_updated_documents
+    }
 
     # Create mock buckets
-    pipeline_files = load_test_data_from_dir("pipeline_in")
-    pipeline_files[
-        "input/2022-11-01T21.53.26.945831/new_and_updated_documents.json"
-    ] = small_new_and_updated_documents
     pipeline_bucket = s3_mock_factory.create_bucket(
         "test-pipeline-bucket", pipeline_files
     )
@@ -437,6 +436,19 @@ def test_integration__with_errors(
 
     path = "input/2022-11-01T21.53.26.945831/reports/ingest/batch_1.json"
     results = json.loads(s3_mock_factory.get_file(pipeline_bucket, path))
+    assert len(results) == 4
+    update_one, new_one, new_two, update_two = sorted(
+        results, key=lambda i: i["document_id"]
+    )
 
-    errors = [i for i in filter(lambda i: i.get("error"), results)]
-    assert errors
+    # Errors for new documents
+    assert new_one["kind"] == "new"
+    assert "404 Not Found" in new_one["error"]
+    assert new_two["kind"] == "new"
+    assert "404 Not Found" in new_two["error"]
+
+    # Errors for updated documents
+    assert update_one["kind"] == "updated"
+    # assert update_one["error"]
+    assert update_two["kind"] == "updated"
+    # assert update_two["error"]

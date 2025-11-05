@@ -2,6 +2,7 @@ import pytest
 import requests
 
 from navigator_data_ingest.base.api_client import upload_document
+from navigator_data_ingest.base.types import UnsupportedContentTypeError
 
 
 @pytest.mark.unit
@@ -96,15 +97,12 @@ def test_upload_document__unsupported_content_type(
         url, content=b"mock content", headers={"content-type": input_content_type}
     )
 
-    result = upload_document(
-        session=session,
-        source_url=url,
-        s3_prefix="TEST/1970",
-        file_name_without_suffix="test_slug",
-        document_bucket=mock_cdn_config["bucket"],
-        import_id="TEST.0.1",
-    )
-
-    assert result.content_type == input_content_type
-    assert result.cdn_object is None
-    assert result.md5_sum is None
+    with pytest.raises(UnsupportedContentTypeError):
+        upload_document(
+            session=session,
+            source_url=url,
+            s3_prefix="TEST/1970",
+            file_name_without_suffix="test_slug",
+            document_bucket=mock_cdn_config["bucket"],
+            import_id="TEST.0.1",
+        )
