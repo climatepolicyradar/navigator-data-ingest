@@ -117,3 +117,22 @@ class Action(BaseModel):
 
     update: Update
     action: Callable
+
+
+class IngestKind(Enum):
+    """Wether the ingest kind is updating document or adding a new document."""
+
+    new = "new"
+    updated = "updated"
+
+    def __str__(self):
+        """Return value when converting to str."""
+        return self.value
+
+
+class IngestResult(BaseModel):
+    """Reportable summary for a document."""
+
+    document_id: str
+    kind: IngestKind
+    error: Optional[str] = None

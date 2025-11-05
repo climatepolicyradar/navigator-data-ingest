@@ -1,0 +1,182 @@
+{
+  "new_documents": [
+    {
+      "publication_ts": "2013-01-01T00:00:00",
+      "name": "Presidential of the Republic of Indonesia Instruction Number 6 Year 2013 on Suspension of New Licenses and Improving Forest Governance of Primary Forest and Peatland",
+      "description": "The first iteration of this instruction was issued in 2011 in order to implement commitments under the agreements in the Letter of Intent signed with the Kingdom of Norway in May 2011. The Instruction is intended to facilitate Indonesia's participation in internationally financed REDD activities and places a moratorium on clearance of primary peatland and forests within moratorium areas.\u00a0The initial moratorium was extended by Presidential Instruction 6/2013.\u00a0In 2019, President Joko Widodo signed Presidential Instruction 5/2019, making the moratorium on the clearance of primary forest and peatlands in moratorium areas permanent.\u00a0",
+      "source_url": "https://climatepolicyradar.org/file.pdf",
+      "download_url": "https://climatepolicyradar.org/file.pdf",
+      "url": null,
+      "md5_sum": null,
+      "type": "Decree",
+      "source": "CCLW",
+      "import_id": "TESTCCLW.executive.1332.1547",
+      "family_import_id": "TESTCCLW.family.1332.0",
+      "category": "Policy",
+      "geography": "IDN",
+      "languages": [
+        "Indonesian"
+      ],
+      "metadata": {
+        "hazards": [],
+        "frameworks": [],
+        "instruments": [
+          "Processes, plans and strategies|Governance"
+        ],
+        "keywords": [
+          "REDD+ And LULUCF",
+          "Forests",
+          "Moratorium"
+        ],
+        "sectors": [
+          "LULUCF",
+          "Residential and Commercial"
+        ],
+        "topics": [
+          "Adaptation",
+          "Mitigation"
+        ]
+      },
+      "slug": "indonesia_2013_presidential-instruction-6-year-2013-on-suspension-of-new-licenses-and-improving-forest-governance-of-primary-forest-and-peatland",
+      "family_slug": "slug_TESTCCLW.family.1332.0"
+    },
+    {
+      "publication_ts": "2013-01-01T00:00:00",
+      "name": "Presidential of the Republic of Indonesia Instruction Number 6 Year 2013 on Suspension of New Licenses and Improving Forest Governance of Primary Forest and Peatland",
+      "description": "The first iteration of this instruction was issued in 2011 in order to implement commitments under the agreements in the Letter of Intent signed with the Kingdom of Norway in May 2011. The Instruction is intended to facilitate Indonesia's participation in internationally financed REDD activities and places a moratorium on clearance of primary peatland and forests within moratorium areas.\u00a0The initial moratorium was extended by Presidential Instruction 6/2013.\u00a0In 2019, President Joko Widodo signed Presidential Instruction 5/2019, making the moratorium on the clearance of primary forest and peatlands in moratorium areas permanent.\u00a0",
+      "source_url": "https://climatepolicyradar.org/file.pdf",
+      "download_url": null,
+      "url": null,
+      "md5_sum": null,
+      "type": "Decree",
+      "source": "CCLW",
+      "import_id": "TESTCCLW.executive.1332.1548",
+      "family_import_id": "TESTCCLW.family.1332.0",
+      "category": "Policy",
+      "geography": "IDN",
+      "languages": [
+        "English"
+      ],
+      "metadata": {
+        "hazards": [],
+        "frameworks": [],
+        "instruments": [
+          "Processes, plans and strategies|Governance"
+        ],
+        "keywords": [
+          "REDD+ And LULUCF",
+          "Forests",
+          "Moratorium"
+        ],
+        "sectors": [
+          "LULUCF",
+          "Residential and Commercial"
+        ],
+        "topics": [
+          "Adaptation",
+          "Mitigation"
+        ]
+      },
+      "slug": "england_2013_presidential-of-the-republic-of-indonesia-instruction-number-6-year-2013-on-suspension-of-new-licenses-and-improving-forest-governance-of-primary-forest-and-peatland",
+      "family_slug": "slug_TESTCCLW.family.1332.0"
+    }
+  ],
+  "updated_documents": {
+    "TESTCCLW.executive.1.1": [
+      {
+        "s3_value": "name",
+        "db_value": "new name",
+        "type": "name"
+      },
+      {
+        "s3_value": {},
+        "db_value": {
+          "publication_ts": "2013-01-01T00:00:00",
+          "name": "Dummy Name",
+          "description": "description",
+          "source_url": "https://climatepolicyradar.org/page.html",
+          "download_url": null,
+          "url": null,
+          "md5_sum": null,
+          "type": "EU Decision",
+          "source": "CCLW",
+          "import_id": "TESTCCLW.executive.1.1",
+          "family_import_id": "TESTCCLW.family.1.0",
+          "category": "Law",
+          "geography": "EUR",
+          "languages": [
+            "English"
+          ],
+          "metadata": {
+            "hazards": [],
+            "frameworks": [],
+            "instruments": [
+              "Capacity building|Governance"
+            ],
+            "keywords": [
+              "Adaptation"
+            ],
+            "sectors": [
+              "Economy-wide"
+            ],
+            "topics": [
+              "Adaptation"
+            ]
+          },
+          "slug": "dummy_slug",
+          "family_slug": "slug_TESTCCLW.family.1.0"
+        },
+        "type": "metadata"
+      }
+    ],
+    "TESTCCLW.executive.2.2": [
+      {
+        "s3_value": "description",
+        "db_value": "new description",
+        "type": "description"
+      },
+      {
+        "s3_value": {
+          "publication_ts": "2021-12-25T00:00:00"
+        },
+        "db_value": {
+          "publication_ts": "2013-01-01T00:00:00",
+          "name": "Dummy Name",
+          "description": "description",
+          "source_url": "https://climatepolicyradar.org/page.html",
+          "download_url": null,
+          "url": null,
+          "md5_sum": null,
+          "type": "EU Decision",
+          "source": "CCLW",
+          "import_id": "TESTCCLW.executive.2.2",
+          "family_import_id": "TESTCCLW.family.2.0",
+          "category": "Law",
+          "geography": "EUR",
+          "languages": [
+            "English"
+          ],
+          "metadata": {
+            "hazards": [],
+            "frameworks": [],
+            "instruments": [
+              "Capacity building|Governance"
+            ],
+            "keywords": [
+              "Adaptation"
+            ],
+            "sectors": [
+              "Economy-wide"
+            ],
+            "topics": [
+              "Adaptation"
+            ]
+          },
+          "slug": "dummy_slug",
+          "family_slug": "slug_TESTCCLW.family.2.0"
+        },
+        "type": "metadata"
+      }
+    ]
+  }
+}

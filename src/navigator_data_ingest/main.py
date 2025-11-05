@@ -11,11 +11,11 @@ from cloudpathlib import S3Path
 from cpr_sdk.pipeline_general_models import BackendDocument
 
 from navigator_data_ingest.base.api_client import (
-    write_error_file,
+    write_results_file,
     write_parser_input,
 )
 from navigator_data_ingest.base.new_document_actions import new_document
-from navigator_data_ingest.base.types import UpdateConfig
+from navigator_data_ingest.base.types import UpdateConfig, IngestResult, IngestKind
 from navigator_data_ingest.base.updated_document_actions import update_document
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 
@@ -176,9 +176,8 @@ def main(
     )
 
     document_generator = LawPolicyGenerator(input_file_path, output_location_path)
-    errors = []
+    results: list[IngestResult] = []
 
-    # TODO: configure worker count
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,
@@ -199,15 +198,19 @@ def main(
             for update in document_generator.process_updated_documents()
         }
 
-        update_results = []
         for future in as_completed(tasks):
             document_id, _ = tasks[future]
+            result = IngestResult(
+                document_id=document_id,
+                kind=IngestKind.updated,
+            )
             try:
-                update_results.append(future.result())
+                future.result()
             except Exception as e:
                 msg = f"Update document, {document_id} failed: {e}."
-                errors.append(msg)
                 _LOGGER.exception(msg, extra={"props": {"document_id": document_id}})
+                result.error = f"{type(e).__name__}: {str(e)}"
+            results.append(result)
         _LOGGER.info("Done updating documents.")
 
         # News
@@ -220,39 +223,30 @@ def main(
             for document in document_generator.process_new_documents()
         }
 
-        new_results = []
         for future in as_completed(tasks):
             document: BackendDocument = tasks[future]
+            result = IngestResult(
+                document_id=document.import_id,
+                kind=IngestKind.new,
+            )
             try:
-                result = future.result()
-                new_results.append(result)
+                new_result = future.result()
                 _LOGGER.info(
-                    f"Writing parser input for '{result.parser_input.document_id}"
+                    f"Writing parser input for '{new_result.parser_input.document_id}"
                 )
-                write_parser_input(output_location_path, result.parser_input)
+                write_parser_input(output_location_path, new_result.parser_input)
             except Exception as e:
                 msg = f"New document {document.import_id}, failed: {e}"
-                errors.append(msg)
                 _LOGGER.exception(
                     msg, extra={"props": {"document_id": document.import_id}}
                 )
+                result.error = f"{type(e).__name__}: {str(e)}"
+            results.append(result)
 
         _LOGGER.info("Done uploading documents")
 
-    if len(errors) > 0:
-        error_output_location_path = input_file_path.parent / str(
-            input_file_path.stem + ".json_errors"
-        )
-        _LOGGER.info(
-            "Writing errors to JSON_ERRORS file",
-            extra={
-                "props": {
-                    "errors": errors,
-                    "error_output_location_path": str(error_output_location_path),
-                }
-            },
-        )
-        write_error_file(error_output_location_path, errors)
+    # Write out results
+    write_results_file(input_file_path, results)
 
 
 if __name__ == "__main__":
