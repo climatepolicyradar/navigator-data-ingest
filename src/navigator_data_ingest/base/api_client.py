@@ -25,6 +25,7 @@ from navigator_data_ingest.base.types import (
     CONTENT_TYPE_PDF,
     UnsupportedContentTypeError,
     UploadResult,
+    IngestResult,
 )
 from navigator_data_ingest.base.utils import determine_content_type
 
@@ -60,89 +61,60 @@ def upload_document(
     :return DocumentUploadResult: the remote URL and the md5_sum of its contents
     :raises UnsupportedContentTypeError: if the content is of type multi-file or not within the list of supported
     """
-    # download the document
     _LOGGER.info(f"Downloading document from '{source_url}' for {import_id}")
-    upload_result = UploadResult(
-        cdn_object=None,
-        md5_sum=None,
-        content_type=None,
+
+    # Download and determine content type
+    download_response = _download_from_source(session, source_url)
+    content_type = determine_content_type(download_response, source_url)
+    file_content = download_response.content
+
+    watermark_text = generate_watermark_text(source_url, datetime.now())
+
+    # Convert to PDF based on content type
+    if content_type == CONTENT_TYPE_HTML:
+        # If the content type is HTML or we don't know it from a requests.get,
+        # capture the PDF from the URL
+        _LOGGER.info(f"Capturing PDF from URL with HTML content type: '{source_url}'")
+        file_content, content_type = capture_pdf_and_get_content_type_from_url(
+            source_url
+        )
+        file_content = add_last_page_watermark(
+            file_content,
+            watermark_text,
+        )
+    elif content_type in {CONTENT_TYPE_DOCX, CONTENT_TYPE_DOC}:
+        # If the content type is DOCX or DOC, convert it to PDF
+        _LOGGER.info(f"Converting DOCX or DOC to PDF: '{source_url}'")
+        file_content = convert_doc_to_pdf(file_content)
+        file_content = add_last_page_watermark(
+            file_content,
+            watermark_text,
+        )
+    elif content_type == CONTENT_TYPE_PDF:
+        # If the content type is PDF, we can use the original file content
+        pass
+    else:
+        raise UnsupportedContentTypeError(content_type)
+
+    # Calculate the md5sum
+    file_hash = hashlib.md5(file_content).hexdigest()
+    file_suffix = ".pdf"
+
+    file_name = _create_file_name_for_upload(
+        file_hash, file_name_without_suffix, file_suffix, s3_prefix
     )
 
-    try:
-        content_type = None
-        file_content = bytes()
-        try:
-            download_response = _download_from_source(session, source_url)
-            content_type = determine_content_type(download_response, source_url)
-            file_content = download_response.content
-        except Exception as e:
-            _LOGGER.exception(
-                f"Failed to download document from '{source_url}' with exception: {e}"
-            )
+    _LOGGER.info(
+        f"Uploading supported single file document content from '{source_url}' "
+        f"to CDN s3 bucket with filename '{file_name}'"
+    )
+    cdn_object = _store_document_in_cache(document_bucket, file_name, file_content)
 
-        watermark_text = generate_watermark_text(source_url, datetime.now())
-        upload_result.content_type = content_type
-
-        if content_type == CONTENT_TYPE_HTML:
-            # If the content type is HTML or we don't know it from a requests.get,
-            # capture the PDF from the URL
-            _LOGGER.info(
-                f"Capturing PDF from URL with HTML content type: '{source_url}'"
-            )
-            file_content, content_type = capture_pdf_and_get_content_type_from_url(
-                source_url
-            )
-            file_content = add_last_page_watermark(
-                file_content,
-                watermark_text,
-            )
-            upload_result.content_type = content_type
-        elif content_type in {CONTENT_TYPE_DOCX, CONTENT_TYPE_DOC}:
-            # If the content type is DOCX or DOC, convert it to PDF
-            _LOGGER.info(f"Converting DOCX or DOC to PDF: '{source_url}'")
-            file_content = convert_doc_to_pdf(file_content)
-            file_content = add_last_page_watermark(
-                file_content,
-                watermark_text,
-            )
-
-        elif content_type == CONTENT_TYPE_PDF:
-            # If the content type is PDF, we can use the original file content
-            pass
-
-        else:
-            raise UnsupportedContentTypeError(content_type)
-
-        # Calculate the m5sum & update the result object with the calculated value
-        file_hash = hashlib.md5(file_content).hexdigest()
-        upload_result.md5_sum = file_hash
-        file_suffix = ".pdf"
-
-        file_name = _create_file_name_for_upload(
-            file_hash, file_name_without_suffix, file_suffix, s3_prefix
-        )
-
-        _LOGGER.info(
-            f"Uploading supported single file document content from '{source_url}' "
-            f"to CDN s3 bucket with filename '{file_name}'"
-        )
-        cdn_object = _store_document_in_cache(document_bucket, file_name, file_content)
-        upload_result.cdn_object = cdn_object
-
-    except UnsupportedContentTypeError as e:
-        _LOGGER.warn(
-            f"Uploads for document {import_id} at '{source_url}' could not be completed because "
-            f"the content type '{e.content_type}' is not currently supported."
-        )
-    except Exception as e:
-        _LOGGER.exception(
-            f"Downloading source document {import_id} failed: "
-            f"{e.with_traceback(e.__traceback__)}"
-        )
-    finally:
-        # Always return an upload result, even if it's incomplete
-        # TODO: perhaps use the existence of an incomplete output in the future
-        return upload_result
+    return UploadResult(
+        cdn_object=cdn_object,
+        md5_sum=file_hash,
+        content_type=content_type,
+    )
 
 
 def _create_file_name_for_upload(
@@ -176,6 +148,7 @@ def _create_file_name_for_upload(
 @retry(
     stop=stop_after_attempt(4),
     wait=wait_random_exponential(multiplier=1, min=1, max=10),
+    reraise=True,
 )
 def _download_from_source(
     session: requests.Session, source_url: str, timeout: int = 30
@@ -231,6 +204,7 @@ def _store_document_in_cache(
 @retry(
     stop=stop_after_attempt(4),
     wait=wait_random_exponential(multiplier=1, min=1, max=10),
+    reraise=True,
 )
 def save_errors(
     bucket: str,
@@ -261,12 +235,22 @@ def write_parser_input(
 
 
 @retry(
-    stop=stop_after_attempt(4),
+    stop=stop_after_attempt(2),
     wait=wait_random_exponential(multiplier=1, min=1, max=10),
 )
-def write_error_file(
-    output_location: CloudPath,
-    errors: list[str],
-) -> None:
-    with output_location.open("w") as output_file:
-        output_file.write(json.dumps(errors, indent=2))
+def write_results_file(input_file_path: CloudPath, results: list[IngestResult]):
+    path: CloudPath = input_file_path.parent / "reports" / "ingest" / "batch_1.json"
+
+    _LOGGER.info(
+        "Writing results.",
+        extra={
+            "props": {
+                "count": len(results),
+                "path": str(path),
+            }
+        },
+    )
+    with path.open("w") as output_file:
+        output_file.write(
+            json.dumps([r.model_dump(mode="json") for r in results], indent=2)
+        )

@@ -1,5 +1,4 @@
 import logging
-import traceback
 
 import pydantic
 import requests
@@ -70,30 +69,22 @@ def new_document(
     translations from the BackendDocument object.
 
     :param Document document: A document to upload.
+    :raises: Any exception during processing (to be caught at top level)
     """
     _LOGGER.info(f"Handling document: {document}")
 
     session = requests.Session()
 
+    # Validate and create source URL
     try:
         document_source_url = (
             pydantic.AnyHttpUrl(document.source_url) if document.source_url else None
         )
+    except pydantic.ValidationError as e:
+        _LOGGER.error(f"Invalid source URL for document '{document.import_id}'")
+        raise ValueError(f"Invalid source_url: {document.source_url}") from e
 
-    except pydantic.ValidationError:
-        _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed.")
-        return HandleResult(
-            error=traceback.format_exc(),
-            parser_input=ParserInput(
-                document_id=document.import_id,
-                document_slug=document.slug,
-                document_name=document.name,
-                document_description=document.description,
-                document_source_url=None,
-                document_metadata=document,
-            ),
-        )
-
+    # Create initial parser input
     parser_input = ParserInput(
         document_id=document.import_id,
         document_slug=document.slug,
@@ -103,17 +94,12 @@ def new_document(
         document_metadata=document,
     )
 
-    try:
-        uploaded_document_result = _upload_document(
-            session,
-            document,
-            document_bucket,
-        )
-        _LOGGER.info(f"Uploaded content for '{document.import_id}'")
-
-    except Exception:
-        _LOGGER.exception(f"Ingesting document with ID '{document.import_id}' failed")
-        return HandleResult(error=traceback.format_exc(), parser_input=parser_input)
+    uploaded_document_result = _upload_document(
+        session,
+        document,
+        document_bucket,
+    )
+    _LOGGER.info(f"Uploaded content for '{document.import_id}'")
 
     parser_input = parser_input.copy(
         update={
