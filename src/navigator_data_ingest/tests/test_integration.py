@@ -96,7 +96,7 @@ def thread_executor(monkeypatch):
 
 @pytest.fixture
 def mock_failing_pdf_downloads(requests_mock):
-    pdf_url = "https://climatepolicyradar.org/file.pdf"
+    pdf_url = "https://climatepolicyradar.org/missing_file.pdf"
     requests_mock.get(pdf_url, status_code=404, text="Not Found")
 
     return pdf_url
@@ -287,11 +287,11 @@ def test_integration__with_files(
     assert not errors
 
     new_document_ids = [
-        i["document_id"] for i in filter(lambda i: i.get("kind") == "new", results)
+        i["document_id"] for i in filter(lambda i: i.get("type") == "new", results)
     ]
     assert len(new_document_ids) == 18
     updated_document_ids = [
-        i["document_id"] for i in filter(lambda i: i.get("kind") == "updated", results)
+        i["document_id"] for i in filter(lambda i: i.get("type") == "updated", results)
     ]
     assert len(updated_document_ids) == 6
 
@@ -387,7 +387,70 @@ def test_integration__with_files(
     assert len(document_files) == 16
 
 
-def test_integration__with_errors(
+def test_integration__with_files_some_errors(
+    s3_mock_factory,
+    mock_failing_pdf_downloads,
+    mock_pdf_downloads,
+    mock_html_downloads,
+):
+    # Combine good and bad new_and_updated_documents
+    path = (
+        "src/navigator_data_ingest/tests/fixtures/small/new_and_updated_documents.json"
+    )
+    with open(path) as f:
+        small_new_and_updated_documents = json.loads(f.read())
+        broken_new_docs = small_new_and_updated_documents["new_documents"]
+    pipeline_files = load_test_data_from_dir("pipeline_in")
+    pipeline_files["input/2022-11-01T21.53.26.945831/new_and_updated_documents.json"][
+        "new_documents"
+    ] = (
+        broken_new_docs
+        + pipeline_files[
+            "input/2022-11-01T21.53.26.945831/new_and_updated_documents.json"
+        ]["new_documents"]
+    )
+
+    # Create mock buckets
+    pipeline_bucket = s3_mock_factory.create_bucket(
+        "test-pipeline-bucket", pipeline_files
+    )
+    document_bucket = s3_mock_factory.create_bucket("test-document-bucket")
+
+    # Run
+    runner = CliRunner()
+    result = runner.invoke(
+        main,
+        [
+            "--pipeline-bucket",
+            pipeline_bucket,
+            "--document-bucket",
+            document_bucket,
+            "--updates-file-name",
+            "new_and_updated_documents.json",
+            "--output-prefix",
+            "parser_input",
+            "--embeddings-input-prefix",
+            "embeddings_input",
+            "--indexer-input-prefix",
+            "indexer_input",
+            "--db-state-file-key",
+            "input/2022-11-01T21.53.26.945831/db_state.json",
+        ],
+    )
+    assert result.exit_code == 0, parse_runner_result(result)
+
+    # After (some PDFs failed so no documents)
+    document_files = s3_mock_factory.list_bucket_file_names(document_bucket)
+    assert len(document_files) == 16
+
+    path = "input/2022-11-01T21.53.26.945831/reports/ingest/batch_1.json"
+    results = json.loads(s3_mock_factory.get_file(pipeline_bucket, path))
+    assert len(results) == 26
+    errors = [i for i in filter(lambda i: i.get("error"), results)]
+    assert len(errors) == 2
+
+
+def test_integration__with_files_all_errors(
     s3_mock_factory,
     mock_failing_pdf_downloads,
     mock_html_downloads,
@@ -442,13 +505,13 @@ def test_integration__with_errors(
     )
 
     # Errors for new documents
-    assert new_one["kind"] == "new"
+    assert new_one["type"] == "new"
     assert "404 Not Found" in new_one["error"]
-    assert new_two["kind"] == "new"
+    assert new_two["type"] == "new"
     assert "404 Not Found" in new_two["error"]
 
     # Errors for updated documents
-    assert update_one["kind"] == "updated"
+    assert update_one["type"] == "updated"
     # assert update_one["error"]
-    assert update_two["kind"] == "updated"
+    assert update_two["type"] == "updated"
     # assert update_two["error"]
