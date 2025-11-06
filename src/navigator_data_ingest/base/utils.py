@@ -34,6 +34,7 @@ class LawPolicyGenerator:
         """Generate documents for processing from the configured source."""
         _LOGGER.info("Processing new documents")
         for document in self.input_data.new_documents:
+            # This line means "updates" must run first for new documents to work
             if not parser_input_already_exists(self.output_location_path, document):
                 yield document
 
