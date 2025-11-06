@@ -15,7 +15,7 @@ from navigator_data_ingest.base.api_client import (
     write_parser_input,
 )
 from navigator_data_ingest.base.new_document_actions import new_document
-from navigator_data_ingest.base.types import UpdateConfig, IngestResult, IngestKind
+from navigator_data_ingest.base.types import UpdateConfig, IngestResult, IngestType
 from navigator_data_ingest.base.updated_document_actions import update_document
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 
@@ -202,7 +202,7 @@ def main(
             document_id, _ = tasks[future]
             result = IngestResult(
                 document_id=document_id,
-                kind=IngestKind.updated,
+                type=IngestType.updated,
             )
             try:
                 future.result()
@@ -227,7 +227,7 @@ def main(
             document: BackendDocument = tasks[future]
             result = IngestResult(
                 document_id=document.import_id,
-                kind=IngestKind.new,
+                type=IngestType.new,
             )
             try:
                 new_result = future.result()

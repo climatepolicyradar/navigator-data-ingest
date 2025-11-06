@@ -119,8 +119,8 @@ class Action(BaseModel):
     action: Callable
 
 
-class IngestKind(Enum):
-    """Wether the ingest kind is updating document or adding a new document."""
+class IngestType(Enum):
+    """Whether the ingest kind is updating document or adding a new document."""
 
     new = "new"
     updated = "updated"
@@ -134,5 +134,5 @@ class IngestResult(BaseModel):
     """Reportable summary for a document."""
 
     document_id: str
-    kind: IngestKind
+    type: IngestType
     error: Optional[str] = None
