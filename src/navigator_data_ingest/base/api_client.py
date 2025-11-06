@@ -204,23 +204,6 @@ def _store_document_in_cache(
 @retry(
     stop=stop_after_attempt(4),
     wait=wait_random_exponential(multiplier=1, min=1, max=10),
-    reraise=True,
-)
-def save_errors(
-    bucket: str,
-    name: str,
-    data: bytes,
-) -> str:
-    clean_name = name.lstrip("/")
-    output_file_location = S3Path(f"s3://{bucket}/{clean_name}")
-    with output_file_location.open("wb") as output_file:
-        output_file.write(data)
-    return clean_name
-
-
-@retry(
-    stop=stop_after_attempt(4),
-    wait=wait_random_exponential(multiplier=1, min=1, max=10),
 )
 def write_parser_input(
     output_location: CloudPath,
