@@ -76,15 +76,14 @@ elif is_tagged_version ${GITHUB_REF} ; then
     major=$(get_major "${semver}")
     minor=$(get_minor "${semver}")
     patch=$(get_patch "${semver}")
-    maturity=$(get_maturity "${semver}")
-    echo "Detected Version: ${major} . ${minor} . ${patch} [${maturity}]"
+    echo "Detected Version: ${major} . ${minor} . ${patch}"
 
-    docker_tag "${input_image}" "${name}:${major}.${minor}.${patch}-${maturity}"
-    docker_tag "${input_image}" "${name}:${major}.${minor}-${maturity}"
-    docker_tag "${input_image}" "${name}:${major}-${maturity}"
-    docker push "${name}:${major}.${minor}.${patch}-${maturity}"
-    docker push "${name}:${major}.${minor}-${maturity}"
-    docker push "${name}:${major}-${maturity}"
+    docker_tag "${input_image}" "${name}:${major}.${minor}.${patch}"
+    docker_tag "${input_image}" "${name}:${major}.${minor}"
+    docker_tag "${input_image}" "${name}:${major}"
+    docker push "${name}:${major}.${minor}.${patch}"
+    docker push "${name}:${major}.${minor}"
+    docker push "${name}:${major}"
 else
     echo "${GITHUB_REF} is neither a branch head nor valid semver tag"
     echo "Assuming '${GITHUB_HEAD_REF}' is a branch"
