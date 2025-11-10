@@ -506,9 +506,9 @@ def test_integration__with_files_all_errors(
 
     # Errors for new documents
     assert new_one["type"] == "new"
-    assert "404 Not Found" in new_one["error"]
+    assert "HTTPError: 404 Client Error" in new_one["error"]
     assert new_two["type"] == "new"
-    assert "404 Not Found" in new_two["error"]
+    assert "HTTPError: 404 Client Error" in new_two["error"]
 
     # Errors for updated documents
     assert update_one["type"] == "updated"
