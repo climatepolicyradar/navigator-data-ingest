@@ -175,7 +175,13 @@ def test_create_file_name_for_upload(
     "status_code,expectation",
     [
         (200, contextlib.nullcontext()),
-        (500, pytest.raises(Exception, match="Downloading source document failed")),
+        (
+            500,
+            pytest.raises(
+                Exception,
+                match="500 Server Error: None for url: mock://test-document.pdf",
+            ),
+        ),
     ],
 )
 def test_download_from_source(requests_mock, status_code, expectation):
