@@ -28,6 +28,7 @@ pymupdf = "^1.25.5"
 python-levenshtein = "^0.27.1"
 playwright = "^1.52.0"
 boto3 = ">=1.21.21,<2.0.0"
+filetype = "^1.2.0"
 
 [tool.poetry.group.dev-dependencies.dependencies]
 black = "^25.1.0"
