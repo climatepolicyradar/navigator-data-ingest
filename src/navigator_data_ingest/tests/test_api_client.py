@@ -24,7 +24,7 @@ from navigator_data_ingest.base.types import UnsupportedContentTypeError
         (
             "mock://somedata.docx",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/msword",  # type infered from file data
             ".pdf",
         ),
         ("mock://somedata.doc", "application/msword", "application/msword", ".pdf"),

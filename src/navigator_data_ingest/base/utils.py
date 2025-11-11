@@ -1,3 +1,4 @@
+import filetype
 import json
 import logging
 from typing import Generator, List, Tuple, cast
@@ -81,21 +82,33 @@ def parser_input_already_exists(
 
 def determine_content_type(response: Response, source_url: str) -> str:
     """
-    Use the response headers and file extension to determine content type
+    Identify the content type of a file using a three-stage fallback approach.
+
+    1. First priority: Detect via magic bytes (file signature)
+    2. Second priority: Infer from file extension in URL
+    3. Third priority: Use Content-Type header from response
 
     Args:
         response (Response): the request object from the file download
-        source_url (str): The defined source url
+        source_url (str): The source URL of the file
 
     Returns:
-        str: chosen content type
+        str: The determined content type (MIME type), or empty string if none found
     """
+    # magic bytes
+    if inferred_content_type := filetype.guess(response.content):
+        return inferred_content_type.mime
 
-    content_type_header = response.headers["Content-Type"].split(";")[0]
+    # file extension in URL
     try:
         file_extension_start_index = source_url.rindex(".")
         file_extension = source_url[file_extension_start_index:]
-        return CONTENT_TYPE_MAPPING.get(file_extension, content_type_header)
+        if content_type := CONTENT_TYPE_MAPPING.get(file_extension):
+            return content_type
     except ValueError:
-        # Some URLs don't have a file extension, so use the content type header
-        return content_type_header
+        # URL has no file extension, continue to stage 3
+        pass
+
+    # Content-Type header
+    content_type_header = response.headers.get("Content-Type", "")
+    return content_type_header.split(";")[0].strip()
