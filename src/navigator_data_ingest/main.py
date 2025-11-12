@@ -122,7 +122,7 @@ def main(
     indexer_input_prefix: str,
     archive_prefix: str,
     worker_count: int,
-    db_state_file_key: str,
+    input_dir_path: str,
 ):
     """
     Load documents from source JSON array file, updating details via API.
@@ -137,22 +137,16 @@ def main(
     param indexer_input_prefix: S3 prefix containing the indexer input files.
     param archive_prefix: S3 prefix to which to archive documents.
     param worker_count: Number of workers downloading/uploading cached documents.
-    param db_state_file_key: The s3 path for the file containing the db state
+    param input_dir_path: The s3 path for the directory containing the input files like 
+        db_state.json.
     """
     # Setup logging after main() is invoked to avoid pickling issues with ProcessPoolExecutor
     _setup_logging()
     _LOGGER = logging.getLogger(__name__)
 
-    # Get the key of folder containing the db state file
-    input_dir_path = (
-        S3Path(os.path.join("s3://", pipeline_bucket, db_state_file_key))
-    ).parent
+    input_dir_path: S3Path = S3Path(input_dir_path)
 
-    # Get the key of the updates file contain information on the new and updated
-    # documents (input/${timestamp}/updates.json)
-    updates_file_key = str(input_dir_path / updates_file_name).replace(
-        f"s3://{pipeline_bucket}/", ""
-    )
+    updates_file_key = (input_dir_path / updates_file_name).key
 
     pipeline_bucket_path = S3Path(f"s3://{pipeline_bucket.strip().rstrip('/')}")
 
