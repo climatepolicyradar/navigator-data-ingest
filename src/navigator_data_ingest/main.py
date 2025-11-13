@@ -1,8 +1,7 @@
 import logging
 import logging.config
 import os
-from concurrent.futures import ProcessPoolExecutor
-from concurrent.futures import as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import cast
 
 import click
@@ -11,11 +10,11 @@ from cloudpathlib import S3Path
 from cpr_sdk.pipeline_general_models import BackendDocument
 
 from navigator_data_ingest.base.api_client import (
-    write_results_file,
     write_parser_input,
+    write_results_file,
 )
 from navigator_data_ingest.base.new_document_actions import new_document
-from navigator_data_ingest.base.types import UpdateConfig, IngestResult, IngestType
+from navigator_data_ingest.base.types import IngestResult, IngestType, UpdateConfig
 from navigator_data_ingest.base.updated_document_actions import update_document
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 
@@ -109,9 +108,9 @@ def _setup_logging():
     help="Number of workers downloading/uploading cached documents",
 )
 @click.option(
-    "--db-state-file-key",
+    "--input-dir-path",
     required=True,
-    help="The s3 key for the file containing the db state.",
+    help="The input directory containing the db state file.",
 )
 def main(
     pipeline_bucket: str,
@@ -122,7 +121,7 @@ def main(
     indexer_input_prefix: str,
     archive_prefix: str,
     worker_count: int,
-    db_state_file_key: str,
+    input_dir_path: str,
 ):
     """
     Load documents from source JSON array file, updating details via API.
@@ -137,51 +136,35 @@ def main(
     param indexer_input_prefix: S3 prefix containing the indexer input files.
     param archive_prefix: S3 prefix to which to archive documents.
     param worker_count: Number of workers downloading/uploading cached documents.
-    param db_state_file_key: The s3 path for the file containing the db state
+    param input_dir_path: The s3 path for the directory containing the input files like 
+        db_state.json.
     """
     # Setup logging after main() is invoked to avoid pickling issues with ProcessPoolExecutor
     _setup_logging()
     _LOGGER = logging.getLogger(__name__)
-
-    # Get the key of folder containing the db state file
-    input_dir_path = (
-        S3Path(os.path.join("s3://", pipeline_bucket, db_state_file_key))
-    ).parent
-
-    # Get the key of the updates file contain information on the new and updated
-    # documents (input/${timestamp}/updates.json)
-    updates_file_key = str(input_dir_path / updates_file_name).replace(
-        f"s3://{pipeline_bucket}/", ""
-    )
-
+    
     pipeline_bucket_path = S3Path(f"s3://{pipeline_bucket.strip().rstrip('/')}")
-
-    input_file_path: S3Path = cast(
-        S3Path,
-        pipeline_bucket_path / f"{updates_file_key.strip().lstrip('/')}",
-    )
-    output_location_path = cast(
-        S3Path,
-        pipeline_bucket_path / f"{output_prefix.strip().lstrip('/')}",
-    )
+    input_dir_s3_path: S3Path = pipeline_bucket_path / input_dir_path
+    new_and_updated_documents_file_path: S3Path = input_dir_s3_path / updates_file_name
+    output_location_path: S3Path = pipeline_bucket_path / output_prefix
 
     _LOGGER.info(
         "Loading and updating Law/Policy document data.",
         extra={
             "props": {
-                "input_file": str(input_file_path),
+                "new_and_updated_documents_file_path": str(new_and_updated_documents_file_path),
                 "output_location": str(output_location_path),
             }
         },
     )
 
-    document_generator = LawPolicyGenerator(input_file_path, output_location_path)
+    document_generator = LawPolicyGenerator(new_and_updated_documents_file_path, output_location_path)
     results: list[IngestResult] = []
 
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,
-            input_prefix=input_file_path.key.replace(input_file_path.name, ""),  # type: ignore
+            input_prefix=input_dir_s3_path.key,
             parser_input=output_prefix,
             embeddings_input=embeddings_input_prefix,
             indexer_input=indexer_input_prefix,
@@ -246,7 +229,7 @@ def main(
         _LOGGER.info("Done uploading documents")
 
     # Write out results
-    write_results_file(input_file_path, results)
+    write_results_file(input_dir_s3_path, results)
 
 
 if __name__ == "__main__":

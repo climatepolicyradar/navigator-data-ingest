@@ -222,8 +222,8 @@ def test_integration__no_op(s3_mock_factory):
             "embeddings_input",
             "--indexer-input-prefix",
             "indexer_input",
-            "--db-state-file-key",
-            "input/2022-11-01T21.53.26.945831/db_state.json",
+            "--input-dir-path",
+            "input/2022-11-01T21.53.26.945831/",
         ],
     )
     assert result.exit_code == 0, parse_runner_result(result)
@@ -272,8 +272,8 @@ def test_integration__with_files(
             "embeddings_input",
             "--indexer-input-prefix",
             "indexer_input",
-            "--db-state-file-key",
-            "input/2022-11-01T21.53.26.945831/db_state.json",
+            "--input-dir-path",
+            "input/2022-11-01T21.53.26.945831/",
         ],
     )
 
@@ -433,8 +433,8 @@ def test_integration__with_files_some_errors(
             "embeddings_input",
             "--indexer-input-prefix",
             "indexer_input",
-            "--db-state-file-key",
-            "input/2022-11-01T21.53.26.945831/db_state.json",
+            "--input-dir-path",
+            "input/2022-11-01T21.53.26.945831/",
         ],
     )
     assert result.exit_code == 0, parse_runner_result(result)
@@ -487,8 +487,8 @@ def test_integration__with_files_all_errors(
             "embeddings_input",
             "--indexer-input-prefix",
             "indexer_input",
-            "--db-state-file-key",
-            "input/2022-11-01T21.53.26.945831/db_state.json",
+            "--input-dir-path",
+            "input/2022-11-01T21.53.26.945831/",
         ],
     )
     assert result.exit_code == 0, parse_runner_result(result)

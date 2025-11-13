@@ -197,8 +197,8 @@ def write_parser_input(
     stop=stop_after_attempt(2),
     wait=wait_random_exponential(multiplier=1, min=1, max=10),
 )
-def write_results_file(input_file_path: CloudPath, results: list[IngestResult]):
-    path: CloudPath = input_file_path.parent / "reports" / "ingest" / "batch_1.json"
+def write_results_file(input_dir_path: CloudPath, results: list[IngestResult]):
+    path: CloudPath = input_dir_path / "reports" / "ingest" / "batch_1.json"
 
     _LOGGER.info(
         "Writing results.",
