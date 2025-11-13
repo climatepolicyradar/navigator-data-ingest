@@ -1,8 +1,7 @@
 import logging
 import logging.config
 import os
-from concurrent.futures import ProcessPoolExecutor
-from concurrent.futures import as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import cast
 
 import click
@@ -11,11 +10,11 @@ from cloudpathlib import S3Path
 from cpr_sdk.pipeline_general_models import BackendDocument
 
 from navigator_data_ingest.base.api_client import (
-    write_results_file,
     write_parser_input,
+    write_results_file,
 )
 from navigator_data_ingest.base.new_document_actions import new_document
-from navigator_data_ingest.base.types import UpdateConfig, IngestResult, IngestType
+from navigator_data_ingest.base.types import IngestResult, IngestType, UpdateConfig
 from navigator_data_ingest.base.updated_document_actions import update_document
 from navigator_data_ingest.base.utils import LawPolicyGenerator
 
@@ -109,9 +108,9 @@ def _setup_logging():
     help="Number of workers downloading/uploading cached documents",
 )
 @click.option(
-    "--db-state-file-key",
+    "--input-dir-path",
     required=True,
-    help="The s3 key for the file containing the db state.",
+    help="The input directory containing the db state file.",
 )
 def main(
     pipeline_bucket: str,
@@ -144,9 +143,9 @@ def main(
     _setup_logging()
     _LOGGER = logging.getLogger(__name__)
 
-    input_dir_path: S3Path = S3Path(input_dir_path)
+    input_dir_s3_path: S3Path = S3Path(input_dir_path)
 
-    updates_file_key = (input_dir_path / updates_file_name).key
+    updates_file_key = (input_dir_s3_path / updates_file_name).key
 
     pipeline_bucket_path = S3Path(f"s3://{pipeline_bucket.strip().rstrip('/')}")
 
@@ -175,7 +174,7 @@ def main(
     with ProcessPoolExecutor(max_workers=worker_count) as executor:
         update_config = UpdateConfig(
             pipeline_bucket=pipeline_bucket,
-            input_prefix=input_file_path.key.replace(input_file_path.name, ""),  # type: ignore
+            input_prefix=input_dir_s3_path.key,
             parser_input=output_prefix,
             embeddings_input=embeddings_input_prefix,
             indexer_input=indexer_input_prefix,
@@ -240,7 +239,7 @@ def main(
         _LOGGER.info("Done uploading documents")
 
     # Write out results
-    write_results_file(input_file_path, results)
+    write_results_file(input_dir_s3_path, results)
 
 
 if __name__ == "__main__":
