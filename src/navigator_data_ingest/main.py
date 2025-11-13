@@ -142,33 +142,23 @@ def main(
     # Setup logging after main() is invoked to avoid pickling issues with ProcessPoolExecutor
     _setup_logging()
     _LOGGER = logging.getLogger(__name__)
-
-    input_dir_s3_path: S3Path = S3Path(input_dir_path)
-
-    updates_file_key = (input_dir_s3_path / updates_file_name).key
-
+    
     pipeline_bucket_path = S3Path(f"s3://{pipeline_bucket.strip().rstrip('/')}")
-
-    input_file_path: S3Path = cast(
-        S3Path,
-        pipeline_bucket_path / f"{updates_file_key.strip().lstrip('/')}",
-    )
-    output_location_path = cast(
-        S3Path,
-        pipeline_bucket_path / f"{output_prefix.strip().lstrip('/')}",
-    )
+    input_dir_s3_path: S3Path = pipeline_bucket_path / input_dir_path
+    new_and_updated_documents_file_path: S3Path = input_dir_s3_path / updates_file_name
+    output_location_path: S3Path = pipeline_bucket_path / output_prefix
 
     _LOGGER.info(
         "Loading and updating Law/Policy document data.",
         extra={
             "props": {
-                "input_file": str(input_file_path),
+                "new_and_updated_documents_file_path": str(new_and_updated_documents_file_path),
                 "output_location": str(output_location_path),
             }
         },
     )
 
-    document_generator = LawPolicyGenerator(input_file_path, output_location_path)
+    document_generator = LawPolicyGenerator(new_and_updated_documents_file_path, output_location_path)
     results: list[IngestResult] = []
 
     with ProcessPoolExecutor(max_workers=worker_count) as executor:

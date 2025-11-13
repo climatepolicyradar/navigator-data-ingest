@@ -212,10 +212,10 @@ def test_store_document_in_cache(test_s3_client__cdn, mock_cdn_config):
 @pytest.mark.unit
 def test_write_results_file(test_s3_client__cdn, mock_cdn_config):
     bucket = mock_cdn_config["bucket"]
-    input_file_path = S3Path(f"s3://{bucket}/test_input/some_file.json")
+    input_file_dir = S3Path(f"s3://{bucket}/test_input/")
     results = [IngestResult(document_id="TEST.1.1", type=IngestType.new, error=None)]
 
-    write_results_file(input_file_path, results)
+    write_results_file(input_file_dir, results)
 
-    expected_file = input_file_path.parent / "reports" / "ingest" / "batch_1.json"
+    expected_file = input_file_dir / "reports" / "ingest" / "batch_1.json"
     assert expected_file.exists()
